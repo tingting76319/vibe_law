@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>⚖️ 台灣法律專家知識系統 | Legal-RAG</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/judge.css">
 </head>
 <body>
     <div class="container">
@@ -14,95 +15,280 @@
                 <span class="logo-icon">⚖️</span>
                 <h1>台灣法律專家知識系統</h1>
             </div>
-            <div class="tag">RAG</div>
+            <div class="nav-tabs header-tabs">
+                <button class="nav-tab active" data-view="rag">🔍 法律問答</button>
+                <button class="nav-tab" data-view="judge">👨‍⚖️ 法官數位孿生</button>
+            </div>
         </header>
 
-        <!-- 搜尋區域 -->
-        <section class="search-section">
-            <div class="search-box">
-                <input type="text" id="search-input" placeholder="搜尋法律問題、判例、法規...（例如：車禍 離婚 租屋）">
-                <button id="search-btn" class="search-btn">🔍 搜尋</button>
-            </div>
-            <div class="search-tips">
-                快速搜尋：
-                <span class="tag-btn" data-query="車禍">車禍</span>
-                <span class="tag-btn" data-query="離婚">離婚</span>
-                <span class="tag-btn" data-query="租屋">租屋</span>
-                <span class="tag-btn" data-query="繼承">繼承</span>
-                <span class="tag-btn" data-query="勞動">勞動</span>
-            </div>
-        </section>
+        <!-- RAG 問答視圖 -->
+        <div id="view-rag" class="view-section">
+            <!-- 搜尋區域 -->
+            <section class="search-section">
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="搜尋法律問題、判例、法規...（例如：車禍 離婚 租屋）">
+                    <button id="search-btn" class="search-btn">🔍 搜尋</button>
+                </div>
+                <div class="search-tips">
+                    快速搜尋：
+                    <span class="tag-btn" data-query="車禍">車禍</span>
+                    <span class="tag-btn" data-query="離婚">離婚</span>
+                    <span class="tag-btn" data-query="租屋">租屋</span>
+                    <span class="tag-btn" data-query="繼承">繼承</span>
+                    <span class="tag-btn" data-query="勞動">勞動</span>
+                </div>
+            </section>
 
-        <!-- 熱門問題 -->
-        <section class="hot-topics">
-            <h2>💡 熱門問題</h2>
-            <div class="topics-grid">
-                <div class="topic-card" data-query="車禍責任">
-                    <div class="topic-icon">🚗</div>
-                    <div class="topic-title">車禍責任如何認定？</div>
-                    <div class="topic-desc">過失責任、刑事責任、民事賠償</div>
+            <!-- 熱門問題 -->
+            <section class="hot-topics">
+                <h2>💡 熱門問題</h2>
+                <div class="topics-grid">
+                    <div class="topic-card" data-query="車禍責任">
+                        <div class="topic-icon">🚗</div>
+                        <div class="topic-title">車禍責任如何認定？</div>
+                        <div class="topic-desc">過失責任、刑事責任、民事賠償</div>
+                    </div>
+                    <div class="topic-card" data-query="離婚程序">
+                        <div class="topic-icon">💔</div>
+                        <div class="topic-title">離婚手續怎麼辦？</div>
+                        <div class="topic-desc">協議離婚、裁判離婚、監護權</div>
+                    </div>
+                    <div class="topic-card" data-query="租屋糾紛">
+                        <div class="topic-icon">🏠</div>
+                        <div class="topic-title">租屋糾紛處理</div>
+                        <div class="topic-desc">押金、退租、修繕責任</div>
+                    </div>
+                    <div class="topic-card" data-query="繼承順位">
+                        <div class="topic-icon">📜</div>
+                        <div class="topic-title">繼承順位與分配</div>
+                        <div class="topic-desc">法定繼承、特留分、遺囑</div>
+                    </div>
                 </div>
-                <div class="topic-card" data-query="離婚程序">
-                    <div class="topic-icon">💔</div>
-                    <div class="topic-title">離婚手續怎麼辦？</div>
-                    <div class="topic-desc">協議離婚、裁判離婚、監護權</div>
-                </div>
-                <div class="topic-card" data-query="租屋糾紛">
-                    <div class="topic-icon">🏠</div>
-                    <div class="topic-title">租屋糾紛處理</div>
-                    <div class="topic-desc">押金、退租、修繕責任</div>
-                </div>
-                <div class="topic-card" data-query="繼承順位">
-                    <div class="topic-icon">📜</div>
-                    <div class="topic-title">繼承順位與分配</div>
-                    <div class="topic-desc">法定繼承、特留分、遺囑</div>
-                </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- 問答區域 -->
-        <section class="qa-section" id="qa-section">
-            <div class="qa-header">
-                <h2>💬 法律問答</h2>
-                <button class="clear-btn" id="clear-chat">🗑️ 清除</button>
-            </div>
-            
-            <div class="qa-history" id="qa-history">
-                <!-- 問答紀錄會顯示在這裡 -->
-                <div class="welcome-message">
-                    <p>歡迎使用台灣法律專家知識系統！</p>
-                    <p>請在上方輸入您的法律問題，我會為您搜尋相關判例並提供解答。</p>
-                    <p class="disclaimer">⚠️ 本系統僅供參考，不構成法律意見。如有具體法律問題，請諮詢律師。</p>
+            <!-- 問答區域 -->
+            <section class="qa-section" id="qa-section">
+                <div class="qa-header">
+                    <h2>💬 法律問答</h2>
+                    <button class="clear-btn" id="clear-chat">🗑️ 清除</button>
                 </div>
-            </div>
-            
-            <div class="qa-input-area">
-                <input type="text" id="qa-input" placeholder="輸入您的法律問題...">
-                <button id="ask-btn">送出</button>
-            </div>
-        </section>
+                
+                <div class="qa-history" id="qa-history">
+                    <!-- 問答紀錄會顯示在這裡 -->
+                    <div class="welcome-message">
+                        <p>歡迎使用台灣法律專家知識系統！</p>
+                        <p>請在上方輸入您的法律問題，我會為您搜尋相關判例並提供解答。</p>
+                        <p class="disclaimer">⚠️ 本系統僅供參考，不構成法律意見。如有具體法律問題，請諮詢律師。</p>
+                    </div>
+                </div>
+                
+                <div class="qa-input-area">
+                    <input type="text" id="qa-input" placeholder="輸入您的法律問題...">
+                    <button id="ask-btn">送出</button>
+                </div>
+            </section>
 
-        <!-- 判例資料區 -->
-        <section class="cases-section">
-            <h2>📚 相關判例</h2>
-            <div class="cases-list" id="cases-list">
-                <div class="case-empty">搜尋後將顯示相關判例</div>
-            </div>
-        </section>
+            <!-- 判例資料區 -->
+            <section class="cases-section">
+                <h2>📚 相關判例</h2>
+                <div class="cases-list" id="cases-list">
+                    <div class="case-empty">搜尋後將顯示相關判例</div>
+                </div>
+            </section>
 
-        <!-- 法規查詢 -->
-        <section class="laws-section">
-            <h2>📖 法規查詢</h2>
-            <div class="laws-tabs">
-                <button class="law-tab active" data-law="civil">民法</button>
-                <button class="law-tab" data-law="criminal">刑法</button>
-                <button class="law-tab" data-law="administrative">行政法</button>
-                <button class="law-tab" data-law="civil-procedure">民事訴訟法</button>
-            </div>
-            <div class="laws-content" id="laws-content">
-                <!-- 法規內容 -->
-            </div>
-        </section>
+            <!-- 法規查詢 -->
+            <section class="laws-section">
+                <h2>📖 法規查詢</h2>
+                <div class="laws-tabs">
+                    <button class="law-tab active" data-law="civil">民法</button>
+                    <button class="law-tab" data-law="criminal">刑法</button>
+                    <button class="law-tab" data-law="administrative">行政法</button>
+                    <button class="law-tab" data-law="civil-procedure">民事訴訟法</button>
+                </div>
+                <div class="laws-content" id="laws-content">
+                    <!-- 法規內容 -->
+                </div>
+            </section>
+        </div>
+
+        <!-- 法官數位孿生視圖 -->
+        <div id="view-judge" class="view-section hidden">
+            <!-- 法官選擇器 -->
+            <section class="judge-selector">
+                <h2>👨‍⚖️ 選擇法官</h2>
+                <div class="judge-list" id="judge-list">
+                    <!-- 法官列表會動態載入 -->
+                </div>
+            </section>
+
+            <!-- 法官檔案區 -->
+            <section class="judge-profile" id="judge-profile">
+                <!-- 法官基本資料 -->
+                <div class="judge-card">
+                    <div class="judge-avatar">
+                        <span class="avatar-placeholder">👨‍⚖️</span>
+                    </div>
+                    <div class="judge-info">
+                        <h3 class="judge-name" id="judge-name">請選擇法官</h3>
+                        <p class="judge-title" id="judge-title">-</p>
+                        <div class="judge-meta">
+                            <span class="meta-item">🏛️ <span id="judge-court">-</span></span>
+                            <span class="meta-item">📅 任职年限: <span id="judge-years">-</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 裁判風格統計 -->
+                <div class="judge-stats">
+                    <h3>📊 裁判風格統計</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="stat-total">0</div>
+                            <div class="stat-label">總判決數</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="stat-civil">0</div>
+                            <div class="stat-label">民事案件</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="stat-criminal">0</div>
+                            <div class="stat-label">刑事案件</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="stat-admin">0</div>
+                            <div class="stat-label">行政案件</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 風格分析圖表 -->
+                    <div class="style-chart">
+                        <div class="chart-row">
+                            <span class="chart-label">⚖️ 裁決傾向</span>
+                            <div class="chart-bar-container">
+                                <div class="chart-bar" id="bar-維持" style="width: 0%">維持 0%</div>
+                                <div class="chart-bar" id="bar-撤銷" style="width: 0%">撤銷 0%</div>
+                                <div class="chart-bar" id="bar-和解" style="width: 0%">和解 0%</div>
+                            </div>
+                        </div>
+                        <div class="chart-row">
+                            <span class="chart-label">⏱️ 平均審理天數</span>
+                            <div class="chart-bar-container">
+                                <div class="chart-bar warning" id="bar-duration" style="width: 0%">0 天</div>
+                            </div>
+                        </div>
+                        <div class="chart-row">
+                            <span class="chart-label">📈 上訴維持率</span>
+                            <div class="chart-bar-container">
+                                <div class="chart-bar success" id="bar-appeal" style="width: 0%">0%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 歷史判決列表 -->
+                <div class="judge-cases">
+                    <h3>📜 歷史判決</h3>
+                    <div class="filter-bar">
+                        <select id="case-type-filter" class="filter-select">
+                            <option value="">全部類型</option>
+                            <option value="民事">民事</option>
+                            <option value="刑事">刑事</option>
+                            <option value="行政">行政</option>
+                        </select>
+                        <input type="text" id="case-search" class="filter-input" placeholder="搜尋判決...">
+                    </div>
+                    <div class="cases-timeline" id="judge-cases-list">
+                        <div class="case-empty">請選擇法官查看歷史判決</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 判決預測區 -->
+            <section class="prediction-section">
+                <h3>🔮 判決預測</h3>
+                <p class="prediction-desc">輸入案件特徵，預測法官可能的裁決結果</p>
+                
+                <div class="prediction-form">
+                    <div class="form-group">
+                        <label>案件類型</label>
+                        <select id="pred-case-type">
+                            <option value="">請選擇...</option>
+                            <option value="民事">民事</option>
+                            <option value="刑事">刑事</option>
+                            <option value="行政">行政</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>案件類別</label>
+                        <select id="pred-case-category">
+                            <option value="">請選擇...</option>
+                            <option value="車禍">車禍</option>
+                            <option value="離婚">離婚</option>
+                            <option value="租屋">租屋</option>
+                            <option value="繼承">繼承</option>
+                            <option value="勞動">勞動</option>
+                            <option value="毒品">毒品</option>
+                            <option value="傷害">傷害</option>
+                            <option value="竊盜">竊盜</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>原告立場</label>
+                        <select id="pred-plaintiff">
+                            <option value="">請選擇...</option>
+                            <option value="請求賠償">請求賠償</option>
+                            <option value="請求離婚">請求離婚</option>
+                            <option value="請求遷讓">請求遷讓</option>
+                            <option value="請求確認">請求確認</option>
+                            <option value="告訴">告訴</option>
+                            <option value="公訴">公訴</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>關鍵情節</label>
+                        <textarea id="pred-facts" rows="3" placeholder="輸入案件關鍵事實..."></textarea>
+                    </div>
+                    <button id="predict-btn" class="predict-btn">🔮 開始預測</button>
+                </div>
+
+                <!-- 預測結果 -->
+                <div class="prediction-result hidden" id="prediction-result">
+                    <h4>🎯 預測結果</h4>
+                    <div class="result-card">
+                        <div class="result-header">
+                            <span class="result-label">預測裁決</span>
+                            <span class="result-verdict" id="verdict-text">-</span>
+                        </div>
+                        <div class="confidence-section">
+                            <span class="confidence-label">信心指數</span>
+                            <div class="confidence-bar-container">
+                                <div class="confidence-bar" id="confidence-bar"></div>
+                            </div>
+                            <span class="confidence-value" id="confidence-value">0%</span>
+                        </div>
+                        <div class="result-analysis">
+                            <h5>📋 分析說明</h5>
+                            <p id="analysis-text">-</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 相似案例區 -->
+            <section class="similar-cases-section">
+                <h3>🔗 相似案例</h3>
+                <p class="similar-desc">與當前案件相似的歷史判決</p>
+                
+                <div class="similar-input">
+                    <input type="text" id="similar-query" placeholder="輸入案件描述，尋找相似案例...">
+                    <button id="similar-search-btn">🔍 尋找相似案例</button>
+                </div>
+                
+                <div class="similar-results" id="similar-results">
+                    <div class="case-empty">輸入案件描述以尋找相似案例</div>
+                </div>
+            </section>
+        </div>
 
         <!-- 底部 -->
         <footer class="footer">
@@ -112,9 +298,11 @@
     </div>
 
     <script src="js/data/cases.js"></script>
+    <script src="js/data/judges.js"></script>
     <script src="js/data/laws.js"></script>
     <script src="js/search.js"></script>
     <script src="js/rag.js"></script>
+    <script src="js/judge.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

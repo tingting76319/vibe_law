@@ -1,18 +1,58 @@
 // Legal-RAG 搜尋模組
 
-// 搜尋處理器
-function handleSearch(query) {
+const API_BASE = '/api/judicial';
+
+// 搜尋處理器 - 改為呼叫後端 API
+async function handleSearch(query) {
     if (!query || query.trim() === '') return null;
     
     const trimmedQuery = query.trim();
     
-    // 1. 搜尋判例
+    try {
+        // 呼叫後端 API 搜尋
+        const response = await fetch(`${API_BASE}/search?q=${encodeURIComponent(trimmedQuery)}`);
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            const cases = result.data || [];
+            
+            // 搜尋法規（本地）
+            const laws = searchLaws(trimmedQuery);
+            
+            // 熱門問題
+            const hotAnswers = getHotAnswers(trimmedQuery);
+            
+            return {
+                query: trimmedQuery,
+                cases: cases,
+                laws: laws.slice(0, 3),
+                hotAnswers: hotAnswers
+            };
+        }
+    } catch (error) {
+        console.error('搜尋API錯誤:', error);
+    }
+    
+    // 如果 API 失敗，使用本地備援
     const cases = searchCases(trimmedQuery);
-    
-    // 2. 搜尋法規
     const laws = searchLaws(trimmedQuery);
+    const hotAnswers = getHotAnswers(trimmedQuery);
     
-    // 3. 搜尋熱門問題
+    return {
+        query: trimmedQuery,
+        cases: cases,
+        laws: laws.slice(0, 3),
+        hotAnswers: hotAnswers
+    };
+}
+
+// 同步版本（用於向後相容）
+function handleSearchSync(query) {
+    if (!query || query.trim() === '') return null;
+    
+    const trimmedQuery = query.trim();
+    const cases = searchCases(trimmedQuery);
+    const laws = searchLaws(trimmedQuery);
     const hotAnswers = getHotAnswers(trimmedQuery);
     
     return {
@@ -52,8 +92,8 @@ function getHotAnswers(query) {
             relatedCases: ['109台上1234', '109犯罪偵查']
         },
         '離婚': {
-            title: '離婚程序與監護權',
-            content: `台灣離婚主要有兩種方式：
+            title: '離婚程序與            content: `台灣離婚主要有監護權',
+兩種方式：
 
 1. **協議離婚**（民法第1049條）：
    - 雙方同意
@@ -175,12 +215,12 @@ function renderSearchResults(results) {
     if (results.cases.length > 0) {
         results.cases.forEach(c => {
             html += `
-                <div class="case-item" onclick="showCaseDetail('${c.id}')">
-                    <div class="case-title">${c.court} ${c.year}年 ${c.caseNumber}</div>
-                    <div class="case-meta">${c.type} | ${c.date}</div>
-                    <div class="case-summary">${c.summary}</div>
+                <div class="case-item" onclick="showCaseDetail('${c.JID || c.id}')">
+                    <div class="case-title">${c.JTITLE || c.title || '案件'}</div>
+                    <div class="case-meta">${c.JDATE || c.date || ''}</div>
+                    <div class="case-summary">${c.JFULLX?.JFULLCONTENT || c.summary || ''}</div>
                     <div class="case-tags">
-                        ${c.keywords.map(k => `<span class="case-tag">${k}</span>`).join('')}
+                        ${(c.keywords || []).map(k => `<span class="case-tag">${k}</span>`).join('')}
                     </div>
                 </div>
             `;
@@ -188,7 +228,7 @@ function renderSearchResults(results) {
     }
     
     // 顯示相關法規
-    if (results.laws.length > 0) {
+    if (results.laws && results.laws.length > 0) {
         html += '<h4 style="margin-top:20px;color:var(--gold);">相關法規：</h4>';
         results.laws.forEach(l => {
             html += `

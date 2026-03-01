@@ -1,0 +1,15 @@
+{
+  "user": "tingting76319",
+  "password": "YTLiu76319",
+  "apiBaseUrl": "https://data.judicial.gov.tw/jdg/api",
+  "serviceHours": {
+    "start": 0,
+    "end": 6
+  },
+  "isMock": false,
+  "llm": {
+    "provider": "minimax",
+    "apiKey": "",
+    "model": "MiniMax-M2.5"
+  }
+}

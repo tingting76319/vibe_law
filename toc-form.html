@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案件評估 - 法律風險評估系統</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/toc.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <a href="index.html" class="logo-link">
+                    <span class="logo-icon">⚖️</span>
+                    <h1>法律風險評估系統</h1>
+                </a>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">回首頁</a>
+            </div>
+        </header>
+
+        <main class="toc-main">
+            <div class="form-container">
+                <div class="form-header">
+                    <h2>📝 案件評估表單</h2>
+                    <p class="form-desc">填寫以下資訊，我們將為您評估案件風險並提供初步建議</p>
+                </div>
+
+                <form id="case-form" class="case-form">
+                    <div class="form-section">
+                        <h3>案件基本資訊</h3>
+                        
+                        <div class="form-group">
+                            <label class="form-label required">案件類型</label>
+                            <div class="case-type-grid">
+                                <label class="case-type-card">
+                                    <input type="radio" name="caseType" value="traffic" required>
+                                    <span class="case-type-icon">🚗</span>
+                                    <span class="case-type-name">車禍事故</span>
+                                </label>
+                                <label class="case-type-card">
+                                    <input type="radio" name="caseType" value="divorce">
+                                    <span class="case-type-icon">💔</span>
+                                    <span class="case-type-name">離婚訴訟</span>
+                                </label>
+                                <label class="case-type-card">
+                                    <input type="radio" name="caseType" value="rental">
+                                    <span class="case-type-icon">🏠</span>
+                                    <span class="case-type-name">租屋糾紛</span>
+                                </label>
+                                <label class="case-type-card">
+                                    <input type="radio" name="caseType" value="inheritance">
+                                    <span class="case-type-icon">📜</span>
+                                    <span class="case-type-name">繼承問題</span>
+                                </label>
+                                <label class="case-type-card">
+                                    <input type="radio" name="caseType" value="labor">
+                                    <span class="case-type-icon">💼</span>
+                                    <span class="case-type-name">勞動糾紛</span>
+                                </label>
+                                <label class="case-type-card">
+                                    <input type="radio" name="caseType" value="debt">
+                                    <span class="case-type-icon">💳</span>
+                                    <span class="case-type-name">債務糾紛</span>
+                                </label>
+                                <label class="case-type-card">
+                                    <input type="radio" name="caseType" value="contract">
+                                    <span class="case-type-icon">📋</span>
+                                    <span class="case-type-name">合約爭議</span>
+                                </label>
+                                <label class="case-type-card">
+                                    <input type="radio" name="caseType" value="other">
+                                    <span class="case-type-icon">📌</span>
+                                    <span class="case-type-name">其他</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>案件詳情</h3>
+                        
+                        <div class="form-group">
+                            <label for="caseTitle" class="form-label required">案件標題</label>
+                            <input type="text" id="caseTitle" name="caseTitle" class="form-input" 
+                                placeholder="簡要描述您的案件（例如：車禍對方要求賠償）" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="caseDescription" class="form-label required">案件描述</label>
+                            <textarea id="caseDescription" name="caseDescription" class="form-textarea" 
+                                placeholder="請詳細說明事情經過，包括時間、地點、涉及的當事人、糾紛起因等..." 
+                                rows="8" required></textarea>
+                            <div class="textarea-hint">建議包含：事發時間、當事人關係、主要爭議點、已採取的行動</div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>證據與進度</h3>
+                        
+                        <div class="form-group">
+                            <label class="form-label required">證據強度</label>
+                            <div class="evidence-options">
+                                <label class="evidence-option">
+                                    <input type="radio" name="evidenceStrength" value="strong" required>
+                                    <div class="evidence-content">
+                                        <span class="evidence-icon">💪</span>
+                                        <span class="evidence-title">證據充足</span>
+                                        <span class="evidence-desc">有書面證據、錄音錄影、證人等</span>
+                                    </div>
+                                </label>
+                                <label class="evidence-option">
+                                    <input type="radio" name="evidenceStrength" value="medium">
+                                    <div class="evidence-content">
+                                        <span class="evidence-icon">📄</span>
+                                        <span class="evidence-title">證據一般</span>
+                                        <span class="evidence-desc">部分書面證據，但缺乏錄音錄影</span>
+                                    </div>
+                                </label>
+                                <label class="evidence-option">
+                                    <input type="radio" name="evidenceStrength" value="weak">
+                                    <div class="evidence-content">
+                                        <span class="evidence-icon">🤔</span>
+                                        <span class="evidence-title">證據不足</span>
+                                        <span class="evidence-desc">主要依賴口述，無書面證據</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label required">目前進度</label>
+                            <div class="progress-options">
+                                <label class="progress-option">
+                                    <input type="radio" name="caseProgress" value="initial" required>
+                                    <span class="progress-label">尚未開始</span>
+                                </label>
+                                <label class="progress-option">
+                                    <input type="radio" name="caseProgress" value="notice">
+                                    <span class="progress-label">收到通知/存證信函</span>
+                                </label>
+                                <label class="progress-option">
+                                    <input type="radio" name="caseProgress" value="mediation">
+                                    <span class="progress-label">調解中</span>
+                                </label>
+                                <label class="progress-option">
+                                    <input type="radio" name="caseProgress" value="lawsuit">
+                                    <span class="progress-label">已提告/被起訴</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>緊急程度與對方資訊</h3>
+                        
+                        <div class="form-group">
+                            <label class="form-label required">緊急程度</label>
+                            <div class="urgency-options">
+                                <label class="urgency-option">
+                                    <input type="radio" name="urgency" value="low">
+                                    <div class="urgency-content urgency-low">
+                                        <span class="urgency-icon">🟢</span>
+                                        <span class="urgency-title">低</span>
+                                        <span class="urgency-desc">可等待，無立即危機</span>
+                                    </div>
+                                </label>
+                                <label class="urgency-option">
+                                    <input type="radio" name="urgency" value="medium" required>
+                                    <div class="urgency-content urgency-medium">
+                                        <span class="urgency-icon">🟡</span>
+                                        <span class="urgency-title">中</span>
+                                        <span class="urgency-desc">需在數週內處理</span>
+                                    </div>
+                                </label>
+                                <label class="urgency-option">
+                                    <input type="radio" name="urgency" value="high">
+                                    <div class="urgency-content urgency-high">
+                                        <span class="urgency-icon">🔴</span>
+                                        <span class="urgency-title">高</span>
+                                        <span class="urgency-desc">需立即處理（如強制執行）</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="opponent" class="form-label">對方當事人（選填）</label>
+                            <input type="text" id="opponent" name="opponent" class="form-input" 
+                                placeholder="對方姓名或公司名稱">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="court" class="form-label">法院/法官（選填）</label>
+                            <input type="text" id="court" name="court" class="form-input" 
+                                placeholder="如已進入司法程序，填寫法院名稱">
+                        </div>
+                    </div>
+
+                    <div class="form-section contact-section">
+                        <h3>聯絡資訊</h3>
+                        <div class="form-group">
+                            <label for="contactName" class="form-label required">您的姓名</label>
+                            <input type="text" id="contactName" name="contactName" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="contactPhone" class="form-label">聯絡電話</label>
+                            <input type="tel" id="contactPhone" name="contactPhone" class="form-input" 
+                                placeholder="09xxxxxxxx">
+                        </div>
+                        <div class="form-group">
+                            <label for="contactEmail" class="form-label required">電子郵件</label>
+                            <input type="email" id="contactEmail" name="contactEmail" class="form-input" required>
+                        </div>
+                    </div>
+
+                    <div class="form-disclaimer">
+                        <p>⚠️ <strong>重要聲明</strong>：本系統評估僅供參考，不構成法律意見。最終裁決仍由法院依據具體證據作成。如有具體法律問題，強烈建議諮詢專業律師。</p>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="resetForm()">清除重填</button>
+                        <button type="submit" class="btn btn-primary">送出評估</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>⚠️ <strong>法律聲明</strong>：本系統僅供參考，不構成法律意見。如有具體法律問題，請諮詢專業律師。</p>
+        </footer>
+    </div>
+
+    <script src="js/toc.js"></script>
+</body>
+</html>

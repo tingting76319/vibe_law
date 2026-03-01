@@ -1,0 +1,31 @@
+{
+  "$schema": "https://schema.zeabur.com/zeabur.json",
+  "build": {
+    "backend": {
+      "buildCommand": "cd backend && npm install",
+      "installCommand": "cd backend && npm install",
+      "outputDir": "backend"
+    }
+  },
+  "deploy": {
+    "backend": {
+      "domain": [
+        {
+          "hostname": "vibe-law",
+          "type": "rewrite"
+        }
+      ],
+      "env": [
+        {
+          "key": "MMKey_LAW_LLM",
+          "value": "your-api-key-here"
+        }
+      ],
+      "region": "auto",
+      "source": {
+        "path": "backend",
+        "startCommand": "node src/index.js"
+      }
+    }
+  }
+}
