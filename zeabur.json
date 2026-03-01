@@ -11,8 +11,7 @@
     "backend": {
       "domain": [
         {
-          "hostname": "vibe-law",
-          "type": "rewrite"
+          "hostname": "vibe-law"
         }
       ],
       "env": [
@@ -21,11 +20,7 @@
           "value": "your-api-key-here"
         }
       ],
-      "region": "auto",
-      "source": {
-        "path": "backend",
-        "startCommand": "node src/index.js"
-      }
+      "region": "auto"
     }
   }
 }
