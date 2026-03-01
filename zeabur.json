@@ -4,23 +4,24 @@
     "backend": {
       "buildCommand": "cd backend && npm install",
       "installCommand": "cd backend && npm install",
-      "outputDir": "backend"
+      "outputDir": "backend/dist"
     }
   },
   "deploy": {
     "backend": {
       "domain": [
         {
-          "hostname": "vibe-law"
+          "hostname": "vibe-law",
+          "type": "rewrite"
         }
       ],
       "env": [
         {
-          "key": "MMKey_LAW_LLM",
-          "value": "your-api-key-here"
+          "key": "NODE_ENV",
+          "value": "production"
         }
       ],
-      "region": "auto"
+      "region": "Taiwan"
     }
   }
 }
