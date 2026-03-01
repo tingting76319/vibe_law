@@ -1,0 +1,559 @@
+/* Legal-RAG 台灣法律專家知識系統樣式 */
+
+:root {
+    --primary: #1a365d;
+    --secondary: #2c5282;
+    --accent: #c9a227;
+    --bg-dark: #0a1628;
+    --bg-card: rgba(255, 255, 255, 0.05);
+    --text-light: #e2e8f0;
+    --text-muted: #a0aec0;
+    --border: rgba(255, 255, 255, 0.1);
+    --gold: #d4a574;
+    --success: #48bb78;
+    --danger: #fc8181;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Noto Sans TC', 'Microsoft JhengHei', 'Segoe UI', sans-serif;
+    background: linear-gradient(180deg, #0d1b2a 0%, #1b263b 50%, #0a1628 100%);
+    min-height: 100vh;
+    color: var(--text-light);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* 頂部標題 */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    margin-bottom: 20px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo-icon {
+    font-size: 2.5rem;
+}
+
+.logo h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    background: linear-gradient(90deg, var(--gold), #fff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.tag {
+    padding: 5px 15px;
+    background: linear-gradient(135deg, var(--secondary), var(--primary));
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+/* 搜尋區域 */
+.search-section {
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+}
+
+.search-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.search-box input {
+    flex: 1;
+    padding: 15px 20px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    color: #fff;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.search-box input:focus {
+    border-color: var(--gold);
+}
+
+.search-box input::placeholder {
+    color: var(--text-muted);
+}
+
+.search-btn {
+    padding: 15px 30px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--gold), #b8952f);
+    color: #000;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.search-btn:hover {
+    transform: translateY(-2px);
+}
+
+.search-tips {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.tag-btn {
+    display: inline-block;
+    padding: 5px 15px;
+    margin: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tag-btn:hover {
+    background: var(--gold);
+    color: #000;
+}
+
+/* 熱門問題 */
+.hot-topics {
+    margin-bottom: 20px;
+}
+
+.hot-topics h2 {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    color: var(--gold);
+}
+
+.topics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.topic-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.topic-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--gold);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.topic-icon {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.topic-title {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.topic-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* 問答區域 */
+.qa-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+}
+
+.qa-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.qa-header h2 {
+    font-size: 1.2rem;
+    color: var(--gold);
+}
+
+.clear-btn {
+    padding: 5px 15px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.clear-btn:hover {
+    background: var(--danger);
+    color: #fff;
+}
+
+.qa-history {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+}
+
+.welcome-message {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 30px;
+}
+
+.welcome-message .disclaimer {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(252, 129, 129, 0.1);
+    border: 1px solid var(--danger);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: var(--danger);
+}
+
+.qa-item {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.qa-item:last-child {
+    border-bottom: none;
+}
+
+.question {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.question-label {
+    padding: 3px 10px;
+    background: var(--secondary);
+    border-radius: 5px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.answer {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.answer-label {
+    padding: 3px 10px;
+    background: var(--gold);
+    color: #000;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.answer-content {
+    flex: 1;
+    line-height: 1.8;
+}
+
+.related-cases {
+    margin-top: 10px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.related-cases h4 {
+    font-size: 0.9rem;
+    color: var(--gold);
+    margin-bottom: 8px;
+}
+
+.related-cases ul {
+    list-style: none;
+    font-size: 0.85rem;
+}
+
+.related-cases li {
+    padding: 5px 0;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.related-cases li:hover {
+    color: var(--gold);
+}
+
+.qa-input-area {
+    display: flex;
+    gap: 10px;
+}
+
+.qa-input-area input {
+    flex: 1;
+    padding: 12px 15px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    color: #fff;
+    font-size: 0.95rem;
+    outline: none;
+}
+
+.qa-input-area input:focus {
+    border-color: var(--gold);
+}
+
+.qa-input-area button {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    background: var(--secondary);
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.qa-input-area button:hover {
+    background: var(--primary);
+}
+
+/* 判例資料區 */
+.cases-section {
+    margin-bottom: 20px;
+}
+
+.cases-section h2 {
+    font-size: 1.2rem;
+    color: var(--gold);
+    margin-bottom: 15px;
+}
+
+.cases-list {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 15px;
+}
+
+.case-empty {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 30px;
+}
+
+.case-item {
+    padding: 15px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.case-item:last-child {
+    border-bottom: none;
+}
+
+.case-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.case-title {
+    font-weight: 600;
+    color: var(--gold);
+    margin-bottom: 5px;
+}
+
+.case-meta {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.case-summary {
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.case-tags {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.case-tag {
+    padding: 3px 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* 法規查詢 */
+.laws-section {
+    margin-bottom: 20px;
+}
+
+.laws-section h2 {
+    font-size: 1.2rem;
+    color: var(--gold);
+    margin-bottom: 15px;
+}
+
+.laws-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.law-tab {
+    padding: 10px 20px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.law-tab:hover,
+.law-tab.active {
+    background: var(--secondary);
+    color: #fff;
+    border-color: var(--secondary);
+}
+
+.laws-content {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.law-item {
+    padding: 15px;
+    border-bottom: 1px solid var(--border);
+}
+
+.law-item:last-child {
+    border-bottom: none;
+}
+
+.law-name {
+    font-weight: 600;
+    color: var(--gold);
+    margin-bottom: 8px;
+}
+
+.law-content {
+    font-size: 0.9rem;
+    line-height: 1.8;
+    color: var(--text-light);
+}
+
+.law-meta {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 8px;
+}
+
+/* 底部 */
+.footer {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    border-top: 1px solid var(--border);
+    margin-top: 30px;
+}
+
+.footer p {
+    margin: 5px 0;
+}
+
+.footer strong {
+    color: var(--danger);
+}
+
+/* 滾動條 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--secondary);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+}
+
+/* 響應式 */
+@media (max-width: 600px) {
+    .header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .search-box {
+        flex-direction: column;
+    }
+    
+    .topics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .laws-tabs {
+        flex-wrap: wrap;
+    }
+}

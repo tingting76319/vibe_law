@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚖️ 台灣法律專家知識系統 | Legal-RAG</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 頂部標題 -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">⚖️</span>
+                <h1>台灣法律專家知識系統</h1>
+            </div>
+            <div class="tag">RAG</div>
+        </header>
+
+        <!-- 搜尋區域 -->
+        <section class="search-section">
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="搜尋法律問題、判例、法規...（例如：車禍 離婚 租屋）">
+                <button id="search-btn" class="search-btn">🔍 搜尋</button>
+            </div>
+            <div class="search-tips">
+                快速搜尋：
+                <span class="tag-btn" data-query="車禍">車禍</span>
+                <span class="tag-btn" data-query="離婚">離婚</span>
+                <span class="tag-btn" data-query="租屋">租屋</span>
+                <span class="tag-btn" data-query="繼承">繼承</span>
+                <span class="tag-btn" data-query="勞動">勞動</span>
+            </div>
+        </section>
+
+        <!-- 熱門問題 -->
+        <section class="hot-topics">
+            <h2>💡 熱門問題</h2>
+            <div class="topics-grid">
+                <div class="topic-card" data-query="車禍責任">
+                    <div class="topic-icon">🚗</div>
+                    <div class="topic-title">車禍責任如何認定？</div>
+                    <div class="topic-desc">過失責任、刑事責任、民事賠償</div>
+                </div>
+                <div class="topic-card" data-query="離婚程序">
+                    <div class="topic-icon">💔</div>
+                    <div class="topic-title">離婚手續怎麼辦？</div>
+                    <div class="topic-desc">協議離婚、裁判離婚、監護權</div>
+                </div>
+                <div class="topic-card" data-query="租屋糾紛">
+                    <div class="topic-icon">🏠</div>
+                    <div class="topic-title">租屋糾紛處理</div>
+                    <div class="topic-desc">押金、退租、修繕責任</div>
+                </div>
+                <div class="topic-card" data-query="繼承順位">
+                    <div class="topic-icon">📜</div>
+                    <div class="topic-title">繼承順位與分配</div>
+                    <div class="topic-desc">法定繼承、特留分、遺囑</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 問答區域 -->
+        <section class="qa-section" id="qa-section">
+            <div class="qa-header">
+                <h2>💬 法律問答</h2>
+                <button class="clear-btn" id="clear-chat">🗑️ 清除</button>
+            </div>
+            
+            <div class="qa-history" id="qa-history">
+                <!-- 問答紀錄會顯示在這裡 -->
+                <div class="welcome-message">
+                    <p>歡迎使用台灣法律專家知識系統！</p>
+                    <p>請在上方輸入您的法律問題，我會為您搜尋相關判例並提供解答。</p>
+                    <p class="disclaimer">⚠️ 本系統僅供參考，不構成法律意見。如有具體法律問題，請諮詢律師。</p>
+                </div>
+            </div>
+            
+            <div class="qa-input-area">
+                <input type="text" id="qa-input" placeholder="輸入您的法律問題...">
+                <button id="ask-btn">送出</button>
+            </div>
+        </section>
+
+        <!-- 判例資料區 -->
+        <section class="cases-section">
+            <h2>📚 相關判例</h2>
+            <div class="cases-list" id="cases-list">
+                <div class="case-empty">搜尋後將顯示相關判例</div>
+            </div>
+        </section>
+
+        <!-- 法規查詢 -->
+        <section class="laws-section">
+            <h2>📖 法規查詢</h2>
+            <div class="laws-tabs">
+                <button class="law-tab active" data-law="civil">民法</button>
+                <button class="law-tab" data-law="criminal">刑法</button>
+                <button class="law-tab" data-law="administrative">行政法</button>
+                <button class="law-tab" data-law="civil-procedure">民事訴訟法</button>
+            </div>
+            <div class="laws-content" id="laws-content">
+                <!-- 法規內容 -->
+            </div>
+        </section>
+
+        <!-- 底部 -->
+        <footer class="footer">
+            <p>⚠️ <strong>法律聲明</strong>：本系統僅供參考，不構成法律意見。如有具體法律問題，請諮詢專業律師。</p>
+            <p>📊 資料來源：司法院公開判例 | 全國法規資料庫</p>
+        </footer>
+    </div>
+
+    <script src="js/data/cases.js"></script>
+    <script src="js/data/laws.js"></script>
+    <script src="js/search.js"></script>
+    <script src="js/rag.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
