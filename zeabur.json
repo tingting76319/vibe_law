@@ -2,8 +2,8 @@
   "$schema": "https://schema.zeabur.com/zeabur.json",
   "build": {
     "backend": {
-      "buildCommand": "npm install",
-      "installCommand": "npm install"
+      "buildCommand": "npm install --prefix .",
+      "installCommand": "npm install --prefix ."
     }
   },
   "deploy": {
