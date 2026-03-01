@@ -4,7 +4,6 @@
 const express = require('express');
 const multer = require('multer');
 const AdmZip = require('adm-zip');
-const { pool, query } = require('../db/postgres');
 const path = require('path');
 const fs = require('fs');
 
@@ -26,6 +25,15 @@ const upload = multer({
   storage,
   limits: { fileSize: 500 * 1024 * 1024 } // 500MB limit
 });
+
+// 取得連線池
+function getPool() {
+  const { Pool } = require('pg');
+  return new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  });
+}
 
 // 上傳並匯入
 router.post('/upload', upload.single('file'), async (req, res) => {
@@ -64,6 +72,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     // 匯入每個 JSON 檔案
     let importedCount = 0;
     let errorCount = 0;
+    const pool = getPool();
     
     for (const file of jsonFiles) {
       try {
@@ -76,7 +85,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
           for (const line of lines) {
             try {
               const item = JSON.parse(line);
-              await importItem(item);
+              await importItem(pool, item);
               importedCount++;
             } catch (e2) {
               errorCount++;
@@ -88,14 +97,14 @@ router.post('/upload', upload.single('file'), async (req, res) => {
         if (Array.isArray(data)) {
           for (const item of data) {
             try {
-              await importItem(item);
+              await importItem(pool, item);
               importedCount++;
             } catch (e) {
               errorCount++;
             }
           }
         } else {
-          await importItem(data);
+          await importItem(pool, data);
           importedCount++;
         }
       } catch (e) {
@@ -108,7 +117,9 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     fs.unlinkSync(filePath);
     
     // 統計
-    const total = await query('SELECT COUNT(*) as count FROM judgments');
+    const total = await pool.query('SELECT COUNT(*) as count FROM judgments');
+    
+    await pool.end();
     
     res.json({
       success: true,
@@ -125,7 +136,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
 });
 
 // 匯入單筆資料
-async function importItem(item) {
+async function importItem(pool, item) {
   const text = `
     INSERT INTO judgments (jid, jyear, jcase, jno, jdate, jtitle, jfull, jpdf)
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
@@ -150,20 +161,22 @@ async function importItem(item) {
     item.JPDF || item.jpdf || item.JFULLX?.JFULLPDF || ''
   ];
   
-  await query(text, values);
+  await pool.query(text, values);
 }
 
 // 取得匯入狀態
 router.get('/status', async (req, res) => {
   try {
-    const total = await query('SELECT COUNT(*) as count FROM judgments');
-    const byYear = await query(`
+    const pool = getPool();
+    const total = await pool.query('SELECT COUNT(*) as count FROM judgments');
+    const byYear = await pool.query(`
       SELECT jyear, COUNT(*) as count 
       FROM judgments 
       GROUP BY jyear 
       ORDER BY jyear DESC
       LIMIT 10
     `);
+    await pool.end();
     
     res.json({
       total: total.rows[0].count,
