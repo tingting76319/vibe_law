@@ -8,7 +8,7 @@ class LLMService {
   constructor() {
     this.config = config.llm || {};
     this.provider = this.config.provider || 'minimax';
-    this.apiKey = this.config.apiKey || process.env.LLM_API_KEY;
+    this.apiKey = this.config.apiKey || process.env.MMKey_LAW_LLM;
     this.model = this.config.model || 'MiniMax-M2.5';
     console.log(`[LLMService] 初始化 - Provider: ${this.provider}, Model: ${this.model}`);
   }

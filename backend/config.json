@@ -9,7 +9,7 @@
   "isMock": false,
   "llm": {
     "provider": "minimax",
-    "apiKey": "sk-api-jMdfxhfeWPazThxWEeBgpML3cHihtmO6u0n9DXiynn8lYrP6M4TeOqSPGwaU6VJB_RieIyFmk2ha0bv-tOX8QfzRsHkScmVTQxRsfN7EAC6OvWOCg85e_e8",
+    "apiKey": "",
     "model": "MiniMax-M2.5"
   }
 }
