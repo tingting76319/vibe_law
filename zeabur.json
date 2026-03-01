@@ -2,7 +2,7 @@
   "$schema": "https://schema.zeabur.com/zeabur.json",
   "build": {
     "backend": {
-      "buildCommand": "pwd && ls -la && npm install",
+      "buildCommand": "npm install",
       "installCommand": "npm install"
     }
   },
@@ -16,17 +16,17 @@
       "source": {
         "path": ".",
         "startCommand": "node backend/src/index.js"
-      },
-      "env": [
-        {
-          "key": "DATABASE_URL",
-          "value": "postgresql://root:p0lK6P4cLAVy82H371bOE9xviMq5CQrY@150.109.204.13:32317/zeabur"
-        },
-        {
-          "key": "NODE_ENV",
-          "value": "production"
-        }
-      ]
+      }
     }
-  }
+  },
+  "env": [
+    {
+      "key": "DATABASE_URL",
+      "value": "postgresql://root:p0lK6P4cLAVy82H371bOE9xviMq5CQrY@150.109.204.13:32317/zeabur"
+    },
+    {
+      "key": "NODE_ENV",
+      "value": "production"
+    }
+  ]
 }
