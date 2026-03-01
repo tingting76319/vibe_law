@@ -14,8 +14,8 @@
         }
       ],
       "source": {
-        "path": "backend",
-        "startCommand": "node src/index.js"
+        "path": ".",
+        "startCommand": "cd backend && node src/index.js"
       },
       "env": [
         {
