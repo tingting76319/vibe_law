@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>判決書上傳</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+    .upload-box { border: 2px dashed #ccc; padding: 40px; text-align: center; border-radius: 10px; }
+    .upload-box:hover { border-color: #333; }
+    #progress { margin-top: 20px; display: none; }
+    #result { margin-top: 20px; padding: 15px; border-radius: 5px; }
+    .success { background: #d4edda; color: #155724; }
+    .error { background: #f8d7da; color: #721c24; }
+    .progress-bar { width: 100%; height: 20px; background: #eee; border-radius: 5px; overflow: hidden; }
+    .progress-fill { height: 100%; background: #4CAF50; width: 0%; transition: width 0.3s; }
+  </style>
+</head>
+<body>
+  <h1>📁 判決書 ZIP 上傳</h1>
+  
+  <div class="upload-box">
+    <p>選擇 ZIP 檔案（內含 JSON）</p>
+    <input type="file" id="fileInput" accept=".zip,.json" multiple>
+    <br><br>
+    <button onclick="upload()" style="padding: 10px 30px; font-size: 16px; cursor: pointer;">上傳</button>
+  </div>
+  
+  <div id="progress">
+    <p id="status">上傳中...</p>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+  
+  <div id="result"></div>
+  
+  <div style="margin-top: 30px;">
+    <h3>📊 目前資料庫狀態</h3>
+    <button onclick="checkStatus()" style="padding: 5px 15px;">重新整理</button>
+    <div id="stats"></div>
+  </div>
+
+  <script>
+    const API_URL = '';
+    
+    async function checkStatus() {
+      try {
+        const res = await fetch(API_URL + '/api/upload/status');
+        const data = await res.json();
+        let html = '<p>總數: ' + data.total + '</p>';
+        if (data.byYear) {
+          html += '<ul>';
+          data.byYear.forEach(y => {
+            html += '<li>' + y.jyear + '年: ' + y.count + ' 件</li>';
+          });
+          html += '</ul>';
+        }
+        document.getElementById('stats').innerHTML = html;
+      } catch(e) {
+        document.getElementById('stats').innerHTML = '錯誤: ' + e.message;
+      }
+    }
+    
+    async function upload() {
+      const input = document.getElementById('fileInput');
+      if (!input.files.length) {
+        alert('請選擇檔案');
+        return;
+      }
+      
+      const file = input.files[0];
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      document.getElementById('progress').style.display = 'block';
+      document.getElementById('progressFill').style.width = '30%';
+      document.getElementById('status').textContent = '上傳中...';
+      
+      try {
+        const res = await fetch(API_URL + '/api/upload/upload', {
+          method: 'POST',
+          body: formData
+        });
+        
+        const data = await res.json();
+        
+        document.getElementById('progressFill').style.width = '100%';
+        
+        if (data.success) {
+          document.getElementById('result').className = 'success';
+          document.getElementById('result').innerHTML = '<h3>✅ 成功！</h3><p>匯入: ' + data.imported + ' 筆</p><p>錯誤: ' + data.errors + ' 筆</p><p>總數: ' + data.total + ' 筆</p>';
+        } else {
+          document.getElementById('result').className = 'error';
+          document.getElementById('result').innerHTML = '<h3>❌ 錯誤</h3><p>' + (data.error || '未知錯誤') + '</p>';
+        }
+      } catch(e) {
+        document.getElementById('result').className = 'error';
+        document.getElementById('result').innerHTML = '<h3>❌ 錯誤</h3><p>' + e.message + '</p>';
+      }
+      
+      checkStatus();
+    }
+    
+    checkStatus();
+  </script>
+</body>
+</html>
