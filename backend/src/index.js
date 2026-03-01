@@ -62,14 +62,7 @@ app.get('/', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Legal-RAG Backend 啟動中...`);
-  console.log(`📡 API Server: http://localhost:${PORT}`);
-  console.log(`📋 API 端點:`);
-  console.log(`   GET  /api/judicial/test        - 測試 API 連線`);
-  console.log(`   GET  /api/judicial/cases       - 取得所有案例`);
-  console.log(`   GET  /api/judicial/search?q=   - 搜尋案例`);
-  console.log(`   POST /api/rag/ask               - RAG 問答`);
-  console.log(`   POST /api/upload/upload         - 上傳 ZIP 匯入`);
-  console.log(`   GET  /api/upload/status         - 匯入狀態`);
+  console.log(`📡 API Server: http://0.0.0.0:${PORT}`);
 });
