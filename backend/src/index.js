@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const { pool, testConnection } = require('./db/postgres');
 
 const judicialRoutes = require('./routes/judicial');
 const ragRoutes = require('./routes/rag');
@@ -11,14 +10,28 @@ const uploadRoutes = require('./routes/upload');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// 嘗試載入 PostgreSQL，如果失敗會使用 SQLite
+let pool = null;
+try {
+  const pg = require('pg');
+  const { Pool: PgPool } = pg;
+  pool = new PgPool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  });
+  console.log('[PostgreSQL] 模組載入成功');
+} catch (e) {
+  console.log('[PostgreSQL] 模組載入失敗:', e.message);
+}
+
 // 計算正確的根目錄路徑
 const rootPath = path.resolve(__dirname, '..', '..');
-
 console.log('Root path:', rootPath);
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // API Routes
 app.use('/api/judicial', judicialRoutes);
@@ -29,11 +42,13 @@ app.use('/api/upload', uploadRoutes);
 // Health check
 app.get('/health', async (req, res) => {
   let dbStatus = 'unknown';
-  try {
-    await pool.query('SELECT 1');
-    dbStatus = 'connected';
-  } catch (e) {
-    dbStatus = 'disconnected';
+  if (pool) {
+    try {
+      await pool.query('SELECT 1');
+      dbStatus = 'connected';
+    } catch (e) {
+      dbStatus = 'error: ' + e.message;
+    }
   }
   
   res.json({ 
@@ -41,16 +56,6 @@ app.get('/health', async (req, res) => {
     timestamp: new Date().toISOString(),
     database: dbStatus
   });
-});
-
-// 測試資料庫連線
-app.get('/api/db/test', async (req, res) => {
-  try {
-    const result = await testConnection();
-    res.json({ success: result, message: result ? '資料庫連線成功' : '資料庫連線失敗' });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
 });
 
 // Serve static files
