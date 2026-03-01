@@ -11,8 +11,9 @@ const mockData = require('../../data/mockData.json');
 class JudicialAPI {
   constructor() {
     this.token = null;
-    this.isMock = true; // 開發環境使用 mock
+    this.isMock = config.isMock !== false; // 預設 true，除非設為 false
     this.apiBaseUrl = config.apiBaseUrl;
+    console.log(`[JudicialAPI] 初始化 - Mock模式: ${this.isMock}`);
   }
 
   // 檢查是否在服務時間內
@@ -20,6 +21,12 @@ class JudicialAPI {
     const now = new Date();
     const hour = now.getHours();
     return hour >= config.serviceHours.start && hour < config.serviceHours.end;
+  }
+
+  // 切換 Mock 模式
+  setMockMode(enabled) {
+    this.isMock = enabled;
+    console.log(`[JudicialAPI] Mock模式已切換: ${this.isMock}`);
   }
 
   // 驗證取得 Token
@@ -105,23 +112,17 @@ class JudicialAPI {
 
   // 搜尋案例（本地 mock 功能）
   async searchCases(keyword) {
-    if (!this.isMock) {
-      throw new Error('搜尋功能僅在 Mock 模式下可用');
-    }
-
+    // Mock 模式或真實模式都支援本地搜尋
     const keywordLower = keyword.toLowerCase();
     return mockData.cases.filter(c => {
-      const text = (c.JTITLE + ' ' + c.JFULLX.JFULLCONTENT).toLowerCase();
+      const text = (c.JTITLE + ' ' + (c.JFULLX?.JFULLCONTENT || '')).toLowerCase();
       return text.includes(keywordLower) || 
-             c.keywords.some(k => k.toLowerCase().includes(keywordLower));
+             (c.keywords || []).some(k => k.toLowerCase().includes(keywordLower));
     });
   }
 
   // 取得所有案例
   async getAllCases() {
-    if (!this.isMock) {
-      throw new Error('取得所有案例僅在 Mock 模式下可用');
-    }
     return mockData.cases;
   }
 }

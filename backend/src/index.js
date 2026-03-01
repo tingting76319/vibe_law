@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const judicialRoutes = require('./routes/judicial');
+const ragRoutes = require('./routes/rag');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,6 +12,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/judicial', judicialRoutes);
+app.use('/api/rag', ragRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -27,4 +29,6 @@ app.listen(PORT, () => {
   console.log(`   GET  /api/judicial/search?q= - 搜尋案例`);
   console.log(`   GET  /api/judicial/cases/:jid - 取得單一案例`);
   console.log(`   GET  /api/judicial/changelog - 取得異動清單`);
+  console.log(`   POST /api/rag/ask         - RAG 問答`);
+  console.log(`   GET  /api/rag/health     - RAG 健康檢查`);
 });

@@ -5,5 +5,11 @@
   "serviceHours": {
     "start": 0,
     "end": 6
+  },
+  "isMock": false,
+  "llm": {
+    "provider": "minimax",
+    "apiKey": "",
+    "model": "MiniMax-M2.5"
   }
 }
