@@ -17,7 +17,7 @@ router.get('/search', async (req, res) => {
     const { Pool } = require('pg');
     const pool = new Pool({
       connectionString: process.env.DATABASE_URL,
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+      ssl: false
     });
     
     const searchTerm = `%${q}%`;
@@ -50,7 +50,7 @@ router.get('/cases', async (req, res) => {
     const { Pool } = require('pg');
     const pool = new Pool({
       connectionString: process.env.DATABASE_URL,
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+      ssl: false
     });
     
     const { limit = 50, offset = 0 } = req.query;
@@ -79,7 +79,7 @@ router.get('/cases/:jid', async (req, res) => {
     const { Pool } = require('pg');
     const pool = new Pool({
       connectionString: process.env.DATABASE_URL,
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+      ssl: false
     });
     
     const { jid } = req.params;
@@ -109,7 +109,7 @@ router.get('/test', async (req, res) => {
     const { Pool } = require('pg');
     const pool = new Pool({
       connectionString: process.env.DATABASE_URL,
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+      ssl: false
     });
     
     const result = await pool.query('SELECT COUNT(*) as count FROM judgments');

@@ -31,7 +31,7 @@ function getPool() {
   const { Pool } = require('pg');
   return new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    ssl: false
   });
 }
 
