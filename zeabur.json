@@ -2,7 +2,7 @@
   "$schema": "https://schema.zeabur.com/zeabur.json",
   "build": {
     "backend": {
-      "buildCommand": "cd backend && npm install",
+      "buildCommand": "cd backend && npm install --verbose",
       "installCommand": "cd backend && npm install"
     }
   },
