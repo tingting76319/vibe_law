@@ -14,9 +14,15 @@
         }
       ],
       "source": {
-        "path": "backend",
-        "startCommand": "npm start"
-      }
+        "path": ".",
+        "startCommand": "node backend/src/index.js"
+      },
+      "env": [
+        {
+          "key": "NODE_ENV",
+          "value": "production"
+        }
+      ]
     }
   }
 }
