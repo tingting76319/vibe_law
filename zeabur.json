@@ -14,10 +14,14 @@
         }
       ],
       "source": {
-        "path": ".",
-        "startCommand": "node backend/src/index.js"
+        "path": "backend",
+        "startCommand": "node src/index.js"
       },
       "env": [
+        {
+          "key": "DATABASE_URL",
+          "value": "postgresql://root:p0lK6P4cLAVy82H371bOE9xviMq5CQrY@150.109.204.13:32317/zeabur"
+        },
         {
           "key": "NODE_ENV",
           "value": "production"

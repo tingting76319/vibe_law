@@ -13,10 +13,12 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "adm-zip": "^0.5.16",
     "axios": "^1.7.0",
     "better-sqlite3": "^11.7.0",
     "cors": "^2.8.5",
     "express": "^4.21.2",
+    "multer": "^2.1.0",
     "pg": "^8.19.0",
     "pg-hstore": "^2.3.4",
     "uuid": "^11.0.5"
