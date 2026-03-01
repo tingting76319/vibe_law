@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const judicialRoutes = require('./routes/judicial');
 const ragRoutes = require('./routes/rag');
 
@@ -10,13 +11,21 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Routes
+// Serve static files (frontend)
+app.use(express.static(path.join(__dirname, '..')));
+
+// API Routes
 app.use('/api/judicial', judicialRoutes);
 app.use('/api/rag', ragRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Serve index.html for root route
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
 // Start server

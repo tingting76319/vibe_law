@@ -1,7 +1,7 @@
 // Legal-RAG 主程式
 
 // API 端點配置
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = '/api';
 
 // 初始化
 document.addEventListener('DOMContentLoaded', function() {

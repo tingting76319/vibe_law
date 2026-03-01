@@ -1,0 +1,22 @@
+{
+  "$schema": "https://schema.zeabur.com/zeabur.json",
+  "build": {
+    "backend": {
+      "buildCommand": "npm install",
+      "installCommand": "npm install",
+      "outputDir": "."
+    }
+  },
+  "deploy": {
+    "backend": {
+      "domain": [
+        {
+          "hostname": "legal-rag",
+          "type": "rewrite"
+        }
+      ],
+      "env": [],
+      "region": "auto"
+    }
+  }
+}

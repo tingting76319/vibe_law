@@ -1,6 +1,6 @@
 // Legal-RAG 搜尋模組
 
-const API_BASE = 'http://localhost:3000/api/judicial';
+const API_BASE = '/api/judicial';
 
 // 搜尋處理器 - 改為呼叫後端 API
 async function handleSearch(query) {
