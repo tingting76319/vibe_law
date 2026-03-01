@@ -15,7 +15,7 @@
       ],
       "source": {
         "path": "backend",
-        "startCommand": "node src/index.js"
+        "startCommand": "cd backend && node src/index.js"
       }
     }
   }
