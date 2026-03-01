@@ -12,11 +12,11 @@ const PORT = process.env.PORT || 3000;
 
 // Debug: 顯示環境變數
 console.log('[Debug] DATABASE_URL exists:', !!process.env.DATABASE_URL);
-console.log('[Debug] DATABASE_URL:', process.env.DATABASE_URL ? '***' + process.env.DATABASE_URL.slice(-20) : 'undefined');
 console.log('[Debug] NODE_ENV:', process.env.NODE_ENV);
 
-// 計算正確的根目錄路徑
-const rootPath = path.resolve(__dirname, '..', '..');
+// 根目錄路徑 - 從 backend/src 往外兩層
+const rootPath = path.resolve(__dirname);
+console.log('[Debug] __dirname:', __dirname);
 console.log('[Debug] Root path:', rootPath);
 
 // Middleware
@@ -39,12 +39,17 @@ app.get('/health', async (req, res) => {
   });
 });
 
-// Serve static files
-app.use(express.static(rootPath));
+// Serve static files from root
+app.use(express.static(path.join(__dirname, '..', '..')));
 
 // Serve index.html
 app.get('/', (req, res) => {
-  res.sendFile(path.join(rootPath, 'index.html'));
+  res.sendFile(path.join(__dirname, '..', '..', 'index.html'));
+});
+
+// Serve upload.html
+app.get('/upload', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', '..', 'upload.html'));
 });
 
 // Start server
