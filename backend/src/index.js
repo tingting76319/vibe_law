@@ -10,23 +10,14 @@ const uploadRoutes = require('./routes/upload');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 嘗試載入 PostgreSQL，如果失敗會使用 SQLite
-let pool = null;
-try {
-  const pg = require('pg');
-  const { Pool: PgPool } = pg;
-  pool = new PgPool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-  });
-  console.log('[PostgreSQL] 模組載入成功');
-} catch (e) {
-  console.log('[PostgreSQL] 模組載入失敗:', e.message);
-}
+// Debug: 顯示環境變數
+console.log('[Debug] DATABASE_URL exists:', !!process.env.DATABASE_URL);
+console.log('[Debug] DATABASE_URL:', process.env.DATABASE_URL ? '***' + process.env.DATABASE_URL.slice(-20) : 'undefined');
+console.log('[Debug] NODE_ENV:', process.env.NODE_ENV);
 
 // 計算正確的根目錄路徑
 const rootPath = path.resolve(__dirname, '..', '..');
-console.log('Root path:', rootPath);
+console.log('[Debug] Root path:', rootPath);
 
 // Middleware
 app.use(cors());
@@ -41,20 +32,10 @@ app.use('/api/upload', uploadRoutes);
 
 // Health check
 app.get('/health', async (req, res) => {
-  let dbStatus = 'unknown';
-  if (pool) {
-    try {
-      await pool.query('SELECT 1');
-      dbStatus = 'connected';
-    } catch (e) {
-      dbStatus = 'error: ' + e.message;
-    }
-  }
-  
   res.json({ 
     status: 'ok', 
     timestamp: new Date().toISOString(),
-    database: dbStatus
+    database: process.env.DATABASE_URL ? 'configured' : 'missing'
   });
 });
 
