@@ -12,10 +12,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Serve static files (frontend)
-app.use(express.static(path.join(__dirname, '..')));
-
-// API Routes
+// API Routes (MUST be before static files)
 app.use('/api/judicial', judicialRoutes);
 app.use('/api/rag', ragRoutes);
 app.use('/api/judge', judgeTwinRoutes);
@@ -24,6 +21,9 @@ app.use('/api/judge', judgeTwinRoutes);
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// Serve static files (frontend) - AFTER API routes
+app.use(express.static(path.join(__dirname, '..')));
 
 // Serve index.html for root route
 app.get('/', (req, res) => {
