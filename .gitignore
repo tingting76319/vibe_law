@@ -32,5 +32,3 @@ build/
 # OpenClaw
 .openclaw/
 .opencode/
-node_modules/
-backend/node_modules/
