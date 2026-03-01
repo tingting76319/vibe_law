@@ -2,8 +2,8 @@
   "$schema": "https://schema.zeabur.com/zeabur.json",
   "build": {
     "backend": {
-      "buildCommand": "cd backend && npm install",
-      "installCommand": "cd backend && npm install"
+      "buildCommand": "npm install --prefix backend && npm run db:init --prefix backend",
+      "installCommand": "npm install --prefix backend"
     }
   },
   "deploy": {
@@ -14,8 +14,8 @@
         }
       ],
       "source": {
-        "path": "backend",
-        "startCommand": "cd backend && node src/index.js"
+        "path": ".",
+        "startCommand": "node backend/src/index.js"
       }
     }
   }
