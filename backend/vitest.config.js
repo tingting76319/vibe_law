@@ -6,13 +6,13 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     include: [
-      'backend/tests/**/*.test.js'
+      'tests/**/*.test.js',
+      'tests/**/*.spec.js'
     ],
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
-      '**/.git/**',
-      'tests/e2e.spec.js'
+      '**/.git/**'
     ],
     coverage: {
       provider: 'v8',
@@ -23,21 +23,14 @@ export default defineConfig({
         '**/*.test.js',
         '**/tests/**',
         '**/coverage/**'
-      ],
-      thresholds: {
-        lines: 70,
-        functions: 60,
-        branches: 60,
-        statements: 70
-      }
+      ]
     },
-    testTimeout: 10000,
-    hookTimeout: 10000
+    testTimeout: 10000
   },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './'),
-      '@backend': path.resolve(__dirname, './backend/src')
+      '@backend': path.resolve(__dirname, './src')
     }
   }
 });

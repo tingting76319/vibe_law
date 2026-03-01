@@ -204,3 +204,6 @@ if (typeof module !== 'undefined' && module.exports) {
         getJudgeSummary
     };
 }
+
+// ESM export
+export { JUDGES, getJudgeById, getJudgesByCourt, getJudgesBySpecialty, searchJudges, getAllJudges, getJudgeSummary };

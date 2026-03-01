@@ -12,8 +12,16 @@ function initApp() {
     // 初始化法規顯示
     renderLaws('civil');
     
+    // 初始化法官模組
+    if (typeof initJudgeModule === 'function') {
+        initJudgeModule();
+    }
+    
     // 綁定事件
     bindEvents();
+    
+    // 綁定導航標籤事件
+    bindNavEvents();
 }
 
 function bindEvents() {
@@ -70,6 +78,34 @@ function bindEvents() {
             renderLaws(category);
         });
     });
+}
+
+// 導航標籤事件
+function bindNavEvents() {
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            const view = this.dataset.view;
+            switchView(view);
+            
+            // 更新 active 狀態
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+}
+
+// 切換視圖
+function switchView(viewName) {
+    // 隱藏所有視圖
+    document.querySelectorAll('.view-section').forEach(section => {
+        section.classList.add('hidden');
+    });
+    
+    // 顯示目標視圖
+    const targetView = document.getElementById(`view-${viewName}`);
+    if (targetView) {
+        targetView.classList.remove('hidden');
+    }
 }
 
 // 執行搜尋
@@ -377,8 +413,52 @@ function renderLaws(category) {
     container.innerHTML = html;
 }
 
+// 清除問答
+function clearQA() {
+    const qaHistory = document.getElementById('qa-history');
+    qaHistory.innerHTML = `
+        <div class="welcome-message">
+            <p>歡迎使用台灣法律專家知識系統！</p>
+            <p>請在上方輸入您的法律問題，我會為您搜尋相關判例並提供解答。</p>
+            <p class="disclaimer">⚠️ 本系統僅供參考，不構成法律意見。如有具體法律問題，請諮詢律師。</p>
+        </div>
+    `;
+}
+
+// 渲染問答
+function renderQA(qa) {
+    const qaHistory = document.getElementById('qa-history');
+    
+    const html = `
+        <div class="qa-item">
+            <div class="question">
+                <span class="question-label">問題</span>
+                <span>${qa.question}</span>
+            </div>
+            <div class="answer">
+                <span class="answer-label">回答</span>
+                <div class="answer-content">
+                    <h4>${qa.answer.title}</h4>
+                    <p>${qa.answer.content.replace(/\n/g, '<br>')}</p>
+                    ${qa.relatedCases && qa.relatedCases.length > 0 ? `
+                        <div class="related-cases">
+                            <h4>相關判例</h4>
+                            <ul>
+                                ${qa.relatedCases.map(c => `<li onclick="showCaseDetail('${c.id}')">${c.title}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    qaHistory.insertAdjacentHTML('afterbegin', html);
+}
+
 // 顯示判例詳情（全局）
 window.showCaseDetail = showCaseDetail;
 window.showLawDetail = showLawDetail;
 window.getCaseById = getCaseById;
 window.getLawById = getLawById;
+window.switchView = switchView;

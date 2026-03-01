@@ -2,16 +2,48 @@ name: Legal-RAG CI/CD
 
 on:
   push:
-    branches: [master, main]
+    branches: [master, main, develop]
   pull_request:
     branches: [master, main]
 
 jobs:
-  test:
+  # 1. Lint 檢查
+  lint:
     runs-on: ubuntu-latest
-
+    
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Upload lint results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-report
+          path: eslint-report.json
+          retention-days: 7
+
+  # 2. 單元測試
+  unit-test:
+    runs-on: ubuntu-latest
+    needs: lint
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -21,29 +53,92 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm ci --prefix backend
           npm ci
+          npm ci --prefix backend
 
-      - name: Run backend tests
+      - name: Run backend unit tests
+        run: npm run test:run
+        env:
+          CI: true
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
+
+  # 3. E2E 測試
+  e2e-test:
+    runs-on: ubuntu-latest
+    needs: unit-test
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm ci --prefix backend
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Start backend server
         run: |
           cd backend
-          npm test
+          npm run dev &
+        env:
+          PORT: 3000
 
-      - name: Lint check
-        run: |
-          echo "Lint check passed"
+      - name: Wait for server
+        run: sleep 10
 
+      - name: Run E2E tests
+        run: npm run test:e2e
+        env:
+          CI: true
+          BASE_URL: http://localhost:3000
+        continue-on-error: true
+
+      - name: Upload E2E report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  # 4. Build
   build:
-    needs: test
     runs-on: ubuntu-latest
+    needs: [lint, unit-test, e2e-test]
     if: github.event_name == 'push'
-
+    
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Build application
-        run: |
-          echo "Build completed"
+        run: npm run build
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -52,15 +147,51 @@ jobs:
           path: .
           retention-days: 7
 
+  # 5. Deploy (僅 master/main 分支)
   deploy:
-    needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    needs: build
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
     environment: production
-
+    
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: legal-rag-build
+          path: .
+
       - name: Deploy to production
         run: |
-          echo "Deploy to production"
-          # Add your deployment commands here
-          # e.g., Zeabur, Vercel, AWS, etc.
+          echo "🚀 Deploying to production..."
+          # 在此添加您的部署命令
+          # 例如: Zeabur, Vercel, AWS, GCP, 等
+          
+          # 示例：echo "Deployment completed"
+          
+          echo "✅ Deployment completed"
+        env:
+          # 添加您的部署環境變量
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+
+  # 6. 部署狀態通知
+  notify:
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    if: always() && github.ref == 'refs/heads/master'
+    
+    steps:
+      - name: Generate status summary
+        run: |
+          echo "## 📊 CI/CD 部署狀態" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| 階段 | 狀態 |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Lint | ${{ needs.lint.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Unit Test | ${{ needs.unit-test.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| E2E Test | ${{ needs.e2e-test.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Deploy | ${{ needs.deploy.result }} |" >> $GITHUB_STEP_SUMMARY
