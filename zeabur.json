@@ -27,6 +27,10 @@
     {
       "key": "NODE_ENV",
       "value": "production"
+    },
+    {
+      "key": "MMKey_LAW_LLM",
+      "value": "sk-api-_wIEWYc3XgPz-0zBG7xZEdTh7WyL1UWtsXbNloPkLWPm5eEAwQDgAYh2LeJPpevN73soda8bQ5R8GZRJvE2AyhmqDUbKtaf2NAKXXB0jw5OQKN1wMSyxICY"
     }
   ]
 }
