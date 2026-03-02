@@ -6,6 +6,7 @@ const judicialRoutes = require('./routes/judicial');
 const ragRoutes = require('./routes/rag');
 const judgeTwinRoutes = require('./routes/judgeDigitalTwin');
 const uploadRoutes = require('./routes/upload');
+const v04Routes = require('./routes/v04');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -30,12 +31,31 @@ app.use('/api/rag', ragRoutes);
 app.use('/api/judge', judgeTwinRoutes);
 app.use('/api/upload', uploadRoutes);
 
+// v0.4 API Routes
+app.use('/api/v04', v04Routes);
+
 // Health check
 app.get('/health', async (req, res) => {
   res.json({ 
     status: 'ok', 
     timestamp: new Date().toISOString(),
+    version: '0.4',
     database: process.env.DATABASE_URL ? 'configured' : 'missing'
+  });
+});
+
+// v0.4 health check
+app.get('/api/v04/health', async (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    version: '0.4',
+    timestamp: new Date().toISOString(),
+    features: {
+      vectorEmbedding: 'enabled',
+      keywordExtraction: 'enabled',
+      judgmentProcessing: 'enabled',
+      enhancedSearch: 'enabled'
+    }
   });
 });
 
@@ -56,4 +76,5 @@ app.get('/upload', (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Legal-RAG Backend 啟動中...`);
   console.log(`📡 API Server: http://0.0.0.0:${PORT}`);
+  console.log(`🔍 v0.4 Features: 向量嵌入、關鍵字萃取、判決書處理、相似案例搜尋`);
 });

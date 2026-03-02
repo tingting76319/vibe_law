@@ -1,11 +1,29 @@
-// Legal-RAG 主程式
+// Legal-RAG 主程式 v0.5
+// 支持多輪對話和引用來源顯示
 
 // API 端點配置
 const API_BASE = '/api';
 
+// 當前會話 ID
+let currentSessionId = null;
+
+// 初始化會話
+function initSession() {
+    // 從 localStorage 獲取或生成 session ID
+    currentSessionId = localStorage.getItem('rag_session_id');
+    if (!currentSessionId) {
+        currentSessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('rag_session_id', currentSessionId);
+    }
+    console.log('[App v0.5] 會話 ID:', currentSessionId);
+    return currentSessionId;
+}
+
 // 初始化
 document.addEventListener('DOMContentLoaded', function() {
     initApp();
+    initSession();
+    loadConversationHistory();
 });
 
 function initApp() {
@@ -40,9 +58,7 @@ function bindEvents() {
     });
     
     // 清除按鈕
-    document.getElementById('clear-chat').addEventListener('click', function() {
-        clearQA();
-    });
+    document.getElementById('clear-chat').addEventListener('click', clearConversation);
     
     // 快速搜尋標籤
     document.querySelectorAll('.tag-btn').forEach(btn => {
@@ -121,21 +137,47 @@ async function doSearch() {
     renderSearchResults(results);
 }
 
-// 執行問答 - 串接 RAG API
+// 加載對話歷史
+async function loadConversationHistory() {
+    try {
+        const response = await fetch(`${API_BASE}/rag/history?sessionId=${currentSessionId}`);
+        const result = await response.json();
+        
+        if (result.status === 'success' && result.data.messages && result.data.messages.length > 0) {
+            // 渲染歷史訊息
+            const qaHistory = document.getElementById('qa-history');
+            qaHistory.innerHTML = ''; // 清除歡迎訊息
+            
+            result.data.messages.forEach(msg => {
+                if (msg.role === 'user') {
+                    renderUserQuestion(msg.content);
+                } else {
+                    renderAIAnswer({
+                        content: msg.content,
+                        sources: msg.metadata?.sources || []
+                    });
+                }
+            });
+        }
+    } catch (error) {
+        console.error('加載對話歷史失敗:', error);
+    }
+}
+
+// 執行問答 v0.5 - 串接 RAG API
 async function doAsk() {
     const question = document.getElementById('qa-input').value;
     if (!question) return;
+    
+    // 顯示使用者問題
+    renderUserQuestion(question);
     
     // 顯示載入狀態
     const qaHistory = document.getElementById('qa-history');
     const loadingHtml = `
         <div class="qa-item loading-item">
-            <div class="question">
-                <span class="question-label">問題</span>
-                <span>${question}</span>
-            </div>
             <div class="answer">
-                <span class="answer-label">回答</span>
+                <span class="answer-label">AI 回答</span>
                 <div class="answer-content">
                     <div class="loading-indicator">
                         <span class="loading-spinner"></span>
@@ -146,24 +188,20 @@ async function doAsk() {
         </div>
     `;
     
-    // 移除歡迎訊息
-    const welcomeMsg = qaHistory.querySelector('.welcome-message');
-    if (welcomeMsg) {
-        welcomeMsg.remove();
-    }
-    
-    // 添加載入中的問答
-    qaHistory.insertAdjacentHTML('afterbegin', loadingHtml);
-    qaHistory.scrollTop = 0;
+    qaHistory.insertAdjacentHTML('beforeend', loadingHtml);
+    qaHistory.scrollTop = qaHistory.scrollHeight;
     
     try {
-        // 呼叫 RAG API
+        // 呼叫 RAG API (v0.5 with session)
         const response = await fetch(`${API_BASE}/rag/ask`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ question: question })
+            body: JSON.stringify({ 
+                question: question,
+                sessionId: currentSessionId
+            })
         });
         
         const result = await response.json();
@@ -175,21 +213,21 @@ async function doAsk() {
         }
         
         if (result.status === 'success') {
-            // 渲染 AI 回答
-            renderQA({
-                question: question,
-                answer: {
-                    title: result.data?.title || 'AI 回答',
-                    content: result.data?.answer || result.data?.content || '無法取得回答'
-                },
-                relatedCases: result.data?.relatedCases || [],
-                sources: result.data?.sources || []
+            // 渲染 AI 回答（含來源）
+            renderAIAnswer({
+                content: result.data.answer,
+                sources: result.data.sources || [],
+                relatedCases: result.data.relatedCases || []
             });
         } else {
             // API 回傳錯誤，使用本地備援
             console.error('RAG API 錯誤:', result.message);
             const fallbackResult = askRAGLocal(question);
-            renderQA(fallbackResult);
+            renderAIAnswer({
+                content: fallbackResult.answer.content,
+                sources: [],
+                relatedCases: fallbackResult.relatedCases
+            });
         }
     } catch (error) {
         console.error('RAG API 請求失敗:', error);
@@ -202,18 +240,148 @@ async function doAsk() {
         
         // 使用本地備援
         const fallbackResult = askRAGLocal(question);
-        renderQA(fallbackResult);
+        renderAIAnswer({
+            content: fallbackResult.answer.content,
+            sources: [],
+            relatedCases: fallbackResult.relatedCases
+        });
     }
-    
-    // 更新判例列表
-    const searchResults = await handleSearch(question);
-    renderSearchResults(searchResults);
     
     // 清空輸入
     document.getElementById('qa-input').value = '';
 }
 
-// 本地備援 RAG 問答（當 API 不可用時）
+// 渲染使用者問題
+function renderUserQuestion(question) {
+    const qaHistory = document.getElementById('qa-history');
+    
+    // 移除歡迎訊息
+    const welcomeMsg = qaHistory.querySelector('.welcome-message');
+    if (welcomeMsg) {
+        welcomeMsg.remove();
+    }
+    
+    const html = `
+        <div class="qa-item user-question">
+            <div class="question">
+                <span class="question-label">您</span>
+                <span>${escapeHtml(question)}</span>
+            </div>
+        </div>
+    `;
+    
+    qaHistory.insertAdjacentHTML('beforeend', html);
+    qaHistory.scrollTop = qaHistory.scrollHeight;
+}
+
+// 渲染 AI 回答（含來源顯示）v0.5
+function renderAIAnswer(data) {
+    const qaHistory = document.getElementById('qa-history');
+    
+    // 處理內容換行
+    const contentHtml = data.content.replace(/\n/g, '<br>');
+    
+    // 生成來源 HTML
+    let sourcesHtml = '';
+    if (data.sources && data.sources.length > 0) {
+        sourcesHtml = `
+            <div class="sources-section">
+                <h4>📚 引用來源</h4>
+                <div class="sources-list">
+                    ${data.sources.map((source, idx) => `
+                        <div class="source-item" data-idx="${idx}">
+                            <span class="source-number">[${idx + 1}]</span>
+                            ${source.type === 'case' ? `
+                                <span class="source-type">判例</span>
+                                <span class="source-title">${source.title}</span>
+                                <span class="source-meta">${source.year}年 ${source.caseNumber} | ${source.court || '法院'}</span>
+                                ${source.relatedLaws ? `<span class="source-laws">${source.relatedLaws.join('、')}</span>` : ''}
+                            ` : `
+                                <span class="source-type">法規</span>
+                                <span class="source-title">${source.name}</span>
+                                <span class="source-meta">${source.description || ''}</span>
+                            `}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+    
+    // 生成相關判例 HTML
+    let relatedCasesHtml = '';
+    if (data.relatedCases && data.relatedCases.length > 0) {
+        relatedCasesHtml = `
+            <div class="related-cases">
+                <h4>⚖️ 相關判例</h4>
+                <ul>
+                    ${data.relatedCases.slice(0, 3).map(c => `
+                        <li>
+                            <a href="#" onclick="showCaseDetail('${c.id}'); return false;">
+                                ${c.year}年 ${c.caseNumber} - ${c.title}
+                            </a>
+                            ${c.relatedLaws ? `<span class="case-laws">${c.relatedLaws.join('、')}</span>` : ''}
+                        </li>
+                    `).join('')}
+                </ul>
+            </div>
+        `;
+    }
+    
+    const html = `
+        <div class="qa-item ai-answer">
+            <div class="answer">
+                <span class="answer-label">AI 律師</span>
+                <div class="answer-content">
+                    <div class="answer-text">${contentHtml}</div>
+                    ${sourcesHtml}
+                    ${relatedCasesHtml}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    qaHistory.insertAdjacentHTML('beforeend', html);
+    qaHistory.scrollTop = qaHistory.scrollHeight;
+}
+
+// HTML 轉義
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// 清除對話
+async function clearConversation() {
+    if (!currentSessionId) return;
+    
+    try {
+        await fetch(`${API_BASE}/rag/clear`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId: currentSessionId })
+        });
+    } catch (error) {
+        console.error('清除對話失敗:', error);
+    }
+    
+    // 清除本地存儲
+    localStorage.removeItem('rag_session_id');
+    currentSessionId = initSession();
+    
+    // 重置 UI
+    const qaHistory = document.getElementById('qa-history');
+    qaHistory.innerHTML = `
+        <div class="welcome-message">
+            <p>歡迎使用台灣法律專家知識系統！</p>
+            <p>請在上方輸入您的法律問題，我會為您搜尋相關判例並提供解答。</p>
+            <p class="disclaimer">⚠️ 本系統僅供參考，不構成法律意見。如有具體法律問題，請諮詢律師。</p>
+        </div>
+    `;
+}
+
+// 本地備援 RAG 問答
 function askRAGLocal(question) {
     const searchResults = handleSearch(question);
     return generateLocalAnswer(question, searchResults);
@@ -425,35 +593,13 @@ function clearQA() {
     `;
 }
 
-// 渲染問答
+// 渲染問答（兼容舊版）
 function renderQA(qa) {
-    const qaHistory = document.getElementById('qa-history');
-    
-    const html = `
-        <div class="qa-item">
-            <div class="question">
-                <span class="question-label">問題</span>
-                <span>${qa.question}</span>
-            </div>
-            <div class="answer">
-                <span class="answer-label">回答</span>
-                <div class="answer-content">
-                    <h4>${qa.answer.title}</h4>
-                    <p>${qa.answer.content.replace(/\n/g, '<br>')}</p>
-                    ${qa.relatedCases && qa.relatedCases.length > 0 ? `
-                        <div class="related-cases">
-                            <h4>相關判例</h4>
-                            <ul>
-                                ${qa.relatedCases.map(c => `<li onclick="showCaseDetail('${c.id}')">${c.title}</li>`).join('')}
-                            </ul>
-                        </div>
-                    ` : ''}
-                </div>
-            </div>
-        </div>
-    `;
-    
-    qaHistory.insertAdjacentHTML('afterbegin', html);
+    renderAIAnswer({
+        content: qa.answer.content || qa.answer,
+        sources: qa.sources || [],
+        relatedCases: qa.relatedCases || []
+    });
 }
 
 // 顯示判例詳情（全局）
