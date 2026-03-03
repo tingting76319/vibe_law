@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.6.0-beta.1] - API 契約強化與測試閘道版 (2026-03-04)
+
+### Added
+- 新增 `backend/src/repositories/judicialRepository.js`，集中司法查詢 SQL 並提供 timeout 保護。
+- 新增 `backend/src/utils/apiResponse.js`，統一回應格式為 `status/data/error/meta`。
+- 新增 `backend/src/utils/validation.js`，提供 query/body 基礎驗證。
+- 新增 repository 單元測試 `backend/tests/judicialRepository.unit.test.js`。
+- 新增 v0.6 規劃文件 `NEXT_VERSION_PLAN_v0.6.md`。
+
+### Changed
+- 重構 `backend/src/routes/judicial.js`，改為 repository + validation 架構。
+- `GET /api/judicial/changelog` 由 stub 改為實際資料查詢。
+- `POST /api/judicial/auth` 由 stub 改為帳密驗證（`JUDICIAL_AUTH_USER`、`JUDICIAL_AUTH_PASSWORD`）。
+- 調整 `backend/tests/api.test.js` 為契約導向驗證，補上 auth/changelog 行為測試。
+- 擴大 coverage gate 到 `routes/repositories/services/utils`，並啟用 `@vitest/coverage-v8`。
+- 更新 `.gitignore` 以排除 coverage 產物。
+
 ## [v0.5.1] - 法官趨勢＋RAG 融合版 (2026-03-03)
 
 ### Added

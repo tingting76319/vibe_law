@@ -1,5 +1,33 @@
 # Release Notes
 
+## v0.6.0-beta.1 - API 契約強化與測試閘道版 (2026-03-04)
+
+### New Features
+
+#### API 契約與資料層強化
+- 新增 `backend/src/repositories/judicialRepository.js`，改為共用 DB client 並集中 SQL 查詢，避免 route 每次 request 建立連線池。
+- 新增 `backend/src/utils/apiResponse.js` 與 `backend/src/utils/validation.js`，統一 API 回應格式與輸入驗證。
+- `GET /api/judicial/changelog` 改為實際查詢資料庫並支援分頁。
+- `POST /api/judicial/auth` 改為帳密驗證流程（由 `JUDICIAL_AUTH_USER`、`JUDICIAL_AUTH_PASSWORD` 控制）。
+
+### Quality and Testing
+- 新增 repository 單元測試：`backend/tests/judicialRepository.unit.test.js`。
+- API 測試更新為契約驗證（包含 `meta`、401/503 auth 錯誤路徑）。
+- backend coverage gate 擴大至 routes/repositories/services/utils，並啟用 `@vitest/coverage-v8`。
+- 實測結果：`npm --prefix backend run test` 與 `npm --prefix backend run test:coverage` 全數通過（21 tests）。
+
+### API Endpoints (updated)
+```
+GET  /api/judicial/search?q=...   - 判例全文搜尋（含驗證與一致回應格式）
+GET  /api/judicial/cases          - 取得所有案例（分頁）
+GET  /api/judicial/cases/:jid     - 取得單一案例（找不到回 404）
+GET  /api/judicial/changelog      - 取得最新裁判資料清單（分頁）
+POST /api/judicial/auth           - 帳密驗證並簽發 token（環境變數控制）
+GET  /api/judicial/test           - 檢查 PostgreSQL 連線狀態
+```
+
+---
+
 ## v0.5 - 法官趨勢＋RAG 融合版 (2026-03-03)
 
 ### 🎉 New Features
