@@ -117,9 +117,38 @@
     }
 
     async function pollJob(jobId) {
+      let transientFailure = 0;
       for (let i = 0; i < 300; i++) {
-        const res = await fetch(API_URL + '/api/upload/jobs/' + encodeURIComponent(jobId));
-        const job = await res.json();
+        let res;
+        let job;
+        try {
+          res = await fetch(API_URL + '/api/upload/jobs/' + encodeURIComponent(jobId));
+          const raw = await res.text();
+          try {
+            job = JSON.parse(raw);
+          } catch (parseErr) {
+            transientFailure++;
+            document.getElementById('status').textContent = '伺服器忙碌（暫時回應異常），重試中...';
+            if (transientFailure >= 10) {
+              document.getElementById('result').className = 'error';
+              document.getElementById('result').innerHTML = '<h3>❌ 錯誤</h3><p>工作狀態回應異常（HTTP ' + (res ? res.status : '?') + '）：' + raw.substring(0, 200) + '</p>';
+              return;
+            }
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            continue;
+          }
+        } catch (fetchErr) {
+          transientFailure++;
+          document.getElementById('status').textContent = '連線中斷，重試中...';
+          if (transientFailure >= 10) {
+            document.getElementById('result').className = 'error';
+            document.getElementById('result').innerHTML = '<h3>❌ 錯誤</h3><p>' + fetchErr.message + '</p>';
+            return;
+          }
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          continue;
+        }
+        transientFailure = 0;
 
         if (!res.ok) {
           document.getElementById('result').className = 'error';

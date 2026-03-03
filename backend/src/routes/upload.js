@@ -86,6 +86,8 @@ async function processUploadJob(jobId, filePath, originalName) {
     const totalFiles = fileHandlers.length;
     setJob(jobId, { totalFiles, step: 'importing' });
 
+    const yieldToEventLoop = () => new Promise((resolve) => setImmediate(resolve));
+
     for (const file of fileHandlers) {
       try {
         const content = file.read();
@@ -95,6 +97,7 @@ async function processUploadJob(jobId, filePath, originalName) {
         } catch (jsonErr) {
           // 可能是一行一筆 JSON
           const lines = content.split('\n').filter((line) => line.trim());
+          let lineCount = 0;
           for (const line of lines) {
             try {
               const item = JSON.parse(line);
@@ -103,6 +106,11 @@ async function processUploadJob(jobId, filePath, originalName) {
             } catch (lineErr) {
               errorCount++;
             }
+            lineCount++;
+            // 避免長時間阻塞事件迴圈，讓健康檢查/輪詢請求有機會被處理
+            if (lineCount % 100 === 0) {
+              await yieldToEventLoop();
+            }
           }
           processedFiles++;
           setJob(jobId, { processedFiles, imported: importedCount, errors: errorCount });
@@ -110,12 +118,18 @@ async function processUploadJob(jobId, filePath, originalName) {
         }
 
         if (Array.isArray(data)) {
+          let itemCount = 0;
           for (const item of data) {
             try {
               await importItem(item);
               importedCount++;
             } catch (itemErr) {
               errorCount++;
+            }
+            itemCount++;
+            // 大批次匯入時定期釋放控制權，降低 502/超時風險
+            if (itemCount % 100 === 0) {
+              await yieldToEventLoop();
             }
           }
         } else {
