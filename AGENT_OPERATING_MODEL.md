@@ -18,6 +18,7 @@
   - 版本路線圖、里程碑規劃、跨代理依賴排程
   - 進度盤點與風險管理（blocking issue、scope 控管）
   - 對外統一回報（Telegram）
+- **Model**: MiniMax-M2.5
 - 交付物：
   - 每週版本計劃、每日進度摘要、風險清單、release checklist
 - KPI：
@@ -27,6 +28,8 @@
 - 主責：
   - 前端頁面、互動流程、元件化與使用者體驗
   - 上傳、查詢、RAG 回應、法官分析等頁面的可用性優化
+- **Model**: OpenCode + MiniMax-M2.5-free
+- **Fallback**: 如果 OpenCode 無反應，使用 MiniMax-M2.5-free
 - 交付物：
   - UI 變更 PR、互動規格、前端測試案例（E2E 或互動測試）
 - KPI：
@@ -36,6 +39,8 @@
 - 主責：
   - API、資料庫 schema、效能與穩定性
   - RAG 後端、auth、upload pipeline、資料一致性
+- **Model**: OpenCode + MiniMax-M2.5-free
+- **Fallback**: 如果 OpenCode 無反應，使用 MiniMax-M2.5-free
 - 交付物：
   - API/DB 變更 PR、migration、後端測試與效能報告
 - KPI：
@@ -46,6 +51,8 @@
   - 測試策略設計（unit/integration/e2e）
   - CI/CD pipeline、coverage gate、release gate
   - 對 Coder 1/2 產出做整合驗證
+- **Model**: OpenCode + MiniMax-M2.5-free
+- **Fallback**: 如果 OpenCode 無反應，使用 MiniMax-M2.5-free
 - 交付物：
   - 測試矩陣、CI workflow、部署驗證報告
 - KPI：
@@ -56,6 +63,8 @@
   - 法律專家系統演算法設計（RAG + Graph RAG）
   - 律師/法官判決行為分析與數位孿生模型
   - 評估資料集、訓練與推論品質監控
+- **Model**: OpenCode + MiniMax-M2.5-free
+- **Fallback**: 如果 OpenCode 無反應，使用 MiniMax-M2.5-free
 - 交付物：
   - 演算法設計文件、實驗報告、評估指標、模型版本紀錄
 - KPI：
@@ -97,6 +106,11 @@
 ### 5.3 Blocking 升級
 - 任一代理卡關 > 4 小時：回報 Leader1
 - 任一高風險項（上線/資料/資安）立即升級，停止 merge 直到風險解除
+
+### 5.4 無反應處理
+- 如果 Coder 1/2/3 或 Research 1 使用 OpenCode + MiniMax-M2.5-free 無反應：
+  - **提示**: "請切換到 MiniMax-M2.5-free 模型重試"
+  - 如果仍無回應，Leader1 需要介入處理
 
 ## 6. Telegram 定時回報機制 (Leader1 主導)
 
@@ -158,3 +172,17 @@ Research1:
 - Coder2：RAG session 永續化（Redis/PG）與查詢效能優化
 - Coder3：建立 integration test fixture + 擴充 coverage 到更多 route/service
 - Research1：Graph RAG 法官/律師關係圖 MVP 與判決預判基準測試
+
+---
+
+## 附錄：Agent Model 設定總覽
+
+| Agent | Model | Fallback |
+|-------|-------|----------|
+| Leader1 | MiniMax-M2.5 | - |
+| Coder 1 | OpenCode + MiniMax-M2.5-free | MiniMax-M2.5-free |
+| Coder 2 | OpenCode + MiniMax-M2.5-free | MiniMax-M2.5-free |
+| Coder 3 | OpenCode + MiniMax-M2.5-free | MiniMax-M2.5-free |
+| Research 1 | OpenCode + MiniMax-M2.5-free | MiniMax-M2.5-free |
+
+*最後更新: 2026-03-03*
