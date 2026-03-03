@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 - 調整 `backend/tests/api.test.js` 為契約導向驗證，補上 auth/changelog 行為測試。
 - 擴大 coverage gate 到 `routes/repositories/services/utils`，並啟用 `@vitest/coverage-v8`。
 - 更新 `.gitignore` 以排除 coverage 產物。
+- 新增 `MVP_VERSION_SPLIT_PLAN.md`，並在 `VERSION_PLAN.md` 加入導引，將版本切分改為以 MVP 交付為核心。
 
 ## [v0.5.1] - 法官趨勢＋RAG 融合版 (2026-03-03)
 

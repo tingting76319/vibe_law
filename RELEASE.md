@@ -16,6 +16,15 @@
 - backend coverage gate 擴大至 routes/repositories/services/utils，並啟用 `@vitest/coverage-v8`。
 - 實測結果：`npm --prefix backend run test` 與 `npm --prefix backend run test:coverage` 全數通過（21 tests）。
 
+### MVP Roadmap (new planning baseline)
+- 已建立 `MVP_VERSION_SPLIT_PLAN.md` 作為主規劃：
+  - `v0.6.1` 基線穩定
+  - `v0.7.0` 法官/法院邏輯引擎 MVP
+  - `v0.8.0` 律師媒合 MVP
+  - `v0.9.0` 律師策略與訴狀生成 MVP
+  - `v1.0.0` MVP GA 上線版
+- 核心北極星：最短時間媒合合適辯護律師 + 提供個案最佳訴訟策略。
+
 ### API Endpoints (updated)
 ```
 GET  /api/judicial/search?q=...   - 判例全文搜尋（含驗證與一致回應格式）
