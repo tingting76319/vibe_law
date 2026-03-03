@@ -116,6 +116,23 @@
             <!-- 法官選擇器 -->
             <section class="judge-selector">
                 <h2>👨‍⚖️ 選擇法官</h2>
+                
+                <!-- 法官搜尋過濾器 -->
+                <div class="judge-search-filters">
+                    <div class="filter-row">
+                        <input type="text" id="judge-search-input" class="filter-input" placeholder="搜尋法官姓名...">
+                        <select id="judge-court-filter" class="filter-select">
+                            <option value="">全部法院</option>
+                        </select>
+                        <select id="judge-specialty-filter" class="filter-select">
+                            <option value="">全部專長</option>
+                        </select>
+                        <select id="judge-style-filter" class="filter-select">
+                            <option value="">全部風格</option>
+                        </select>
+                    </div>
+                </div>
+                
                 <div class="judge-list" id="judge-list">
                     <!-- 法官列表會動態載入 -->
                 </div>
@@ -182,6 +199,16 @@
                                 <div class="chart-bar success" id="bar-appeal" style="width: 0%">0%</div>
                             </div>
                         </div>
+                    </div>
+                    
+                    <!-- 判決趨勢圖表 -->
+                    <div id="trend-chart-container" class="trend-chart-container">
+                        <!-- 趨勢圖表會在選擇法官後動態載入 -->
+                    </div>
+                    
+                    <!-- 風格分類展示 -->
+                    <div id="style-classification-container" class="style-classification-container">
+                        <!-- 風格分類會在選擇法官後動態載入 -->
                     </div>
                 </div>
 

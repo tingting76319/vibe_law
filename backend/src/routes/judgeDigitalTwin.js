@@ -346,3 +346,199 @@ router.delete('/cache', (req, res) => {
 });
 
 module.exports = router;
+
+// ========== v0.6 法官資料庫增強 API ==========
+
+// 引入趨勢分析服務
+const judgeTrendAnalysis = require('../services/judgeTrendAnalysis');
+const judgeBehaviorAnalysis = require('../services/judgeBehaviorAnalysis');
+
+// ========== 趨勢分析 API ==========
+
+// 取得年度判決趨勢
+router.get('/trends/annual', async (req, res) => {
+  try {
+    const { startYear, endYear } = req.query;
+    const yearRange = startYear && endYear 
+      ? { startYear: parseInt(startYear), endYear: parseInt(endYear) }
+      : null;
+    
+    const result = judgeTrendAnalysis.getAnnualTrend(yearRange);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
+// 取得案件類型分布
+router.get('/trends/case-distribution', async (req, res) => {
+  try {
+    const { court, startYear, endYear } = req.query;
+    const yearRange = startYear && endYear
+      ? { startYear: parseInt(startYear), endYear: parseInt(endYear) }
+      : null;
+    
+    const result = judgeTrendAnalysis.getCaseTypeDistribution(court, yearRange);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
+// 取得上訴維持率
+router.get('/trends/appeal-rate', async (req, res) => {
+  try {
+    const { court, startYear, endYear } = req.query;
+    const yearRange = startYear && endYear
+      ? { startYear: parseInt(startYear), endYear: parseInt(endYear) }
+      : null;
+    
+    const result = judgeTrendAnalysis.getAppealSustainedRate(court, yearRange);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
+// 取得各法院判決模式
+router.get('/trends/court-patterns', async (req, res) => {
+  try {
+    const result = judgeTrendAnalysis.getCourtJudgmentPatterns();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
+// ========== 法官判決統計 API ==========
+
+// 取得法官判決統計
+router.get('/judges/:judgeId/stats', async (req, res) => {
+  try {
+    const { judgeId } = req.params;
+    const result = judgeTrendAnalysis.getJudgeJudgmentStats(judgeId);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
+// 取得法官風格分類
+router.get('/judges/:judgeId/style-classification', async (req, res) => {
+  try {
+    const { judgeId } = req.params;
+    const result = judgeTrendAnalysis.classifyJudgeStyle(judgeId);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
+// ========== 法官搜尋 API (v0.6) ==========
+
+// 按法院搜尋法官
+router.get('/judges/by-court/:court', async (req, res) => {
+  try {
+    const { court } = req.params;
+    const judges = await judgeService.getJudgesByCourt(court);
+    res.json({
+      status: 'success',
+      data: judges,
+      count: judges.length
+    });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
+// 按專長搜尋法官
+router.get('/judges/by-specialty/:specialty', async (req, res) => {
+  try {
+    const { specialty } = req.params;
+    // 從行為分析服務取得
+    const judges = judgeBehaviorAnalysis.getAllJudges().filter(judge =>
+      judge.specialty?.some(s => s.includes(specialty))
+    );
+    res.json({
+      status: 'success',
+      data: judges,
+      count: judges.length
+    });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
+// 按判決風格搜尋法官
+router.get('/judges/by-style/:style', async (req, res) => {
+  try {
+    const { style } = req.params;
+    // 支援: strict(嚴謹), lenient(寬鬆), technical(技術導向), balanced(平衡)
+    const styleMap = {
+      'strict': ['嚴謹', '嚴謹細緻', '程序嚴謹'],
+      'lenient': ['寬鬆'],
+      'technical': ['技術', '技術導向', '專業精準'],
+      'balanced': ['平衡', '法理分析']
+    };
+    
+    const targetStyles = styleMap[style] || [style];
+    
+    // 從資料庫取得法官
+    const allJudges = await judgeService.getAllJudges();
+    
+    // 過濾符合風格的法官
+    const judges = allJudges.filter(judge => {
+      const judgeStyle = judge.style_approach || judge.style || '';
+      return targetStyles.some(s => judgeStyle.includes(s));
+    });
+    
+    res.json({
+      status: 'success',
+      data: judges,
+      count: judges.length,
+      styleMapping: { requested: style, matched: targetStyles }
+    });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+// 取得所有可用風格分類
+router.get('/styles', async (req, res) => {
+  try {
+    const styles = [
+      { id: 'strict', name: '嚴謹', description: '注重事實認定與證據審查' },
+      { id: 'lenient', name: '寬鬆', description: '裁判風格較為靈活，注重效率與平衡' },
+      { id: 'technical', name: '技術導向', description: '具有技術專業背景，擅長複雜專業案件' },
+      { id: 'balanced', name: '平衡', description: '注重各方權益平衡' },
+      { id: 'procedural', name: '程序正義', description: '重視正當程序，確保當事人訴訟權利' }
+    ];
+    
+    res.json({
+      status: 'success',
+      data: styles
+    });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
+// 取得所有專長領域
+router.get('/specialties', async (req, res) => {
+  try {
+    const allJudges = judgeBehaviorAnalysis.getAllJudges();
+    const specialties = new Set();
+    
+    allJudges.forEach(judge => {
+      judge.specialty?.forEach(s => specialties.add(s));
+    });
+    
+    res.json({
+      status: 'success',
+      data: Array.from(specialties)
+    });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
+module.exports = router;

@@ -712,3 +712,301 @@
         flex-direction: column;
     }
 }
+
+/* ========== 法官搜尋過濾器 ========== */
+.judge-search-filters {
+    margin-bottom: 15px;
+}
+
+.filter-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.filter-row .filter-input {
+    flex: 1;
+    min-width: 150px;
+    padding: 10px 15px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.filter-row .filter-input:focus {
+    outline: none;
+    border-color: var(--gold);
+}
+
+.filter-row .filter-select {
+    min-width: 140px;
+    padding: 10px 15px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    color: var(--text-light);
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.filter-row .filter-select:focus {
+    outline: none;
+    border-color: var(--gold);
+}
+
+/* ========== 法官標籤 ========== */
+.judge-item-tags {
+    margin-top: 8px;
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.judge-tag {
+    font-size: 0.75rem;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+/* ========== 判決趨勢圖表 ========== */
+.trend-chart-container {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
+.trend-chart {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.trend-chart h4 {
+    color: var(--gold);
+    margin-bottom: 15px;
+    font-size: 1rem;
+}
+
+.trend-bars {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.trend-year {
+    flex: 1;
+    min-width: 80px;
+    text-align: center;
+}
+
+.trend-year-label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.trend-bars-row {
+    display: flex;
+    height: 60px;
+    border-radius: 6px;
+    overflow: hidden;
+    gap: 2px;
+}
+
+.trend-bar {
+    height: 100%;
+    transition: width 0.3s ease;
+    min-width: 5px;
+}
+
+.trend-year-total {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 5px;
+}
+
+.trend-legend {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+/* ========== 風格分類展示 ========== */
+.style-classification-container {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
+.style-classification {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.style-classification h4 {
+    color: var(--gold);
+    margin-bottom: 15px;
+    font-size: 1rem;
+}
+
+.style-main {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.style-badge {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: 2px solid;
+}
+
+.style-desc {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.style-metrics {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.metric-item {
+    flex: 1;
+    min-width: 120px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+}
+
+.metric-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+}
+
+.metric-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 3px;
+}
+
+.metric-detail {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.style-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.breakdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.breakdown-label {
+    min-width: 80px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.breakdown-bar {
+    flex: 1;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.breakdown-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+
+.breakdown-value {
+    min-width: 40px;
+    text-align: right;
+    font-size: 0.85rem;
+    color: var(--text-light);
+}
+
+.style-specialties {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.specialties-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.specialty-tag {
+    background: rgba(159, 122, 234, 0.2);
+    color: #9f7aea;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+}
+
+/* 響應式調整 */
+@media (max-width: 768px) {
+    .filter-row {
+        flex-direction: column;
+    }
+    
+    .filter-row .filter-input,
+    .filter-row .filter-select {
+        width: 100%;
+    }
+    
+    .trend-bars {
+        flex-direction: column;
+    }
+    
+    .trend-year {
+        width: 100%;
+    }
+    
+    .style-metrics {
+        flex-direction: column;
+    }
+    
+    .metric-item {
+        width: 100%;
+    }
+}

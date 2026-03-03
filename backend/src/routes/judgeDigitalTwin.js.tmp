@@ -1,0 +1,3 @@
+// Fix the by-style endpoint to also search by style_approach from database
+const originalByStyle = router.stack.find(r => r.route && r.route.path === '/judges/by-style/:style');
+console.log('Style route found');

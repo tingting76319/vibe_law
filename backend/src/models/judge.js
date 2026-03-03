@@ -47,7 +47,7 @@ const Judge = {
   },
 
   findByCourt(court) {
-    const judges = db.prepare('SELECT * FROM judge_profiles WHERE court = ? ORDER BY name').all(court);
+    const judges = db.prepare('SELECT * FROM judge_profiles WHERE court LIKE ? ORDER BY name').all(`%${court}%`);
     return judges.map(j => {
       j.judgment_stats = JSON.parse(j.judgment_stats || '{}');
       return j;
