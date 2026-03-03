@@ -1,5 +1,36 @@
 # Release Notes
 
+## v0.5 - 法官趨勢＋RAG 融合版 (2026-03-03)
+
+### 🎉 New Features
+
+#### 法官趨勢分析＋RAG 問答
+- 整合 PostgreSQL 判例資料與多輪 RAG 問答，能同步呈現引用來源、相關案例與關聯法條
+- 對話狀態會儲存在 memory map，支援 `sessionId` 讓多輪上下文保持穩定
+- 新增 `/api/judicial/changelog`、`/api/judicial/auth`、`/api/judicial/test`，改寫錯誤回應都會帶 `status: 'error'`
+- CI pipeline 現在有 `lint`、`test:run`、`build` script 並透過 GitHub Actions 互相串接
+
+### API Endpoints
+```
+POST /api/rag/ask       - RAG 問答（多輪+來源）
+POST /api/rag/clear     - 清除對話歷史
+GET  /api/rag/history   - 取得對話歷史
+GET  /api/rag/health    - RAG 健康檢查
+GET  /api/judicial/search?q=...  - 判例全文搜尋
+GET  /api/judicial/cases         - 取得所有案例
+GET  /api/judicial/cases/:jid    - 查單一案例（找不到回 404）
+GET  /api/judicial/changelog     - 裁判書異動清單（暫時回傳空資料）
+POST /api/judicial/auth          - 模擬登入回傳 mock token
+GET  /api/judicial/test          - 檢查 PostgreSQL 連線
+```
+
+### 測試與品質
+- 單元測試 (Vitest) - 15/15，已連上雲端 PostgreSQL
+- GitHub Actions CI 操作 `lint`、`unit-test`、`build` job
+- RAG multi-turn + citation workflow 已在本地端驗證
+
+---
+
 ## v0.3 - 法官數位孿生版 (2026-03-01)
 
 ### 🎉 New Features

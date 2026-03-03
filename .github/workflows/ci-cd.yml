@@ -33,6 +33,8 @@ jobs:
   unit-test:
     runs-on: ubuntu-latest
     needs: lint
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
     
     steps:
       - name: Checkout code

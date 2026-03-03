@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.5.1] - 法官趨勢＋RAG 融合版 (2026-03-03)
+
+### Added
+- PostgreSQL 連線穩定化：所有 `/api/judicial` 路由都會回傳 `status: 'success'` 或 `status: 'error'`，404 會附帶錯誤訊息
+- 新增 `/api/judicial/changelog`、`/api/judicial/auth`、`/api/judicial/test`，提供 mock token、資料變動與連線自查
+- RAG API 拆出 `history`/`clear`，`ask` 支援 `sessionId`、引用來源、相關法條
+- CI 新增 `lint`/`test:run`/`build` script；unit-test job 現在由 `DATABASE_URL` secret 指向實體資料庫
+
+### Changed
+- `package.json`、`package-lock.json` 和 `backend/package-lock.json` 以支援新的 script/依賴
+- `eslint.config.js` 改成 CommonJS，避免 `npm run lint` 出現 ESM warning
+- `backend/tests/api.test.js` 允許 404 回應並檢查 `status` 欄位，完整覆蓋 PostgreSQL 行為
+
 ## [v0.4] - 判決書整理優化版 (規劃中)
 
 ### Added

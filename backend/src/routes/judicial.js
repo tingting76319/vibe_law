@@ -10,7 +10,7 @@ router.get('/search', async (req, res) => {
     const { q } = req.query;
     
     if (!q) {
-      return res.status(400).json({ error: '請輸入搜尋關鍵字' });
+      return res.status(400).json({ status: 'error', error: '請輸入搜尋關鍵字' });
     }
     
     // 直接使用 pg
@@ -40,7 +40,7 @@ router.get('/search', async (req, res) => {
     });
   } catch (error) {
     console.error('[Judicial] 搜尋錯誤:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ status: 'error', error: error.message });
   }
 });
 
@@ -69,7 +69,7 @@ router.get('/cases', async (req, res) => {
       count: result.rows.length
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ status: 'error', error: error.message });
   }
 });
 
@@ -91,7 +91,7 @@ router.get('/cases/:jid', async (req, res) => {
     await pool.end();
     
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: '找不到該裁判書' });
+      return res.status(404).json({ status: 'error', error: '找不到該裁判書' });
     }
     
     res.json({
@@ -99,7 +99,33 @@ router.get('/cases/:jid', async (req, res) => {
       data: result.rows[0]
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ status: 'error', error: error.message });
+  }
+});
+
+// 裁判書異動清單（暫時回傳空陣列）
+router.get('/changelog', async (req, res) => {
+  try {
+    res.json({
+      status: 'success',
+      data: [],
+      message: '暫無異動紀錄'
+    });
+  } catch (error) {
+    res.status(500).json({ status: 'error', error: error.message });
+  }
+});
+
+// 模擬驗證
+router.post('/auth', async (req, res) => {
+  try {
+    res.json({
+      status: 'success',
+      token: 'mock-token',
+      expiresIn: 3600
+    });
+  } catch (error) {
+    res.status(500).json({ status: 'error', error: error.message });
   }
 });
 
