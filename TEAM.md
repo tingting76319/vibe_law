@@ -22,3 +22,7 @@
 ## 專案
 - **GitHub**: https://github.com/tingting76319/vibe_law
 - **Zeabur**: https://kingliu.zeabur.app/ (vibe-law 服務)
+
+## 分工架構文件
+- 詳細多代理分工、回報節奏與版本協作規則，請參考：
+  - `AGENT_OPERATING_MODEL.md`
