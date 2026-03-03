@@ -2,152 +2,140 @@
  * Judicial API - PostgreSQL 版本
  */
 const express = require('express');
+const crypto = require('crypto');
 const router = express.Router();
+const judicialRepository = require('../repositories/judicialRepository');
+const { success, error } = require('../utils/apiResponse');
+const { parsePagination, requireNonEmptyString } = require('../utils/validation');
+
+function mapDataError(res, err) {
+  if (err.code === 'DB_TIMEOUT') {
+    return error(res, 504, err.message);
+  }
+
+  return error(res, 500, err.message || '系統發生錯誤');
+}
 
 // 搜尋案例
 router.get('/search', async (req, res) => {
   try {
-    const { q } = req.query;
-    
-    if (!q) {
-      return res.status(400).json({ status: 'error', error: '請輸入搜尋關鍵字' });
+    const validated = requireNonEmptyString(req.query.q, '搜尋關鍵字');
+    if (validated.error) {
+      return error(res, 400, validated.error);
     }
-    
-    // 直接使用 pg
-    const { Pool } = require('pg');
-    const pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: false
-    });
-    
-    const searchTerm = `%${q}%`;
-    
-    const result = await pool.query(`
-      SELECT * FROM judgments 
-      WHERE jtitle ILIKE $1 
-         OR jfull ILIKE $1 
-         OR jcase ILIKE $1
-      ORDER BY jdate DESC
-      LIMIT 50
-    `, [searchTerm]);
-    
-    await pool.end();
-    
-    res.json({
-      status: 'success',
-      data: result.rows,
-      count: result.rows.length
-    });
-  } catch (error) {
-    console.error('[Judicial] 搜尋錯誤:', error);
-    res.status(500).json({ status: 'error', error: error.message });
+
+    const rows = await judicialRepository.searchJudgments(validated.value);
+    return success(res, rows, { count: rows.length });
+  } catch (err) {
+    console.error('[Judicial] 搜尋錯誤:', err);
+    return mapDataError(res, err);
   }
 });
 
 // 取得所有案例
 router.get('/cases', async (req, res) => {
   try {
-    const { Pool } = require('pg');
-    const pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: false
+    const pagination = parsePagination(req.query);
+    if (pagination.error) {
+      return error(res, 400, pagination.error);
+    }
+
+    const rows = await judicialRepository.getAllJudgments(pagination.limit, pagination.offset);
+    return success(res, rows, {
+      count: rows.length,
+      limit: pagination.limit,
+      offset: pagination.offset
     });
-    
-    const { limit = 50, offset = 0 } = req.query;
-    
-    const result = await pool.query(`
-      SELECT * FROM judgments 
-      ORDER BY jdate DESC
-      LIMIT $1 OFFSET $2
-    `, [limit, offset]);
-    
-    await pool.end();
-    
-    res.json({
-      status: 'success',
-      data: result.rows,
-      count: result.rows.length
-    });
-  } catch (error) {
-    res.status(500).json({ status: 'error', error: error.message });
+  } catch (err) {
+    return mapDataError(res, err);
   }
 });
 
 // 取得單一案例
 router.get('/cases/:jid', async (req, res) => {
   try {
-    const { Pool } = require('pg');
-    const pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: false
-    });
-    
-    const { jid } = req.params;
-    
-    const result = await pool.query(`
-      SELECT * FROM judgments WHERE jid = $1
-    `, [jid]);
-    
-    await pool.end();
-    
-    if (result.rows.length === 0) {
-      return res.status(404).json({ status: 'error', error: '找不到該裁判書' });
+    const validated = requireNonEmptyString(req.params.jid, 'jid');
+    if (validated.error) {
+      return error(res, 400, validated.error);
     }
-    
-    res.json({
-      status: 'success',
-      data: result.rows[0]
-    });
-  } catch (error) {
-    res.status(500).json({ status: 'error', error: error.message });
+
+    const row = await judicialRepository.getJudgmentById(validated.value);
+    if (!row) {
+      return error(res, 404, '找不到該裁判書');
+    }
+
+    return success(res, row);
+  } catch (err) {
+    return mapDataError(res, err);
   }
 });
 
-// 裁判書異動清單（暫時回傳空陣列）
+// 裁判書異動清單
 router.get('/changelog', async (req, res) => {
   try {
-    res.json({
-      status: 'success',
-      data: [],
-      message: '暫無異動紀錄'
+    const pagination = parsePagination(req.query, { defaultLimit: 20, maxLimit: 100 });
+    if (pagination.error) {
+      return error(res, 400, pagination.error);
+    }
+
+    const rows = await judicialRepository.getJudgmentChangelog(pagination.limit, pagination.offset);
+    return success(res, rows, {
+      count: rows.length,
+      limit: pagination.limit,
+      offset: pagination.offset
     });
-  } catch (error) {
-    res.status(500).json({ status: 'error', error: error.message });
+  } catch (err) {
+    return mapDataError(res, err);
   }
 });
 
-// 模擬驗證
+// API 帳密驗證
 router.post('/auth', async (req, res) => {
-  try {
-    res.json({
-      status: 'success',
-      token: 'mock-token',
-      expiresIn: 3600
-    });
-  } catch (error) {
-    res.status(500).json({ status: 'error', error: error.message });
+  const configuredUser = process.env.JUDICIAL_AUTH_USER;
+  const configuredPassword = process.env.JUDICIAL_AUTH_PASSWORD;
+
+  if (!configuredUser || !configuredPassword) {
+    return error(res, 503, 'auth 功能尚未設定');
   }
+
+  const user = typeof req.body?.user === 'string' ? req.body.user : '';
+  const password = typeof req.body?.password === 'string' ? req.body.password : '';
+
+  if (!user || !password) {
+    return error(res, 400, 'user 與 password 為必填欄位');
+  }
+
+  if (user !== configuredUser || password !== configuredPassword) {
+    return error(res, 401, '帳號或密碼錯誤');
+  }
+
+  const issuedAt = Date.now();
+  const expiresIn = 3600;
+  const payload = `${user}:${issuedAt}:${crypto.randomUUID()}`;
+  const token = Buffer.from(payload).toString('base64url');
+
+  return success(res, {
+    token,
+    tokenType: 'Bearer',
+    expiresIn,
+    issuedAt
+  });
 });
 
 // 測試連線
 router.get('/test', async (req, res) => {
   try {
-    const { Pool } = require('pg');
-    const pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: false
-    });
-    
-    const result = await pool.query('SELECT COUNT(*) as count FROM judgments');
-    await pool.end();
-    
-    res.json({ 
-      status: 'success', 
-      message: 'PostgreSQL 連線成功',
-      count: result.rows[0].count
-    });
-  } catch (error) {
-    res.status(500).json({ status: 'error', message: error.message });
+    const count = await judicialRepository.getJudgmentCount();
+    return success(
+      res,
+      {
+        message: 'PostgreSQL 連線成功',
+        count
+      },
+      {}
+    );
+  } catch (err) {
+    return mapDataError(res, err);
   }
 });
 

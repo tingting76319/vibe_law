@@ -28,6 +28,8 @@ npm-debug.log*
 # Build output
 dist/
 build/
+coverage/
+backend/coverage/
 
 # OpenClaw
 .openclaw/

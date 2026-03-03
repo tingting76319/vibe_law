@@ -17,6 +17,20 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
+      include: [
+        'src/routes/judicial.js',
+        'src/routes/rag.js',
+        'src/repositories/**/*.js',
+        'src/services/judicialApi.js',
+        'src/services/llmService.js',
+        'src/utils/**/*.js'
+      ],
+      thresholds: {
+        lines: 30,
+        functions: 30,
+        branches: 20,
+        statements: 30
+      },
       exclude: [
         'node_modules/',
         '**/*.config.js',
