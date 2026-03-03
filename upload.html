@@ -82,24 +82,75 @@
           method: 'POST',
           body: formData
         });
-        
-        const data = await res.json();
-        
-        document.getElementById('progressFill').style.width = '100%';
-        
-        if (data.success) {
-          document.getElementById('result').className = 'success';
-          document.getElementById('result').innerHTML = '<h3>✅ 成功！</h3><p>匯入: ' + data.imported + ' 筆</p><p>錯誤: ' + data.errors + ' 筆</p><p>總數: ' + data.total + ' 筆</p>';
-        } else {
+
+        const raw = await res.text();
+        let data = null;
+        try {
+          data = JSON.parse(raw);
+        } catch(parseErr) {
           document.getElementById('result').className = 'error';
-          document.getElementById('result').innerHTML = '<h3>❌ 錯誤</h3><p>' + (data.error || '未知錯誤') + '</p>';
+          document.getElementById('result').innerHTML = '<h3>❌ 錯誤</h3><p>伺服器回傳非 JSON（HTTP ' + res.status + '）：' + raw.substring(0, 200) + '</p>';
+          return;
         }
+
+        if (!res.ok || !data.success) {
+          document.getElementById('result').className = 'error';
+          document.getElementById('result').innerHTML = '<h3>❌ 錯誤</h3><p>' + (data.error || data.message || '未知錯誤') + '</p>';
+          return;
+        }
+
+        if (!data.jobId) {
+          document.getElementById('progressFill').style.width = '100%';
+          document.getElementById('result').className = 'success';
+          document.getElementById('result').innerHTML = '<h3>✅ 成功！</h3><p>' + (data.message || '上傳完成') + '</p>';
+          checkStatus();
+          return;
+        }
+
+        await pollJob(data.jobId);
       } catch(e) {
         document.getElementById('result').className = 'error';
         document.getElementById('result').innerHTML = '<h3>❌ 錯誤</h3><p>' + e.message + '</p>';
       }
       
       checkStatus();
+    }
+
+    async function pollJob(jobId) {
+      for (let i = 0; i < 300; i++) {
+        const res = await fetch(API_URL + '/api/upload/jobs/' + encodeURIComponent(jobId));
+        const job = await res.json();
+
+        if (!res.ok) {
+          document.getElementById('result').className = 'error';
+          document.getElementById('result').innerHTML = '<h3>❌ 錯誤</h3><p>' + (job.error || '讀取工作狀態失敗') + '</p>';
+          return;
+        }
+
+        const ratio = job.totalFiles > 0 ? (job.processedFiles / job.totalFiles) : 0.2;
+        const pct = Math.max(5, Math.min(95, Math.round(ratio * 100)));
+        document.getElementById('progressFill').style.width = pct + '%';
+        document.getElementById('status').textContent = '匯入中... 已處理 ' + (job.processedFiles || 0) + '/' + (job.totalFiles || '?') + ' 檔';
+
+        if (job.status === 'completed') {
+          document.getElementById('progressFill').style.width = '100%';
+          document.getElementById('status').textContent = '匯入完成';
+          document.getElementById('result').className = 'success';
+          document.getElementById('result').innerHTML = '<h3>✅ 成功！</h3><p>匯入: ' + (job.imported || 0) + ' 筆</p><p>錯誤: ' + (job.errors || 0) + ' 筆</p><p>總數: ' + (job.total || 0) + ' 筆</p>';
+          return;
+        }
+
+        if (job.status === 'failed') {
+          document.getElementById('result').className = 'error';
+          document.getElementById('result').innerHTML = '<h3>❌ 匯入失敗</h3><p>' + (job.error || '未知錯誤') + '</p>';
+          return;
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+
+      document.getElementById('result').className = 'error';
+      document.getElementById('result').innerHTML = '<h3>❌ 逾時</h3><p>匯入時間過長，請稍後再檢查狀態。</p>';
     }
     
     checkStatus();
