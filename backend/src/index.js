@@ -6,7 +6,7 @@ const judicialRoutes = require('./routes/judicial');
 const ragRoutes = require('./routes/rag');
 const judgeTwinRoutes = require('./routes/judgeDigitalTwin');
 const uploadRoutes = require('./routes/upload');
-const v04Routes = require('./routes/v04');
+const v04Routes = require('./routes/v04.js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
