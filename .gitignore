@@ -43,3 +43,4 @@ backend/uploads/*
 
 # Database
 data/*.db-*
+backend/config.json

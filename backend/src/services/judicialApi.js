@@ -48,8 +48,8 @@ class JudicialAPI {
 
     try {
       const response = await axios.post(`${this.apiBaseUrl}/Auth`, {
-        user: config.user,
-        password: config.password
+        user: process.env.JUDICIAL_USER || config.user,
+        password: process.env.JUDICIAL_PASSWORD || config.password
       });
       
       if (response.data.token) {

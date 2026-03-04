@@ -39,6 +39,14 @@
     {
       "key": "MMKey_LAW_LLM",
       "value": "sk-api-K6UpRI8Hp0QcxOPFxV6VsOPs8wkPddx4MEKzgTVzGcTLHbep3rcqH-w9_ArywE0jEC4u4Swih3TMpsuIab0J8dNFlKTb3WWhnr8EXPbPUTmX-pE5xaTAfSk"
+    },
+    {
+      "key": "JUDICIAL_USER",
+      "value": "YOUR_NEW_USERNAME"
+    },
+    {
+      "key": "JUDICIAL_PASSWORD",
+      "value": "YOUR_NEW_PASSWORD"
     }
   ]
 }

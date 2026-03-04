@@ -1,8 +1,8 @@
 {
-  "user": "tingting76319",
-  "password": "YTLiu76319",
+  "user": "",
+  "password": "",
   "apiBaseUrl": "https://data.judicial.gov.tw/jdg/api",
-  "judicialSource": "mock",
+  "judicialSource": "postgres",
   "serviceHours": {
     "start": 0,
     "end": 6
