@@ -51,17 +51,39 @@ function createJudicialRepository(dbClient) {
   /**
    * 取得各類案件數量統計
    * 分類: 民事、刑事、行政、家事、少年、憲法
-   * 使用快取機制，快取時間 1 小時
+   * 
+   * v1.3 優化: 優先讀取預先計算的 case_type_stats 表
+   * 如果表不存在，則fallback 到即時查詢
    */
   async getCaseTypeStats() {
-   // 檢查快取
+   // 檢查記憶體快取
    const cached = getCachedCaseTypeStats();
    if (cached) {
-    console.log('[getCaseTypeStats] 使用快取資料');
+    console.log('[getCaseTypeStats] 使用記憶體快取資料');
     return cached;
    }
 
-   console.log('[getCaseTypeStats] 查詢資料庫...');
+   console.log('[getCaseTypeStats] 查詢預先計算的統計表...');
+   
+   try {
+     // 嘗試從預先計算的表讀取
+     const result = await queryWithTimeout(`
+       SELECT case_type, count, updated_at
+       FROM case_type_stats
+       ORDER BY count DESC
+     `);
+     
+     if (result.rows.length > 0) {
+       console.log('[getCaseTypeStats] 使用預先計算的統計資料');
+       setCachedCaseTypeStats(result.rows);
+       return result.rows;
+     }
+   } catch (err) {
+     console.log('[getCaseTypeStats] 預計算表不存在或查詢失敗，使用fallback:', err.message);
+   }
+
+   // Fallback: 如果預計算表不存在，使用即時查詢（舊邏輯）
+   console.log('[getCaseTypeStats] Fallback 到即時查詢...');
    const result = await queryWithTimeout(`
     SELECT 
      CASE 
