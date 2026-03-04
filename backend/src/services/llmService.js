@@ -1,9 +1,13 @@
 /**
- * LLM 服務 v0.5 - 支援 MiniMax / OpenAI / Claude
+ * LLM 服務 v0.6 - 支援 MiniMax / OpenAI / Claude
  * 支持多輪對話上下文
+ * v0.6: 增加 API 逾時至 60 秒，增加 fallback 回應
  */
 const axios = require('axios');
 const config = require('../../config.json');
+
+// LLM API 逾時時間 (60 秒)
+const LLM_API_TIMEOUT_MS = 60000;
 
 class LLMService {
   constructor() {
@@ -12,7 +16,7 @@ class LLMService {
     // 優先使用環境變數，再使用 config
     this.apiKey = process.env.MMKey_LAW_LLM || this.config.apiKey || '';
     this.model = this.config.model || 'MiniMax-M2.5';
-    console.log(`[LLMService v0.5] 初始化 - Provider: ${this.provider}, Model: ${this.model}`);
+    console.log(`[LLMService v0.6] 初始化 - Provider: ${this.provider}, Model: ${this.model}`);
     console.log(`[LLMService] API Key 狀態: ${this.apiKey ? '已設定' : '未設定'}`);
   }
 
@@ -35,7 +39,7 @@ class LLMService {
       }
     } catch (error) {
       console.error('[LLMService] API 調用失敗:', error.message);
-      return this.mockGenerate(question, context, conversationHistory);
+      return this.generateFallbackResponse(question, context, error);
     }
   }
 
@@ -44,6 +48,32 @@ class LLMService {
    */
   async generate(prompt, context = '') {
     return this.generateWithHistory(prompt, context, []);
+  }
+
+  // Fallback 回應（當 API 逾時或失敗時）
+  generateFallbackResponse(question, context, error) {
+    const isTimeout = error.code === 'ECONNABORTED' || error.message?.includes('timeout');
+    
+    if (isTimeout) {
+      console.warn('[LLMService] API 逾時，回傳 fallback 回應');
+      return `⏱️ **伺服器忙碌中**
+
+您的問題已收到，但 AI 服務回應時間較長。
+
+**您可以：**
+1. 稍後再試一次
+2. 嘗試簡化問題
+3. 或許您可以先參考以下相關資料：
+
+${context ? `📋 **相關法條資訊**\n${context.substring(0, 1000)}` : '請嘗試搜尋相關法律資訊後再詢問 AI'}
+
+---
+💡 **提示**：如需立即協助，建議直接諮詢專業律師。`;
+    }
+
+    // 其他錯誤
+    console.warn('[LLMService] API 錯誤，回傳 fallback 回應');
+    return this.mockGenerate(question, context, []);
   }
 
   // Mock 回應（當沒有 API Key 時）
@@ -116,7 +146,7 @@ ${response}`;
     return response;
   }
 
-  // MiniMax API
+  // MiniMax API - 逾時 60 秒
   async callMiniMax(question, context, history) {
     const messages = this.buildMessages(question, context, history);
     
@@ -133,7 +163,7 @@ ${response}`;
           'Authorization': `Bearer ${this.apiKey}`,
           'Content-Type': 'application/json'
         },
-        timeout: 30000
+        timeout: LLM_API_TIMEOUT_MS
       }
     );
 
@@ -144,7 +174,7 @@ ${response}`;
     throw new Error('MiniMax API 回應格式錯誤');
   }
 
-  // OpenAI API
+  // OpenAI API - 逾時 60 秒
   async callOpenAI(question, context, history) {
     const messages = this.buildMessages(question, context, history);
     
@@ -161,7 +191,7 @@ ${response}`;
           'Authorization': `Bearer ${this.apiKey}`,
           'Content-Type': 'application/json'
         },
-        timeout: 30000
+        timeout: LLM_API_TIMEOUT_MS
       }
     );
 
@@ -172,7 +202,7 @@ ${response}`;
     throw new Error('OpenAI API 回應格式錯誤');
   }
 
-  // Anthropic Claude API
+  // Anthropic Claude API - 逾時 60 秒
   async callAnthropic(question, context, history) {
     const systemPrompt = this.buildSystemPrompt(context);
     const messages = this.buildMessagesForClaude(question, history);
@@ -192,7 +222,7 @@ ${response}`;
           'anthropic-version': '2023-06-01',
           'Content-Type': 'application/json'
         },
-        timeout: 30000
+        timeout: LLM_API_TIMEOUT_MS
       }
     );
 

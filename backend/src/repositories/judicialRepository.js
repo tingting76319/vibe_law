@@ -1,9 +1,33 @@
 const DB_QUERY_TIMEOUT_MS = Number.parseInt(process.env.DB_QUERY_TIMEOUT_MS || '5000', 10);
 
+// ===== 記憶體快取設定 =====
+const CACHE_TTL_MS = 60 * 60 * 1000; // 1 小時
+const caseTypeStatsCache = {
+  data: null,
+  timestamp: null
+};
+
 function createTimeoutError() {
  const error = new Error('資料庫查詢逾時，請稍後再試');
  error.code = 'DB_TIMEOUT';
  return error;
+}
+
+// 快取輔助函數
+function getCachedCaseTypeStats() {
+ if (!caseTypeStatsCache.data) return null;
+ if (Date.now() - caseTypeStatsCache.timestamp > CACHE_TTL_MS) {
+   // 快取過期，清除
+   caseTypeStatsCache.data = null;
+   caseTypeStatsCache.timestamp = null;
+   return null;
+ }
+ return caseTypeStatsCache.data;
+}
+
+function setCachedCaseTypeStats(data) {
+ caseTypeStatsCache.data = data;
+ caseTypeStatsCache.timestamp = Date.now();
 }
 
 function createJudicialRepository(dbClient) {
@@ -27,8 +51,17 @@ function createJudicialRepository(dbClient) {
   /**
    * 取得各類案件數量統計
    * 分類: 民事、刑事、行政、家事、少年、憲法
+   * 使用快取機制，快取時間 1 小時
    */
   async getCaseTypeStats() {
+   // 檢查快取
+   const cached = getCachedCaseTypeStats();
+   if (cached) {
+    console.log('[getCaseTypeStats] 使用快取資料');
+    return cached;
+   }
+
+   console.log('[getCaseTypeStats] 查詢資料庫...');
    const result = await queryWithTimeout(`
     SELECT 
      CASE 
@@ -46,7 +79,18 @@ function createJudicialRepository(dbClient) {
     ORDER BY count DESC
    `);
    
+   // 設定快取
+   setCachedCaseTypeStats(result.rows);
    return result.rows;
+  },
+
+  /**
+   * 清除判決分類統計快取（需要強制刷新時呼叫）
+   */
+  clearCaseTypeStatsCache() {
+   caseTypeStatsCache.data = null;
+   caseTypeStatsCache.timestamp = null;
+   console.log('[getCaseTypeStats] 快取已清除');
   },
 
   /**
