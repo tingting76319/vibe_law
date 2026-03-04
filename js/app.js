@@ -30,6 +30,9 @@ function initApp() {
     // 初始化法規顯示
     renderLaws('civil');
     
+    // 初始化獨立法規頁面
+    renderLawsStandalone('civil');
+    
     // 初始化法官模組
     if (typeof initJudgeModule === 'function') {
         initJudgeModule();
@@ -311,7 +314,7 @@ function renderAIAnswer(data) {
                             <span class="source-number">[${idx + 1}]</span>
                             ${source.type === 'case' ? `
                                 <span class="source-type">判例</span>
-                                <span class="source-title">${source.title}</span>
+                                <a href="#" onclick="showCaseDetail('${source.id}'); return false;" class="source-title-link">${source.title}</a>
                                 <span class="source-meta">${source.year}年 ${source.caseNumber} | ${source.court || '法院'}</span>
                                 ${source.relatedLaws ? `<span class="source-laws">${source.relatedLaws.join('、')}</span>` : ''}
                             ` : `
@@ -598,6 +601,86 @@ function renderLaws(category) {
     
     container.innerHTML = html;
 }
+
+
+// 渲染法規（獨立頁面）
+function renderLawsStandalone(category) {
+    const container = document.getElementById('laws-content-standalone');
+    if (!container) {
+        console.log('laws-content-standalone not found');
+        return;
+    }
+    
+    const laws = getLawsByCategory(category);
+    
+    if (laws.length === 0) {
+        container.innerHTML = '<div class="case-empty">載入中...</div>';
+        return;
+    }
+    
+    let html = '';
+    laws.forEach(law => {
+        html += `
+            <div class="law-item">
+                <div class="law-name">${law.name}</div>
+                <div class="law-content">${law.content}</div>
+                <div class="law-meta">最近修訂：${law.lastAmended}</div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// 執行法規搜尋
+async function doLawSearch() {
+    const query = document.getElementById('law-search-input').value;
+    if (!query) return;
+    
+    // 顯示載入中
+    const container = document.getElementById('laws-content-standalone');
+    container.innerHTML = '<div class="case-empty"><span class="loading-spinner"></span> 搜尋中...</div>';
+    
+    // 搜尋法規
+    const results = searchLaws(query);
+    
+    if (results.length === 0) {
+        container.innerHTML = '<div class="case-empty">沒有找到相關法規</div>';
+        return;
+    }
+    
+    let html = '';
+    results.forEach(law => {
+        html += `
+            <div class="law-item">
+                <div class="law-name">${law.name}</div>
+                <div class="law-content">${law.content}</div>
+                <div class="law-meta">最近修訂：${law.lastAmended}</div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// 搜尋法規
+function searchLaws(query) {
+    const q = query.toLowerCase();
+    const allLaws = [
+        ...getLawsByCategory('civil'),
+        ...getLawsByCategory('criminal'),
+        ...getLawsByCategory('administrative'),
+        ...getLawsByCategory('civil-procedure'),
+        ...getLawsByCategory('criminal-procedure'),
+        ...getLawsByCategory('labor')
+    ];
+    
+    return allLaws.filter(law => 
+        law.name.toLowerCase().includes(q) || 
+        law.content.toLowerCase().includes(q)
+    );
+}
+
 
 // 清除問答
 function clearQA() {

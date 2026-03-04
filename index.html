@@ -20,6 +20,7 @@
             </div>
             <div class="nav-tabs header-tabs">
                 <button class="nav-tab active" data-view="rag">🔍 法律問答</button>
+                <button class="nav-tab" data-view="law">📖 法規查詢</button>
                 <button class="nav-tab" data-view="judge">👨‍⚖️ 法官數位孿生</button>
                 <button class="nav-tab" data-view="court">🏛️ 法院分析</button>
                 <button class="nav-tab" data-view="lawyer">👔 律師媒合</button>
@@ -117,6 +118,33 @@
             </section>
         </div>
 
+
+        <!-- 法規查詢視圖 -->
+        <div id="view-law" class="view-section hidden">
+            <!-- 法規搜尋 -->
+            <section class="search-section">
+                <div class="search-box">
+                    <input type="text" id="law-search-input" placeholder="搜尋法規名稱或條文...（例如：民法 侵權行為）">
+                    <button id="law-search-btn" class="search-btn">🔍 搜尋法規</button>
+                </div>
+            </section>
+
+            <!-- 法規分類 -->
+            <section class="laws-section">
+                <h2>📖 法規總覽</h2>
+                <div class="laws-tabs">
+                    <button class="law-tab active" data-law="civil">民法</button>
+                    <button class="law-tab" data-law="criminal">刑法</button>
+                    <button class="law-tab" data-law="administrative">行政法</button>
+                    <button class="law-tab" data-law="civil-procedure">民事訴訟法</button>
+                    <button class="law-tab" data-law="criminal-procedure">刑事訴訟法</button>
+                    <button class="law-tab" data-law="labor">勞動法</button>
+                </div>
+                <div class="laws-content" id="laws-content-standalone">
+                    <!-- 法規內容 -->
+                </div>
+            </section>
+        </div>
         <!-- 法官數位孿生視圖 -->
         <div id="view-judge" class="view-section hidden">
             <!-- 法官選擇器 -->
