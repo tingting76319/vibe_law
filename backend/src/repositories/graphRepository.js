@@ -201,40 +201,58 @@ function createGraphRepository(dbClient) {
     async getJudgeSimilarCases(judgeName, limit = 20, options = {}) {
       const { caseType, court, yearFrom, yearTo } = options;
 
-      // 從 SQLite 資料庫找法官資訊
-      // 注意：這裡需要用到 SQLite 的 judge_profiles 表
-      let judgeId = null;
-      let judgeInfo = null;
-
+      // 優先使用預先計算的法官統計表
       try {
-        // 嘗試從 SQLite 獲取法官資訊
-        const sqlite = require('../db/init');
-        const judgeResult = sqlite.prepare(`
-          SELECT id, name, court, court_level, position, specialty, style_approach
-          FROM judge_profiles 
-          WHERE name LIKE ? OR name = ?
+        const statsQuery = `
+          SELECT * FROM judge_case_stats 
+          WHERE judge_name LIKE $1
           LIMIT 1
-        `).all(`%${judgeName}%`, judgeName);
-
-        if (judgeResult && judgeResult.length > 0) {
-          judgeInfo = judgeResult[0];
-          judgeId = judgeInfo.id;
+        `;
+        const statsResult = await dbClient.query(statsQuery, [`%${judgeName}%`]);
+        
+        if (statsResult.rows.length > 0) {
+          const stats = statsResult.rows[0];
+          return {
+            status: 'success',
+            judge_name: stats.judge_name,
+            case_count: parseInt(stats.case_count),
+            message: '使用預先計算的統計資料'
+          };
         }
       } catch (e) {
-        console.log('[Graph] 無法從 SQLite 取得法官資訊:', e.message);
+        console.log('[Graph] 預先計算表查詢失敗:', e.message);
       }
 
-      // 從 PostgreSQL  judgments 表中找法官相關案件
-      // 裁判書內容中可能包含法官名稱
-      let query = '';
-      let queryParams = [];
-      
-      if (judgeName) {
-        // 先找包含法官姓名的裁判書
-        // 然後按案件類型分組，找出法官擅長的案件類型
+      // Fallback: 從 extracted_judges 表格查詢
+      try {
+        const ejQuery = `
+          SELECT j.jid, j.jyear, j.jcase, j.jdate, j.jtitle
+          FROM extracted_judges ej
+          JOIN judgments j ON ej.jid = j.jid
+          WHERE ej.judge_name LIKE $1
+          ${caseType ? 'AND j.jcase LIKE $2' : ''}
+          ORDER BY j.jdate DESC
+          LIMIT $${caseType ? 3 : 1}
+        `;
         
-        let whereConditions = ['jfull ILIKE $1 OR jtitle ILIKE $1'];
-        queryParams = [`%${judgeName}%`];
+        const params = caseType ? [`%${judgeName}%`, `%${caseType}%`] : [`%${judgeName}%`];
+        const ejResult = await dbClient.query(ejQuery, params);
+        
+        return ejResult.rows.map(row => ({
+          jid: row.jid,
+          jyear: row.jyear,
+          jcase: row.jcase,
+          jdate: row.jdate,
+          title: row.jtitle,
+          court: this.extractCourtFromJid(row.jid)
+        }));
+      } catch (e) {
+        console.log('[Graph] extracted_judges 查詢失敗:', e.message);
+      }
+
+      // 最後 fallback: 從 judgments 表搜索（慢）
+      let whereConditions = ['jfull ILIKE $1 OR jtitle ILIKE $1'];
+      let queryParams = [`%${judgeName}%`];
 
         if (caseType) {
           whereConditions.push(`(jcase ILIKE $${queryParams.length + 1} OR jtitle ILIKE $${queryParams.length + 1})`);
