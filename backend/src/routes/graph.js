@@ -7,7 +7,7 @@
  * 2. 法官相似案件 API
  */
 const express = require('express');
-const pool = require('../../db/postgres');
+const pool = require('../db/postgres');
 
 async function getJudgeTenure(judgeName) {
   try {
