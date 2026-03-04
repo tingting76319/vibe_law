@@ -19,7 +19,7 @@ class JudicialAPI {
   // 檢查是否在服務時間內
   isServiceHour() {
     const now = new Date();
-    const hour = now.getHours();
+    const hour = (new Date().getTime() + 8*60*60*1000) % 24;
     return hour >= config.serviceHours.start && hour < config.serviceHours.end;
   }
 
@@ -43,7 +43,7 @@ class JudicialAPI {
     }
 
     if (!this.isServiceHour()) {
-      throw new Error('目前非本 API 服務時間 (00:00-06:00)');
+      throw new Error('目前非本 API 服務時間 (00:00-06:00 (台灣時間))');
     }
 
     try {
