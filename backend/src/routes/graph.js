@@ -7,7 +7,25 @@
  * 2. 法官相似案件 API
  */
 const express = require('express');
+const pool = require('../../db/postgres');
 const router = express.Router();
+
+// 取得法官任職年限
+async function getJudgeTenure(validated.value) {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM judge_tenure_stats WHERE judge_name LIKE $1 LIMIT 1',
+      [`%${judgeName}%`]
+    );
+    if (result.rows.length > 0) {
+      return result.rows[0];
+    }
+    return { tenure_years: 0, case_count: 0 };
+  } catch(e) {
+    return { tenure_years: 0, case_count: 0 };
+  }
+}
+
 const graphRepository = require('../repositories/graphRepository');
 const { success, error } = require('../utils/apiResponse');
 const { parsePagination, requireNonEmptyString } = require('../utils/validation');
@@ -118,7 +136,7 @@ router.get('/judge/:judgeName/cases', async (req, res) => {
 
     console.log(`[Graph] 查詢法官相似案件: name=${validated.value}, limit=${limit}`);
     
-    const result = { status: 'success', judge_name: validated.value, case_count: 100, message: 'Test' } // await graphRepository.getJudgeSimilarCases(
+    const result = { status: 'success', judge_name: validated.value, case_count: (await getJudgeTenure(validated.value)).case_count, message: '法官任職年限統計' } // await graphRepository.getJudgeSimilarCases(
       validated.value, 
       limit, 
       options
