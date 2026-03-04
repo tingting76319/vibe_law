@@ -150,17 +150,31 @@ class JudicialAPI {
   }
 
   // 取得所有案例
-  async fetchLatestJudgments(targetDate = null) {
+  async fetchLatestJudgments(targetDate = null, startDate = null, endDate = null) {
     try {
       const list = await this.getJudgmentList();
       
-      if (!targetDate) {
+      if (!targetDate && !startDate && !endDate) {
         // 如果沒有指定日期，回傳最新的
         return list;
       }
       
-      // 篩選指定日期的判決書
-      const filtered = list.filter(item => item.date === targetDate);
+      let filtered = list;
+      
+      if (targetDate) {
+        // 單一日期
+        filtered = list.filter(item => item.date === targetDate);
+      } else if (startDate && endDate) {
+        // 日期範圍
+        filtered = list.filter(item => item.date >= startDate && item.date <= endDate);
+      } else if (startDate) {
+        // 從某天到現在
+        filtered = list.filter(item => item.date >= startDate);
+      } else if (endDate) {
+        // 到某天為止
+        filtered = list.filter(item => item.date <= endDate);
+      }
+      
       return filtered;
     } catch(e) {
       console.error("[fetchLatestJudgments] Error:", e.message);

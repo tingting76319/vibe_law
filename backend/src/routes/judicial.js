@@ -268,13 +268,14 @@ router.post('/auth', async (req, res) => {
 
 // 測試連線
 // 手動同步判決書
-// GET /api/judicial/sync?date=2026-03-04
+// POST /api/judicial/sync
+// Body: { date: "2026-03-04" } 或 { startDate: "2021-12-01", endDate: "2021-12-05" }
 router.post('/sync', async (req, res) => {
   try {
     const judicialApi = require('../services/judicialApi');
-    const { date } = req.body || {};
-    const result = await judicialApi.fetchLatestJudgments(date);
-    success(res, { message: '同步完成', count: result?.length || 0, date: date || 'latest' });
+    const { date, startDate, endDate } = req.body || {};
+    const result = await judicialApi.fetchLatestJudgments(date, startDate, endDate);
+    success(res, { message: '同步完成', count: result?.length || 0, date: date || 'latest', range: startDate && endDate ? `${startDate} to ${endDate}` : null });
   } catch(e) {
     error(res, 500, e.message);
   }
