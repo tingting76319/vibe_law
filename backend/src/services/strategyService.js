@@ -3,7 +3,7 @@
  * 訴狀分析、趨勢預測、風險評估、策略生成
  */
 const llmService = require('../services/llmService');
-const db = require('better-sqlite3')('./backend/src/data/legal.db');
+const db = require('better-sqlite3')(process.env.DATABASE_PATH || './data/legal.db');
 
 class StrategyService {
   constructor() {
