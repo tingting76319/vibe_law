@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="css/court.css">
     <link rel="stylesheet" href="css/lawyer.css">
     <link rel="stylesheet" href="css/stats.css">
+    <link rel="stylesheet" href="css/timeline.css">
 </head>
 <body>
     <div class="container">
@@ -25,6 +26,8 @@
                 <button class="nav-tab" data-view="court">🏛️ 法院分析</button>
                 <button class="nav-tab" data-view="lawyer">👔 律師媒合</button>
                 <button class="nav-tab" data-view="stats">📊 判決統計</button>
+                <button class="nav-tab" data-view="judge-timeline">📅 法官時間線</button>
+                <button class="nav-tab" data-view="case-context">🔗 案件脈絡圖</button>
             </div>
         </header>
 
@@ -239,7 +242,12 @@
 
                 <!-- 歷史判決列表 -->
                 <div class="judge-cases">
-                    <h3>📜 歷史判決</h3>
+                    <div class="section-header">
+                        <h3>📜 歷史判決</h3>
+                        <button class="nav-to-timeline-btn" onclick="switchView('judge-timeline')">
+                            📅 查看完整時間線
+                        </button>
+                    </div>
                     <div class="filter-bar">
                         <select id="case-type-filter" class="filter-select">
                             <option value="">全部類型</option>
@@ -990,7 +998,43 @@
                 </section>
             </div>
 </div>
-        <!-- 底部 -->
+        
+            <!-- 法官案件時間線視圖 -->
+            <div id="view-judge-timeline" class="view-section hidden">
+                <section class="judge-timeline-container">
+                    <div class="timeline-section">
+                        <div id="judge-timeline">
+                            <div class="empty">
+                                <p>請先選擇一位法官查看其案件時間線</p>
+                                <p class="hint">可從「法官數位孿生」頁面選擇法官</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="similar-cases-section">
+                        <div id="similar-cases-list">
+                            <div class="empty">選擇法官後顯示相似案件</div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 案件脈絡圖視圖 -->
+            <div id="view-case-context" class="view-section hidden">
+                <section class="case-context-container">
+                    <div id="case-context-graph">
+                        <div class="empty">
+                            <p>🔗 案件脈絡圖</p>
+                            <p class="hint">輸入案件編號查看案件的上訴、發回、更審流程</p>
+                            <div class="context-search-box" style="margin-top: 20px;">
+                                <input type="text" id="context-search-input" placeholder="例如：109台上1234" value="">
+                                <button id="context-case-search" class="search-btn">🔍 查詢</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="case-timeline-visual" class="case-timeline-visual"></div>
+                </section>
+            </div>
+<!-- 底部 -->
         <footer class="footer">
             <p>⚠️ <strong>法律聲明</strong>：本系統僅供參考，不構成法律意見。如有具體法律問題，請諮詢專業律師。</p>
             <p>📊 資料來源：司法院公開判例 | 全國法規資料庫</p>
@@ -1006,6 +1050,7 @@
     <script src="js/court.js"></script>
     <script src="js/lawyer.js"></script>
     <script src="js/stats.js"></script>
+    <script src="js/timeline.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

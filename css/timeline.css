@@ -1,0 +1,684 @@
+/* 法官案件時間線 & 案件脈絡圖樣式 v1.4 */
+
+/* ========== 視圖容器 ========== */
+#view-judge-timeline,
+#view-case-context {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* ========== 法官案件時間線 ========== */
+
+.judge-timeline-container {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 24px;
+}
+
+@media (max-width: 1024px) {
+    .judge-timeline-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 時間線區塊 */
+.timeline-section {
+    background: var(--bg-card, #fff);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.timeline-header h3 {
+    margin: 0;
+    color: var(--text-primary, #333);
+    font-size: 1.25rem;
+}
+
+.timeline-filters {
+    display: flex;
+    gap: 12px;
+}
+
+.filter-select {
+    padding: 8px 12px;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 8px;
+    background: var(--bg-main, #fff);
+    color: var(--text-primary, #333);
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.filter-select:hover {
+    border-color: var(--primary-color, #4a90d9);
+}
+
+/* 時間線列表 */
+.timeline-list {
+    position: relative;
+    padding-left: 20px;
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: 24px;
+    display: flex;
+    gap: 16px;
+}
+
+.timeline-marker {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.marker-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--primary-color, #4a90d9);
+    border: 3px solid var(--bg-main, #fff);
+    box-shadow: 0 0 0 2px var(--primary-color, #4a90d9);
+    z-index: 1;
+}
+
+.marker-line {
+    width: 2px;
+    flex: 1;
+    background: var(--border-color, #ddd);
+    margin-top: 4px;
+}
+
+.t flex: 1imeline-content {
+   ;
+    background: var(--bg-secondary, #f8f9fa);
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 0.2s ease;
+}
+
+.timeline-content:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateX(4px);
+}
+
+.timeline-date {
+    font-size: 0.85rem;
+    color: var(--text-secondary, #666);
+    margin-bottom: 8px;
+}
+
+.timeline-case {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+
+.case-type-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    background: var(--primary-light, #e3f2fd);
+    color: var(--primary-color, #1976d2);
+}
+
+.case-result-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.case-result-badge.success {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.case-result-badge.warning {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.case-result-badge.info {
+    background: #e0f7fa;
+    color: #00838f;
+}
+
+.case-result-badge.neutral {
+    background: #f5f5f5;
+    color: #616161;
+}
+
+.timeline-title {
+    font-weight: 600;
+    color: var(--text-primary, #333);
+    margin-bottom: 8px;
+}
+
+.timeline-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 0.85rem;
+    color: var(--text-secondary, #666);
+    margin-bottom: 12px;
+}
+
+.btn-view-context {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 6px;
+    background: var(--primary-color, #4a90d9);
+    color: #fff;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-view-context:hover {
+    background: var(--primary-dark, #1976d2);
+    transform: scale(1.02);
+}
+
+/* 相似案件區塊 */
+.similar-cases-section {
+    background: var(--bg-card, #fff);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.similar-cases-section h4 {
+    margin: 0 0 16px 0;
+    color: var(--text-primary, #333);
+    font-size: 1.1rem;
+}
+
+.similar-cases-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.similar-case-item {
+    background: var(--bg-secondary, #f8f9fa);
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.similar-case-item:hover {
+    border-color: var(--primary-color, #4a90d9);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.similar-case-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.similar-case-header .case-type {
+    font-size: 0.8rem;
+    color: var(--primary-color, #1976d2);
+    font-weight: 500;
+}
+
+.similar-case-header .case-score {
+    font-size: 0.8rem;
+    color: var(--accent-color, #ff9800);
+    font-weight: 600;
+}
+
+.similar-case-title {
+    font-weight: 500;
+    color: var(--text-primary, #333);
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+}
+
+.similar-case-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-secondary, #666);
+}
+
+/* ========== 案件脈絡圖 ========== */
+
+.case-context-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.context-graph-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.context-graph-header h3 {
+    margin: 0;
+    color: var(--text-primary, #333);
+    font-size: 1.5rem;
+}
+
+.context-search-box {
+    display: flex;
+    gap: 8px;
+}
+
+.context-search-box input {
+    padding: 10px 16px;
+    border: 2px solid var(--border-color, #ddd);
+    border-radius: 8px;
+    width: 250px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease;
+}
+
+.context-search-box input:focus {
+    outline: none;
+    border-color: var(--primary-color, #4a90d9);
+}
+
+.context-search-box .search-btn {
+    padding: 10px 20px;
+    background: var(--primary-color, #4a90d9);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: background 0.2s ease;
+}
+
+.context-search-box .search-btn:hover {
+    background: var(--primary-dark, #1976d2);
+}
+
+/* 主要案件卡片 */
+.context-main-case {
+    margin-bottom: 32px;
+}
+
+.case-card.primary {
+    background: linear-gradient(135deg, var(--primary-color, #4a90d9), var(--primary-dark, #1976d2));
+    color: #fff;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(74, 144, 217, 0.3);
+}
+
+.case-card .case-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.case-card .case-id {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.case-card .case-type {
+    background: rgba(255,255,255,0.2);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+}
+
+.case-card .case-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.case-card .case-result {
+    font-size: 1.1rem;
+    opacity: 0.95;
+}
+
+/* 流程圖 */
+.context-flow {
+    margin-bottom: 32px;
+}
+
+.context-flow h4 {
+    margin: 0 0 16px 0;
+    color: var(--text-primary, #333);
+    font-size: 1.1rem;
+}
+
+.flow-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+}
+
+.flow-node {
+    position: relative;
+    padding-left: 60px;
+}
+
+.flow-node::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border-color, #ddd);
+}
+
+.flow-node:last-child::before {
+    display: none;
+}
+
+.flow-step {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 40px;
+    height: 40px;
+    background: var(--primary-color, #4a90d9);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.85rem;
+    z-index: 1;
+}
+
+.flow-node.success .flow-step {
+    background: #4caf50;
+}
+
+.flow-node.warning .flow-step {
+    background: #ff9800;
+}
+
+.flow-node.info .flow-step {
+    background: #00acc1;
+}
+
+.flow-node .flow-court {
+    font-weight: 600;
+    color: var(--text-primary, #333);
+    font-size: 1rem;
+    padding: 12px 16px 4px;
+}
+
+.flow-node .flow-result {
+    padding: 4px 16px;
+    font-size: 0.9rem;
+    color: var(--text-secondary, #666);
+}
+
+.flow-node .flow-date {
+    padding: 4px 16px 12px;
+    font-size: 0.85rem;
+    color: var(--text-secondary, #999);
+}
+
+.flow-arrow {
+    position: absolute;
+    left: 28px;
+    bottom: -12px;
+    color: var(--primary-color, #4a90d9);
+    font-size: 1.2rem;
+    z-index: 1;
+}
+
+/* 相關案件 */
+.context-related {
+    margin-top: 24px;
+}
+
+.context-related h4 {
+    margin: 0 0 16px 0;
+    color: var(--text-primary, #333);
+    font-size: 1.1rem;
+}
+
+.related-cases-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.related-case-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    background: var(--bg-secondary, #f8f9fa);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.related-case-item:hover {
+    background: var(--primary-light, #e3f2fd);
+}
+
+.related-case-item .case-id {
+    font-weight: 600;
+    color: var(--primary-color, #1976d2);
+    min-width: 120px;
+}
+
+.related-case-item .case-title {
+    flex: 1;
+    color: var(--text-primary, #333);
+}
+
+.related-case-item .case-result {
+    color: var(--text-secondary, #666);
+    font-size: 0.9rem;
+}
+
+/* 時間線視覺化 */
+.case-timeline-visual {
+    margin-top: 24px;
+    padding: 24px;
+    background: var(--bg-secondary, #f8f9fa);
+    border-radius: 12px;
+    position: relative;
+    height: 120px;
+}
+
+.visual-timeline {
+    position: relative;
+    height: 100%;
+}
+
+.visual-line {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, 
+        var(--primary-light, #e3f2fd), 
+        var(--primary-color, #4a90d9), 
+        var(--primary-light, #e3f2fd)
+    );
+    transform: translateY(-50%);
+    border-radius: 2px;
+}
+
+.visual-timeline-item {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.visual-marker {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--primary-color, #4a90d9);
+    border: 3px solid #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    margin-bottom: 8px;
+}
+
+.visual-marker.success {
+    background: #4caf50;
+}
+
+.visual-marker.warning {
+    background: #ff9800;
+}
+
+.visual-marker.info {
+    background: #00acc1;
+}
+
+.visual-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.visual-label .step-type {
+    font-weight: 600;
+    color: var(--text-primary, #333);
+}
+
+.visual-label .step-date {
+    color: var(--text-secondary, #666);
+}
+
+/* 載入與錯誤狀態 */
+.loading,
+.error,
+.empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary, #666);
+}
+
+.loading {
+    color: var(--primary-color, #4a90d9);
+}
+
+.error {
+    color: #e53935;
+}
+
+/* ========== 動畫效果 ========== */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.timeline-item,
+.flow-node,
+.related-case-item,
+.similar-case-item {
+    animation: fadeIn 0.3s ease forwards;
+}
+
+.timeline-item:nth-child(1) { animation-delay: 0.05s; }
+.timeline-item:nth-child(2) { animation-delay: 0.1s; }
+.timeline-item:nth-child(3) { animation-delay: 0.15s; }
+.timeline-item:nth-child(4) { animation-delay: 0.2s; }
+.timeline-item:nth-child(5) { animation-delay: 0.25s; }
+
+/* ========== 深色模式 ========== */
+
+[data-theme="dark"] .timeline-content,
+[data-theme="dark"] .similar-case-item,
+[data-theme="dark"] .related-case-item {
+    background: var(--bg-secondary-dark, #2d2d2d);
+}
+
+[data-theme="dark"] .case-card.primary {
+    background: linear-gradient(135deg, #1565c0, #0d47a1);
+}
+
+[data-theme="dark"] .flow-node .flow-court,
+[data-theme="dark"] .similar-case-title,
+[data-theme="dark"] .visual-label .step-type {
+    color: var(--text-primary-dark, #e0e0e0);
+}
+
+[data-theme="dark"] .case-timeline-visual {
+    background: var(--bg-secondary-dark, #2d2d2d);
+}
+
+/* 法官視圖中的時間線導航按鈕 */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.section-header h3 {
+    margin: 0;
+}
+
+.nav-to-timeline-btn {
+    padding: 8px 16px;
+    background: var(--primary-color, #4a90d9);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.nav-to-timeline-btn:hover {
+    background: var(--primary-dark, #1976d2);
+    transform: scale(1.02);
+}
+
+/* 法官時間線視圖標題 */
+#judge-timeline .timeline-header h3 {
+    font-size: 1.3rem;
+}
+
+.hint {
+    font-size: 0.9rem;
+    color: var(--text-secondary, #666);
+    margin-top: 8px;
+}

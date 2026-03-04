@@ -126,7 +126,7 @@ function showCaseDetail(caseId) {
     const caseData = getCaseById(caseId);
     if (!caseData) return;
     
-    alert(`【${caseData.title}】
+    const message = `【${caseData.title}】
 
 法院：${caseData.court}
 案號：${caseData.year}年 ${caseData.caseNumber}
@@ -138,7 +138,22 @@ ${caseData.summary}
 判決結果：${caseData.result}
 
 相關法規：${caseData.relatedLaws.join('、')}
-`);
+
+---
+輸入「y」可查看案件脈絡圖`;
+
+    alert(message);
+    
+    // 檢查是否要顯示脈絡圖（需要在 alert 關閉後處理）
+    setTimeout(() => {
+        const showGraph = confirm('是否查看案件脈絡圖？');
+        if (showGraph) {
+            switchView('case-context');
+            if (typeof loadCaseContextGraph === 'function') {
+                loadCaseContextGraph(caseId);
+            }
+        }
+    }, 100);
 }
 
 // 顯示法規詳情

@@ -49,6 +49,16 @@ function initApp() {
         initCourtModule();
     }
     
+    // 初始化法官時間線模組
+    if (typeof initTimelineModule === 'function') {
+        initTimelineModule();
+    }
+    
+    // 初始化案件脈絡圖模組
+    if (typeof initContextGraphModule === 'function') {
+        initContextGraphModule();
+    }
+    
     // 初始化訴訟策略模組
     if (typeof initStatsModule === 'function') {
         initStatsModule();

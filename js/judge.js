@@ -233,6 +233,11 @@ function selectJudge(judgeId) {
     
     // 渲染法官檔案
     renderJudgeProfile(judgeId);
+    
+    // 同步更新法官時間線視圖
+    if (typeof loadJudgeTimeline === 'function') {
+        loadJudgeTimeline(judgeId);
+    }
 }
 
 // 渲染法官檔案

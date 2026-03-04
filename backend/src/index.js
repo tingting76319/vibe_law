@@ -1,4 +1,3 @@
-
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -14,6 +13,7 @@ const courtsRoutes = require('./routes/courts');
 const lawyersRoutes = require('./routes/lawyers');
 const matchingRoutes = require('./routes/matching');
 const strategyRoutes = require('./routes/strategy');
+const graphRoutes = require('./routes/graph');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -50,6 +50,9 @@ app.use('/api/matching', matchingRoutes);
 // v0.9.0 訴訟策略 API
 app.use('/api/strategy', strategyRoutes);
 
+// v1.4 Graph RAG API
+app.use('/api/graph', graphRoutes);
+
 // v0.4 API Routes
 app.use('/api/v04', v04Routes);
 
@@ -58,7 +61,7 @@ app.get('/health', async (req, res) => {
   res.json({ 
     status: 'ok', 
     timestamp: new Date().toISOString(),
-    version: '1.2',
+    version: '1.4',
     database: process.env.DATABASE_URL ? 'configured' : 'missing',
     features: {
       upload: 'enhanced',
@@ -67,7 +70,22 @@ app.get('/health', async (req, res) => {
       lawyerMatching: 'enabled',
       litigationStrategy: 'enabled',
       caseClassification: 'enabled',
-      hybridSearch: 'enabled'
+      hybridSearch: 'enabled',
+      graphRAG: 'enabled'
+    }
+  });
+});
+
+// v1.4 health check
+app.get('/api/v14/health', async (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    version: '1.4',
+    timestamp: new Date().toISOString(),
+    features: {
+      caseHistory: 'enabled',
+      judgeSimilarCases: 'enabled',
+      judgeTrendAnalysis: 'enabled'
     }
   });
 });
@@ -177,6 +195,7 @@ app.get('/lawyer', (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Legal-RAG Backend 啟動中...`);
   console.log(`📡 API Server: http://0.0.0.0:${PORT}`);
+  console.log(`📋 v1.4 Features: Graph RAG API (案件歷史脈絡, 法官相似案件)`);
   console.log(`📋 v1.2 Features: 判決分類 API (民事/刑事/行政/家事/少年/憲法)`);
   console.log(`📋 v1.2 Features: Hybrid Search 混合搜尋 API`);
   console.log(`📋 v1.2 Features: 資料庫索引優化`);
