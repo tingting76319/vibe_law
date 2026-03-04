@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initApp() {
+    console.log("[DEBUG] initApp called");
     // 初始化法規顯示
     renderLaws('civil');
     
@@ -119,6 +120,7 @@ function bindEvents() {
 
 // 導航標籤事件
 function bindNavEvents() {
+    console.log("[DEBUG] bindNavEvents called");
     document.querySelectorAll('.nav-tab').forEach(tab => {
         tab.addEventListener('click', function() {
             const view = this.dataset.view;
