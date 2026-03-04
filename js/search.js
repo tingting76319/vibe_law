@@ -1,6 +1,6 @@
 // Legal-RAG 搜尋模組
 
-const API_BASE = '/api/judicial';
+const API_BASE_JUDICIAL = '/api/judicial';
 
 // 搜尋處理器 - 改為呼叫後端 API
 async function handleSearch(query) {
@@ -10,7 +10,7 @@ async function handleSearch(query) {
     
     try {
         // 呼叫後端 API 搜尋
-        const response = await fetch(`${API_BASE}/search?q=${encodeURIComponent(trimmedQuery)}`);
+        const response = await fetch(`${API_BASE_JUDICIAL}/search?q=${encodeURIComponent(trimmedQuery)}`);
         const result = await response.json();
         
         if (result.status === 'success') {
