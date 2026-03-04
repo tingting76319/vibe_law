@@ -83,14 +83,14 @@ function createJudicialRepository(dbClient) {
    */
   async getCaseClassification(jid) {
    const row = await queryWithTimeout(
-    'SELECT , jcase, jtitle FROM judgments WHERE jid = $1',
+    'SELECT jcase, jtitle FROM judgments WHERE jid = $1',
     [jid]
    );
    
    if (!row.rows[0]) return null;
    
-   const { , jcase, jtitle } = row.rows[0];
-   const text = `${} ${jcase} ${jtitle}`;
+   const { jcase, jtitle } = row.rows[0];
+   const text = jcase + ' ' + jtitle;
    
    let caseType = '其他';
    if (text.includes('民事')) caseType = '民事';
@@ -161,7 +161,7 @@ function createJudicialRepository(dbClient) {
     jid: row.jid || row.JID || null,
     title: row.jtitle || row.jtitle || null,
     caseNumber: row.jcase || row.jcase || null,
-    court: row. || row. || null,
+    court: row.jcase || row.jcase || null,
     date: row.jdate || row.JDATE || null
    }));
   },
