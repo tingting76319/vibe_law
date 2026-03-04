@@ -79,6 +79,18 @@ function bindEvents() {
         if (e.key === 'Enter') doAsk();
     });
     
+    // 法規搜尋按鈕
+    const lawSearchBtn = document.getElementById('law-search-btn');
+    if (lawSearchBtn) {
+        lawSearchBtn.addEventListener('click', doLawSearch);
+    }
+    const lawSearchInput = document.getElementById('law-search-input');
+    if (lawSearchInput) {
+        lawSearchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') doLawSearch();
+        });
+    }
+    
     // 清除按鈕
     document.getElementById('clear-chat').addEventListener('click', clearConversation);
     
