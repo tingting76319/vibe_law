@@ -298,7 +298,7 @@ function renderUserQuestion(question) {
 }
 
 // 渲染 AI 回答（含來源顯示）v0.5
-function renderAIAnswer(data) {
+function renderAIAnswer(data) { console.log("[DEBUG] renderAIAnswer called with:", JSON.stringify(data).substring(0, 500));
     const qaHistory = document.getElementById('qa-history');
     
     // 處理內容換行
