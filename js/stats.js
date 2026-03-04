@@ -96,7 +96,7 @@ async function loadStatsData() {
 // 從API獲取統計數據
 async function fetchStatsFromAPI(timeRange) {
     try {
-        const response = await fetch(`/api/stats?range=${timeRange}`);
+        const response = await fetch(`/api/judicial/stats/case-typesrange=${timeRange}`);
         if (!response.ok) throw new Error('API Error');
         return await response.json();
     } catch (e) {
