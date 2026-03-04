@@ -177,7 +177,7 @@ app.get('/lawyer', (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Legal-RAG Backend 啟動中...`);
   console.log(`📡 API Server: http://0.0.0.0:${PORT}`);
-  console.log(`📋 v1.1 Features: 判決分類 API (民事/刑事/行政/家事/少年/憲法)`);
-  console.log(`📋 v1.1 Features: Hybrid Search 混合搜尋 API`);
-  console.log(`📋 v1.1 Features: 資料庫索引優化`);
+  console.log(`📋 v1.2 Features: 判決分類 API (民事/刑事/行政/家事/少年/憲法)`);
+  console.log(`📋 v1.2 Features: Hybrid Search 混合搜尋 API`);
+  console.log(`📋 v1.2 Features: 資料庫索引優化`);
 });
