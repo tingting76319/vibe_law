@@ -216,6 +216,12 @@ function createGraphRepository(dbClient) {
               message: '使用預先計算的統計資料'
             };
           }
+          
+          // 如果預先計算表沒資料，回傳提示
+          return {
+            status: 'not_found',
+            message: '找不到法官資料，請嘗試其他法官名稱'
+          };
         } catch (e) {
           console.log('[Graph] 預先計算表查詢失敗:', e.message);
         }
