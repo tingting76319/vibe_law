@@ -14,8 +14,8 @@ function askRAG(question) {
         relatedCases: searchResults?.cases || [],
         relatedLaws: searchResults?.laws || [],
         sources: [
-            ...(searchResults?.cases || []).map(c => ({ type: 'case', data: c })),
-            ...(searchResults?.laws || []).map(l => ({ type: 'law', data: l }))
+            ...(searchResults?.cases || []).map(c => ({ type: 'case', id: c.id || c.jid, title: c.title || c.jtitle, caseNumber: c.caseNumber || c.jcase, court: c.court, year: c.year || c.jyear, relatedLaws: c.relatedLaws || [] })),
+            ...(searchResults?.laws || []).map(l => ({ type: 'law', name: l.name, description: l.content?.substring(0, 100) }))
         ]
     };
 }
