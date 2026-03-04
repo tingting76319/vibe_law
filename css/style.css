@@ -1093,3 +1093,349 @@ body {
     background: rgba(252, 129, 129, 0.3);
     border-color: #fc8181;
 }
+
+/* ==================== v1.1 Mobile Optimization ==================== */
+
+/* 行動裝置基礎優化 */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .header {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px !important;
+    }
+    
+    .logo {
+        justify-content: center;
+    }
+    
+    .logo h1 {
+        font-size: 1.3rem;
+    }
+    
+    /* 導航標籤橫向滾動 */
+    .header-tabs {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding-bottom: 5px;
+    }
+    
+    .header-tabs::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .nav-tab {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    
+    /* 搜尋區域 */
+    .search-section {
+        padding: 15px !important;
+    }
+    
+    .search-box {
+        flex-direction: column;
+    }
+    
+    .search-box input {
+        width: 100%;
+    }
+    
+    .search-box .search-btn {
+        width: 100%;
+    }
+    
+    .search-tips {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    /* 熱門問題 */
+    .topics-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .topic-card {
+        padding: 12px;
+    }
+    
+    .topic-icon {
+        font-size: 1.5rem;
+    }
+    
+    .topic-title {
+        font-size: 0.9rem;
+    }
+    
+    .topic-desc {
+        font-size: 0.75rem;
+    }
+    
+    /* 問答區域 */
+    .qa-section {
+        padding: 15px;
+    }
+    
+    .qa-history {
+        max-height: 400px;
+    }
+    
+    .qa-input-area {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .qa-input-area input,
+    .qa-input-area button {
+        width: 100%;
+    }
+    
+    /* 判例資料 */
+    .cases-list {
+        grid-template-columns: 1fr;
+    }
+    
+    /* 法規區域 */
+    .laws-tabs {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .law-tab {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+    
+    /* 法官/法院/律師視圖 */
+    .judge-selector,
+    .court-selector,
+    .lawyer-selector {
+        padding: 15px;
+    }
+    
+    .judge-list,
+    .court-list,
+    .lawyer-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .judge-search-filters {
+        flex-direction: column;
+    }
+    
+    .filter-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .filter-input,
+    .filter-select {
+        width: 100%;
+    }
+    
+    /* 法官檔案 */
+    .judge-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .judge-avatar {
+        margin: 0 auto;
+    }
+    
+    /* 統計卡片 */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .stat-card {
+        padding: 12px;
+    }
+    
+    .stat-value {
+        font-size: 1.3rem;
+    }
+    
+    /* 風格圖表 */
+    .style-chart {
+        padding: 15px;
+    }
+    
+    .chart-row {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .chart-label {
+        width: 100%;
+        text-align: left;
+    }
+    
+    .chart-bar-container {
+        width: 100%;
+    }
+    
+    /* 底部 */
+    .footer {
+        padding: 15px;
+        font-size: 0.8rem;
+        text-align: center;
+    }
+}
+
+/* 小螢幕手機優化 */
+@media (max-width: 480px) {
+    .logo-icon {
+        font-size: 1.8rem;
+    }
+    
+    .logo h1 {
+        font-size: 1.1rem;
+    }
+    
+    .nav-tab {
+        padding: 8px 10px;
+        font-size: 0.8rem;
+    }
+    
+    .topics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    h2 {
+        font-size: 1.1rem;
+    }
+    
+    .stat-card {
+        padding: 10px;
+    }
+    
+    .stat-value {
+        font-size: 1.2rem;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+    }
+    
+    /* 律師列表 */
+    .lawyer-card {
+        padding: 12px;
+    }
+    
+    .lawyer-photo {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .lawyer-name {
+        font-size: 1rem;
+    }
+    
+    .lawyer-info {
+        font-size: 0.85rem;
+    }
+    
+    /* 按鈕 */
+    .action-btn {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+    
+    /* 表單 */
+    input, select, textarea {
+        font-size: 14px;
+    }
+}
+
+/* 觸控優化 */
+@media (hover: none) and (pointer: coarse) {
+    /* 增大觸控目標 */
+    .nav-tab,
+    .tag-btn,
+    .topic-card,
+    .law-tab,
+    .action-btn,
+    .search-btn,
+    #ask-btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* 移除hover效果的transform避免觸控延遲 */
+    .stat-card:hover,
+    .topic-card:hover,
+    .judge-card:hover,
+    .lawyer-card:hover {
+        transform: none;
+    }
+    
+    /* 啟用active狀態樣式 */
+    .nav-tab:active,
+    .tag-btn:active,
+    .topic-card:active {
+        opacity: 0.7;
+    }
+}
+
+/* 安全區域優化 - iPhone X+ */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .container {
+        padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    }
+    
+    .qa-input-area {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}
+
+/* 橫向模式優化 */
+@media (orientation: landscape) and (max-height: 500px) {
+    .header {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    .topics-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .qa-history {
+        max-height: 250px;
+    }
+}
+
+/* 高對比度模式支援 */
+@media (prefers-contrast: high) {
+    :root {
+        --border: rgba(255, 255, 255, 0.3);
+        --text-muted: #d0d0d0;
+    }
+    
+    .stat-card,
+    .topic-card,
+    .chart-card {
+        border-width: 2px;
+    }
+}
+
+/* 減少動畫偏好 */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

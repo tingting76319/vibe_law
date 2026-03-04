@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/judge.css">
     <link rel="stylesheet" href="css/court.css">
+    <link rel="stylesheet" href="css/lawyer.css">
+    <link rel="stylesheet" href="css/stats.css">
 </head>
 <body>
     <div class="container">
@@ -20,6 +22,8 @@
                 <button class="nav-tab active" data-view="rag">🔍 法律問答</button>
                 <button class="nav-tab" data-view="judge">👨‍⚖️ 法官數位孿生</button>
                 <button class="nav-tab" data-view="court">🏛️ 法院分析</button>
+                <button class="nav-tab" data-view="lawyer">👔 律師媒合</button>
+                <button class="nav-tab" data-view="stats">📊 判決統計</button>
             </div>
         </header>
 
@@ -434,6 +438,539 @@
             </section>
         </div>
 
+
+        <!-- 律師媒合視圖 -->
+        <div id="view-lawyer" class="view-section hidden">
+            <!-- 律師媒合主選單 -->
+            <div class="lawyer-tabs">
+                <button class="lawyer-tab-btn active" data-lawyer-view="list">📋 律師列表</button>
+                <button class="lawyer-tab-btn" data-lawyer-view="upload">📝 案件上傳</button>
+                <button class="lawyer-tab-btn" data-lawyer-view="matches">🎯 我的推薦</button>
+                <button class="lawyer-tab-btn" data-lawyer-view="strategy">⚔️ 訴訟策略</button>
+            </div>
+
+            <!-- 律師列表視圖 -->
+            <div id="lawyer-list-view" class="lawyer-sub-view">
+                <!-- 律師搜尋過濾器 -->
+                <section class="lawyer-search-section">
+                    <h2>👔 尋找律師</h2>
+                    <div class="lawyer-filters">
+                        <div class="filter-row">
+                            <input type="text" id="lawyer-search-input" class="filter-input" placeholder="搜尋律師姓名事務所...">
+                            <select id="lawyer-specialty-filter" class="filter-select">
+                                <option value="">全部專長</option>
+                                <option value="民事">民事</option>
+                                <option value="刑事">刑事</option>
+                                <option value="行政">行政</option>
+                                <option value="家事">家事</option>
+                                <option value="商事">商事</option>
+                                <option value="智慧財產">智慧財產</option>
+                                <option value="勞動">勞動</option>
+                                <option value="金融">金融</option>
+                                <option value="不動產">不動產</option>
+                            </select>
+                            <select id="lawyer-court-filter" class="filter-select">
+                                <option value="">執業法院</option>
+                                <option value="台北">台北</option>
+                                <option value="新北">新北</option>
+                                <option value="桃園">桃園</option>
+                                <option value="台中">台中</option>
+                                <option value="台南">台南</option>
+                                <option value="高雄">高雄</option>
+                            </select>
+                            <select id="lawyer-experience-filter" class="filter-select">
+                                <option value="">年資</option>
+                                <option value="1">1年以上</option>
+                                <option value="3">3年以上</option>
+                                <option value="5">5年以上</option>
+                                <option value="10">10年以上</option>
+                            </select>
+                            <button id="lawyer-search-btn" class="search-btn">🔍 搜尋</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 律師列表 -->
+                <section class="lawyer-list-section">
+                    <div class="lawyer-list" id="lawyer-list">
+                        <!-- 律師卡片會動態渲染 -->
+                        <div class="lawyer-loading">
+                            <span class="loading-spinner"></span> 載入中...
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 案件上傳視圖 -->
+            <div id="lawyer-upload-view" class="lawyer-sub-view hidden">
+                <section class="case-upload-section">
+                    <h2>📝 上傳案件</h2>
+                    <p class="section-desc">描述您的案件，我們會為您推薦最適合的律師</p>
+                    
+                    <form id="case-upload-form" class="case-form">
+                        <div class="form-group">
+                            <label>案件類型 *</label>
+                            <select id="case-type" required>
+                                <option value="">請選擇案件類型</option>
+                                <option value="民事">民事</option>
+                                <option value="刑事">刑事</option>
+                                <option value="行政">行政</option>
+                                <option value="家事">家事</option>
+                                <option value="商事">商事</option>
+                                <option value="智慧財產">智慧財產</option>
+                                <option value="勞動">勞動</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>案件標題 *</label>
+                            <input type="text" id="case-title" placeholder="簡要描述您的案件" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>案件描述 *</label>
+                            <textarea id="case-description" rows="6" placeholder="詳細描述案件情況、相關爭點、對方資訊等..." required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>關鍵字</label>
+                            <input type="text" id="case-keywords" placeholder="車禍 賠償 離婚 監護權 (用逗號分隔)">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>期望法院</label>
+                                <select id="case-preferred-court">
+                                    <option value="">不限</option>
+                                    <option value="台北">台北</option>
+                                    <option value="新北">新北</option>
+                                    <option value="桃園">桃園</option>
+                                    <option value="台中">台中</option>
+                                    <option value="台南">台南</option>
+                                    <option value="高雄">高雄</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>預算範圍</label>
+                                <select id="case-budget">
+                                    <option value="">不限</option>
+                                    <option value="0-30000">3萬以下</option>
+                                    <option value="30000-50000">3-5萬</option>
+                                    <option value="50000-100000">5-10萬</option>
+                                    <option value="100000-500000">10-50萬</option>
+                                    <option value="500000">50萬以上</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" id="upload-case-btn" class="upload-btn">
+                            📤 提交案件並取得律師推薦
+                        </button>
+                    </form>
+                </section>
+
+                <!-- 風險報告區 -->
+                <section class="risk-report-section hidden" id="risk-report-section">
+                    <h3>📊 案件風險分析報告</h3>
+                    <div class="risk-report" id="risk-report">
+                        <!-- 風險報告會動態渲染 -->
+                    </div>
+                </section>
+
+                <!-- 律師推薦區 -->
+                <section class="recommendation-section hidden" id="recommendation-section">
+                    <h3>👔 推薦律師</h3>
+                    <p class="recommendation-desc">根據您的案件，推薦以下律師：</p>
+                    <div class="recommended-lawyers" id="recommended-lawyers">
+                        <!-- 推薦律師會動態渲染 -->
+                    </div>
+                </section>
+            </div>
+
+            <!-- 我的推薦視圖 -->
+            <div id="lawyer-matches-view" class="lawyer-sub-view hidden">
+                <section class="matches-section">
+                    <h2>🎯 我的推薦記錄</h2>
+                    <div class="matches-list" id="matches-list">
+                        <div class="case-empty">尚無推薦記錄</div>
+                    </div>
+                </section>
+            </div>
+        
+            <!-- 訴訟策略視圖 -->
+            <div id="lawyer-strategy-view" class="lawyer-sub-view hidden">
+                <!-- 訴訟策略頁籤 -->
+                <div class="strategy-tabs">
+                    <button class="strategy-tab-btn active" data-strategy-view="workspace">💼 律師工作台</button>
+                    <button class="strategy-tab-btn" data-strategy-view="report">📊 策略報告</button>
+                    <button class="strategy-tab-btn" data-strategy-view="cases">📁 我的案件</button>
+                </div>
+
+                <!-- 律師工作台視圖 -->
+                <div id="strategy-workspace-view" class="strategy-sub-view">
+                    <section class="workspace-section">
+                        <h2>💼 律師工作台</h2>
+                        <p class="section-desc">建立案件、上傳訴狀、輸入案件上下文，產生策略分析報告</p>
+                        
+                        <!-- 建立案件表單 -->
+                        <form id="strategy-case-form" class="strategy-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>案件類型 *</label>
+                                    <select id="strategy-case-type" required>
+                                        <option value="">請選擇案件類型</option>
+                                        <option value="民事">民事</option>
+                                        <option value="刑事">刑事</option>
+                                        <option value="行政">行政</option>
+                                        <option value="家事">家事</option>
+                                        <option value="商事">商事</option>
+                                        <option value="智慧財產">智慧財產</option>
+                                        <option value="勞動">勞動</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>案件標題 *</label>
+                                    <input type="text" id="strategy-case-title" placeholder="例如：車禍損害賠償、離婚監護權" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>案件描述 *</label>
+                                <textarea id="strategy-case-description" rows="4" placeholder="簡要描述案件情況、爭議焦點、對方當事人資訊..." required></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>案件上下文（可選）</label>
+                                <textarea id="strategy-case-context" rows="3" placeholder="額外上下文：例如對方態度、和解意願、對方財產狀況、相關證據等..."></textarea>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>期望法院</label>
+                                    <select id="strategy-case-court">
+                                        <option value="">不限</option>
+                                        <option value="台北">台北</option>
+                                        <option value="新北">新北</option>
+                                        <option value="桃園">桃園</option>
+                                        <option value="台中">台中</option>
+                                        <option value="台南">台南</option>
+                                        <option value="高雄">高雄</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>對方當事人</label>
+                                    <input type="text" id="strategy-opposing-party" placeholder="對方名稱/公司名">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>關鍵字</label>
+                                <input type="text" id="strategy-case-keywords" placeholder="用逗號分隔，例如：車禍、賠償、過失">
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="submit" id="create-case-btn" class="primary-btn">
+                                    📋 建立案件
+                                </button>
+                                <button type="button" id="quick-analyze-btn" class="secondary-btn">
+                                    ⚡ 快速分析
+                                </button>
+                            </div>
+                        </form>
+                    </section>
+
+                    <!-- 訴狀上傳區 -->
+                    <section class="pleading-upload-section" id="pleading-upload-section">
+                        <h3>📄 訴狀上傳</h3>
+                        <p class="section-desc">上傳您的訴狀、相關文件，我們會自動分析並提取關鍵資訊</p>
+                        
+                        <div class="upload-area" id="pleading-upload-area">
+                            <input type="file" id="pleading-file" accept=".pdf,.doc,.docx,.txt,.md" multiple>
+                            <div class="upload-placeholder">
+                                <span class="upload-icon">📁</span>
+                                <p>點擊選擇檔案或拖曳到這裡</p>
+                                <p class="upload-hint">支援 PDF、DOC、DOCX、TXT、MD 格式（最大100MB）</p>
+                            </div>
+                        </div>
+                        
+                        <div class="uploaded-files" id="uploaded-files">
+                            <!-- 已上傳檔案列表 -->
+                        </div>
+                    </section>
+                </div>
+
+                <!-- 策略報告視圖 -->
+                <div id="strategy-report-view" class="strategy-sub-view hidden">
+                    <section class="report-section">
+                        <div class="report-header" id="report-header">
+                            <h2>📊 策略分析報告</h2>
+                            <p class="report-subtitle">AI 驅動的訴訟策略建議</p>
+                        </div>
+
+                        <!-- 報告摘要 -->
+                        <div class="report-summary" id="report-summary">
+                            <div class="summary-card risk-level">
+                                <div class="summary-icon">⚠️</div>
+                                <div class="summary-label">整體風險</div>
+                                <div class="summary-value" id="summary-risk">-</div>
+                            </div>
+                            <div class="summary-card attack-count">
+                                <div class="summary-icon">⚔️</div>
+                                <div class="summary-label">攻擊點</div>
+                                <div class="summary-value" id="summary-attack">-</div>
+                            </div>
+                            <div class="summary-card defense-count">
+                                <div class="summary-icon">🛡️</div>
+                                <div class="summary-label">防守點</div>
+                                <div class="summary-value" id="summary-defense">-</div>
+                            </div>
+                            <div class="summary-card law-count">
+                                <div class="summary-icon">📖</div>
+                                <div class="summary-label">相關法條</div>
+                                <div class="summary-value" id="summary-laws">-</div>
+                            </div>
+                        </div>
+
+                        <!-- 攻擊建議 -->
+                        <div class="report-section-content">
+                            <h3>⚔️ 攻擊建議</h3>
+                            <div class="attack-list" id="attack-list">
+                                <div class="empty-placeholder">尚無分析資料，請先建立案件</div>
+                            </div>
+                        </div>
+
+                        <!-- 防守建議 -->
+                        <div class="report-section-content">
+                            <h3>🛡️ 防守建議</h3>
+                            <div class="defense-list" id="defense-list">
+                                <div class="empty-placeholder">尚無分析資料，請先建立案件</div>
+                            </div>
+                        </div>
+
+                        <!-- 風險點列表 -->
+                        <div class="report-section-content">
+                            <h3>⚠️ 風險點列表</h3>
+                            <div class="risk-list" id="risk-list">
+                                <div class="empty-placeholder">尚無分析資料，請先建立案件</div>
+                            </div>
+                        </div>
+
+                        <!-- 法條引用 -->
+                        <div class="report-section-content">
+                            <h3>📖 法條引用</h3>
+                            <div class="law-list" id="law-list">
+                                <div class="empty-placeholder">尚無分析資料，請先建立案件</div>
+                            </div>
+                        </div>
+
+                        <!-- 時間線與預算 -->
+                        <div class="report-extras">
+                            <div class="timeline-card">
+                                <h4>📅 預估時間線</h4>
+                                <div class="timeline" id="report-timeline">
+                                    <!-- 時間線 -->
+                                </div>
+                            </div>
+                            <div class="budget-card">
+                                <h4>💰 預估費用</h4>
+                                <div class="budget-details" id="report-budget">
+                                    <!-- 預算 -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="report-actions">
+                            <button class="action-btn" id="download-report-btn">📥 下載報告</button>
+                            <button class="action-btn" id="print-report-btn">🖨️ 列印報告</button>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- 我的案件視圖 -->
+                <div id="strategy-cases-view" class="strategy-sub-view hidden">
+                    <section class="cases-section">
+                        <h2>📁 我的案件</h2>
+                        <div class="cases-grid" id="cases-grid">
+                            <div class="case-empty">尚無建立案件</div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+            <!-- 判決分類統計視圖 -->
+            <div id="view-stats" class="view-section hidden">
+                <section class="dashboard-container">
+                    <div class="dashboard-header">
+                        <h2 class="dashboard-title">📊 判決分類統計儀表板</h2>
+                        <div class="dashboard-controls">
+                            <div class="time-filter">
+                                <button class="time-filter-btn active" data-range="1y">近1年</button>
+                                <button class="time-filter-btn" data-range="3y">近3年</button>
+                                <button class="time-filter-btn" data-range="5y">近5年</button>
+                                <button class="time-filter-btn" data-range="all">全部</button>
+                            </div>
+                            <button class="action-btn" id="toggle-dark-mode">🌙 深色模式</button>
+                        </div>
+                    </div>
+
+                    <!-- 骨架屏載入 -->
+                    <div id="stats-skeleton" class="stats-skeleton">
+                        <div class="stats-cards">
+                            <div class="skeleton skeleton-card"></div>
+                            <div class="skeleton skeleton-card"></div>
+                            <div class="skeleton skeleton-card"></div>
+                            <div class="skeleton skeleton-card"></div>
+                        </div>
+                        <div class="skeleton skeleton-chart"></div>
+                    </div>
+
+                    <!-- 數據卡片 -->
+                    <div class="stats-cards" id="stats-cards" style="display: none;">
+                        <div class="stat-card-large">
+                            <div class="stat-icon-large total">📚</div>
+                            <div class="stat-content-large">
+                                <div class="stat-value-large" id="stat-total">-</div>
+                                <div class="stat-label-large">總判決數</div>
+                            </div>
+                        </div>
+                        <div class="stat-card-large">
+                            <div class="stat-icon-large civil">⚖️</div>
+                            <div class="stat-content-large">
+                                <div class="stat-value-large" id="stat-civil">-</div>
+                                <div class="stat-label-large">民事判決</div>
+                            </div>
+                        </div>
+                        <div class="stat-card-large">
+                            <div class="stat-icon-large criminal">🔨</div>
+                            <div class="stat-content-large">
+                                <div class="stat-value-large" id="stat-criminal">-</div>
+                                <div class="stat-label-large">刑事判決</div>
+                            </div>
+                        </div>
+                        <div class="stat-card-large">
+                            <div class="stat-icon-large administrative">🏛️</div>
+                            <div class="stat-content-large">
+                                <div class="stat-value-large" id="stat-administrative">-</div>
+                                <div class="stat-label-large">行政判決</div>
+                            </div>
+                        </div>
+                        <div class="stat-card-large">
+                            <div class="stat-icon-large family">👨‍👩‍👧</div>
+                            <div class="stat-content-large">
+                                <div class="stat-value-large" id="stat-family">-</div>
+                                <div class="stat-label-large">家事判決</div>
+                            </div>
+                        </div>
+                        <div class="stat-card-large">
+                            <div class="stat-icon-large youth">👦</div>
+                            <div class="stat-content-large">
+                                <div class="stat-value-large" id="stat-youth">-</div>
+                                <div class="stat-label-large">少年判決</div>
+                            </div>
+                        </div>
+                        <div class="stat-card-large">
+                            <div class="stat-icon-large constitutional">⚖️</div>
+                            <div class="stat-content-large">
+                                <div class="stat-value-large" id="stat-constitutional">-</div>
+                                <div class="stat-label-large">憲法判決</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 圖表區域 -->
+                    <div class="charts-grid" id="charts-grid" style="display: none;">
+                        <!-- 圓餅圖 -->
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <div>
+                                    <div class="chart-title">📈 各類判決比例</div>
+                                    <div class="chart-subtitle">案件類型分布</div>
+                                </div>
+                            </div>
+                            <div class="pie-chart-container">
+                                <div class="pie-chart" id="pie-chart">
+                                    <div class="pie-center">
+                                        <div class="pie-center-value" id="pie-center-value">0</div>
+                                        <div class="pie-center-label">總計</div>
+                                    </div>
+                                </div>
+                                <div class="pie-legend" id="pie-legend">
+                                    <div class="pie-legend-item">
+                                        <span class="pie-legend-color civil"></span>
+                                        <span>民事判決</span>
+                                        <span class="pie-legend-value" id="legend-civil">-</span>
+                                    </div>
+                                    <div class="pie-legend-item">
+                                        <span class="pie-legend-color criminal"></span>
+                                        <span>刑事判決</span>
+                                        <span class="pie-legend-value" id="legend-criminal">-</span>
+                                    </div>
+                                    <div class="pie-legend-item">
+                                        <span class="pie-legend-color administrative"></span>
+                                        <span>行政判決</span>
+                                        <span class="pie-legend-value" id="legend-administrative">-</span>
+                                    </div>
+                                    <div class="pie-legend-item">
+                                        <span class="pie-legend-color family"></span>
+                                        <span>家事判決</span>
+                                        <span class="pie-legend-value" id="legend-family">-</span>
+                                    </div>
+                                    <div class="pie-legend-item">
+                                        <span class="pie-legend-color youth"></span>
+                                        <span>少年判決</span>
+                                        <span class="pie-legend-value" id="legend-youth">-</span>
+                                    </div>
+                                    <div class="pie-legend-item">
+                                        <span class="pie-legend-color constitutional"></span>
+                                        <span>憲法判決</span>
+                                        <span class="pie-legend-value" id="legend-constitutional">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 長條圖 -->
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <div>
+                                    <div class="chart-title">📊 年度趨勢分析</div>
+                                    <div class="chart-subtitle">各類判決年度變化</div>
+                                </div>
+                            </div>
+                            <div class="bar-chart-container" id="bar-chart">
+                                <!-- 動態生成 -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 年度趨勢圖 -->
+                    <div class="trend-chart-container" id="trend-chart" style="display: none;">
+                        <div class="chart-header">
+                            <div>
+                                <div class="chart-title">📅 年度判決趨勢</div>
+                                <div class="chart-subtitle">近10年判決數量變化</div>
+                            </div>
+                        </div>
+                        <div class="trend-bars" id="trend-bars">
+                            <!-- 動態生成 -->
+                        </div>
+                        <div class="trend-legend">
+                            <div class="trend-legend-item">
+                                <span class="trend-legend-color" style="background: var(--gold);"></span>
+                                <span>總判決數</span>
+                            </div>
+                            <div class="trend-legend-item">
+                                <span class="trend-legend-color" style="background: #48bb78;"></span>
+                                <span>民事</span>
+                            </div>
+                            <div class="trend-legend-item">
+                                <span class="trend-legend-color" style="background: #fc8181;"></span>
+                                <span>刑事</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+</div>
         <!-- 底部 -->
         <footer class="footer">
             <p>⚠️ <strong>法律聲明</strong>：本系統僅供參考，不構成法律意見。如有具體法律問題，請諮詢專業律師。</p>
@@ -448,6 +985,8 @@
     <script src="js/rag.js"></script>
     <script src="js/judge.js"></script>
     <script src="js/court.js"></script>
+    <script src="js/lawyer.js"></script>
+    <script src="js/stats.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

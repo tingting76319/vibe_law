@@ -1,3 +1,4 @@
+
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -57,14 +58,31 @@ app.get('/health', async (req, res) => {
   res.json({ 
     status: 'ok', 
     timestamp: new Date().toISOString(),
-    version: '1.0',
+    version: '1.1',
     database: process.env.DATABASE_URL ? 'configured' : 'missing',
     features: {
       upload: 'enhanced',
       laws: 'enabled',
       judgesCourts: 'enabled',
       lawyerMatching: 'enabled',
-      litigationStrategy: 'enabled'
+      litigationStrategy: 'enabled',
+      caseClassification: 'enabled',
+      hybridSearch: 'enabled'
+    }
+  });
+});
+
+// v1.1 health check
+app.get('/api/v11/health', async (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    version: '1.1',
+    timestamp: new Date().toISOString(),
+    features: {
+      caseClassification: 'enabled',
+      caseTypeStats: 'enabled',
+      hybridSearch: 'enabled',
+      queryOptimization: 'enabled'
     }
   });
 });
@@ -159,6 +177,7 @@ app.get('/lawyer', (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Legal-RAG Backend 啟動中...`);
   console.log(`📡 API Server: http://0.0.0.0:${PORT}`);
-  console.log(`🔍 v0.9 Features: 訴訟策略 API (訴狀分析、趨勢預測、風險評估)`);
-  console.log(`📋 v0.9 Features: 策略生成 API (開庭建議、質詢要點、辯護方向)`);
+  console.log(`📋 v1.1 Features: 判決分類 API (民事/刑事/行政/家事/少年/憲法)`);
+  console.log(`📋 v1.1 Features: Hybrid Search 混合搜尋 API`);
+  console.log(`📋 v1.1 Features: 資料庫索引優化`);
 });

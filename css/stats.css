@@ -1,0 +1,627 @@
+/* Legal-RAG 判決分類統計儀表板樣式 */
+
+/* 儀表板布局 */
+.dashboard-container {
+    display: grid;
+    gap: 20px;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.dashboard-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dashboard-controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* 數據卡片 */
+.stats-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.stat-card-large {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card-large:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.stat-icon-large {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+}
+
+.stat-icon-large.civil { background: linear-gradient(135deg, #48bb78, #2f855a); }
+.stat-icon-large.criminal { background: linear-gradient(135deg, #fc8181, #e53e3e); }
+.stat-icon-large.administrative { background: linear-gradient(135deg, #4299e1, #3182ce); }
+.stat-icon-large.family { background: linear-gradient(135deg, #ed8936, #dd6b20); }
+.stat-icon-large.youth { background: linear-gradient(135deg, #9f7aea, #805ad5); }
+.stat-icon-large.constitutional { background: linear-gradient(135deg, #38b2ac, #319795); }
+.stat-icon-large.total { background: linear-gradient(135deg, var(--gold), #b7791f); }
+
+.stat-content-large {
+    flex: 1;
+}
+
+.stat-value-large {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+}
+
+.stat-label-large {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-top: 5px;
+}
+
+.stat-trend {
+    font-size: 0.85rem;
+    margin-top: 5px;
+}
+
+.stat-trend.up { color: #48bb78; }
+.stat-trend.down { color: #fc8181; }
+
+/* 圖表區域 */
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.chart-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    padding: 25px;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.chart-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-light);
+}
+
+.chart-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 3px;
+}
+
+/* 圓餅圖 */
+.pie-chart-container {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.pie-chart {
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    position: relative;
+    background: conic-gradient(
+        #48bb78 0deg 120deg,
+        #fc8181 120deg 200deg,
+        #4299e1 200deg 260deg,
+        #ed8936 260deg 310deg,
+        #9f7aea 310deg 340deg,
+        #38b2ac 340deg 360deg
+    );
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
+
+.pie-chart::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: var(--bg-dark);
+}
+
+.pie-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 1;
+}
+
+.pie-center-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.pie-center-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.pie-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.pie-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+}
+
+.pie-legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+}
+
+.pie-legend-color.civil { background: #48bb78; }
+.pie-legend-color.criminal { background: #fc8181; }
+.pie-legend-color.administrative { background: #4299e1; }
+.pie-legend-color.family { background: #ed8936; }
+.pie-legend-color.youth { background: #9f7aea; }
+.pie-legend-color.constitutional { background: #38b2ac; }
+
+.pie-legend-value {
+    color: var(--text-muted);
+    margin-left: auto;
+}
+
+/* 長條圖 */
+.bar-chart-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.bar-chart-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.bar-chart-label {
+    width: 80px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.bar-chart-track {
+    flex: 1;
+    height: 30px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+}
+
+.bar-chart-fill {
+    height: 100%;
+    border-radius: 8px;
+    transition: width 0.5s ease;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #fff;
+    min-width: fit-content;
+}
+
+.bar-chart-fill.civil { background: linear-gradient(90deg, #48bb78, #68d391); }
+.bar-chart-fill.criminal { background: linear-gradient(90deg, #fc8181, #feb2b2); }
+.bar-chart-fill.administrative { background: linear-gradient(90deg, #4299e1, #63b3ed); }
+.bar-chart-fill.total { background: linear-gradient(90deg, var(--gold), #ecc94b); }
+
+.bar-chart-value {
+    width: 60px;
+    text-align: right;
+    font-size: 0.9rem;
+    color: var(--text-light);
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+/* 年度趨勢圖 */
+.trend-chart-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+}
+
+.trend-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.trend-bars-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 150px;
+}
+
+.trend-bar-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+}
+
+.trend-bar {
+    width: 100%;
+    max-width: 40px;
+    border-radius: 6px 6px 0 0;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.trend-bar:hover {
+    filter: brightness(1.2);
+    transform: scaleY(1.02);
+}
+
+.trend-bar.total { background: linear-gradient(180deg, var(--gold), #b7791f); }
+.trend-bar.civil { background: linear-gradient(180deg, #48bb78, #2f855a); }
+.trend-bar.criminal { background: linear-gradient(180deg, #fc8181, #e53e3e); }
+
+.trend-bar-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 10;
+}
+
+.trend-bar:hover .trend-bar-tooltip {
+    opacity: 1;
+}
+
+.trend-year-label {
+    margin-top: 8px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.trend-legend {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border);
+}
+
+.trend-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.trend-legend-color {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+}
+
+/* 時間區間選擇器 */
+.time-filter {
+    display: flex;
+    gap: 5px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.time-filter-btn {
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+.time-filter-btn:hover {
+    color: var(--text-light);
+}
+
+.time-filter-btn.active {
+    background: var(--secondary);
+    color: #fff;
+}
+
+/* 視圖切換 */
+.view-section {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 骨架屏樣式 */
+.skeleton {
+    background: linear-gradient(90deg, 
+        rgba(255,255,255,0.05) 25%, 
+        rgba(255,255,255,0.1) 50%, 
+        rgba(255,255,255,0.05) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.skeleton-card {
+    height: 100px;
+    border-radius: 15px;
+}
+
+.skeleton-chart {
+    height: 250px;
+    border-radius: 15px;
+}
+
+.skeleton-text {
+    height: 20px;
+    margin-bottom: 10px;
+}
+
+.skeleton-text.short { width: 60%; }
+.skeleton-text.medium { width: 80%; }
+
+.skeleton-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.skeleton-row .skeleton {
+    flex: 1;
+}
+
+/* 深色模式 */
+:root {
+    --dark-bg: #0d1117;
+    --dark-card: #161b22;
+    --dark-border: #30363d;
+    --dark-text: #c9d1d9;
+    --dark-muted: #8b949e;
+}
+
+.dark-mode {
+    --bg-dark: #0d1117;
+    --bg-card: #161b22;
+    --border: #30363d;
+    --text-light: #c9d1d9;
+    --text-muted: #8b949e;
+}
+
+.dark-mode body {
+    background: linear-gradient(180deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+}
+
+.dark-mode .header,
+.dark-mode .search-section,
+.dark-mode .chart-card,
+.dark-mode .stat-card-large,
+.dark-mode .trend-chart-container {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.dark-mode input,
+.dark-mode select {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: var(--dark-border);
+    color: var(--dark-text);
+}
+
+.dark-mode .pie-chart::after {
+    background: var(--dark-bg);
+}
+
+/* 行動裝置優化 */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .header {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+    }
+    
+    .header-tabs {
+        width: 100%;
+        overflow-x: auto;
+        justify-content: flex-start;
+    }
+    
+    .nav-tab {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+        white-space: nowrap;
+    }
+    
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .stat-card-large {
+        flex-direction: column;
+        text-align: center;
+        padding: 15px;
+    }
+    
+    .pie-chart-container {
+        flex-direction: column;
+    }
+    
+    .pie-legend {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .bar-chart-row {
+        flex-wrap: wrap;
+    }
+    
+    .bar-chart-label {
+        width: 100%;
+        text-align: left;
+        margin-bottom: 5px;
+    }
+    
+    .bar-chart-track {
+        width: 100%;
+    }
+    
+    .dashboard-controls {
+        width: 100%;
+    }
+    
+    .time-filter {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .trend-bars-row {
+        height: 100px;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo h1 {
+        font-size: 1.2rem;
+    }
+    
+    .logo-icon {
+        font-size: 1.8rem;
+    }
+    
+    .stats-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .stat-value-large {
+        font-size: 1.5rem;
+    }
+    
+    .stat-icon-large {
+        width: 50px;
+        height: 50px;
+        font-size: 1.4rem;
+    }
+    
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .chart-card {
+        padding: 15px;
+    }
+}
+
+/* 列印樣式 */
+@media print {
+    .header-tabs,
+    .dashboard-controls,
+    .time-filter {
+        display: none;
+    }
+    
+    body {
+        background: white;
+        color: black;
+    }
+    
+    .stat-card-large,
+    .chart-card {
+        background: white;
+        border: 1px solid #ccc;
+        break-inside: avoid;
+    }
+}

@@ -1,5 +1,6 @@
 /**
  * Judicial API - PostgreSQL 版本
+ * v1.1 - 加入判決分類 API 與 Hybrid Search
  */
 const express = require('express');
 const crypto = require('crypto');
@@ -15,6 +16,149 @@ function mapDataError(res, err) {
 
   return error(res, 500, err.message || '系統發生錯誤');
 }
+
+// ===== v1.1 新增: 判決分類 API =====
+
+/**
+ * GET /api/judicial/stats/case-types
+ * 取得各類案件數量統計
+ * 回傳: { 民事: 100, 刑事: 50, 行政: 30, ... }
+ */
+router.get('/stats/case-types', async (req, res) => {
+  try {
+    const stats = await judicialRepository.getCaseTypeStats();
+    
+    // 轉換為物件格式
+    const result = {
+      民事: 0,
+      刑事: 0,
+      行政: 0,
+      家事: 0,
+      少年: 0,
+      憲法: 0,
+      其他: 0
+    };
+    
+    stats.forEach(row => {
+      if (result.hasOwnProperty(row.case_type)) {
+        result[row.case_type] = row.count;
+      }
+    });
+    
+    // 計算總數
+    const total = Object.values(result).reduce((a, b) => a + b, 0);
+    
+    return success(res, {
+      ...result,
+      total
+    });
+  } catch (err) {
+    console.error('[Judicial] 案件分類統計錯誤:', err);
+    return mapDataError(res, err);
+  }
+});
+
+/**
+ * GET /api/judicial/cases/type/:caseType
+ * 依案件類型取得案例列表
+ * @param caseType: civil | criminal | administrative | family | juvenile | constitutional
+ */
+router.get('/cases/type/:caseType', async (req, res) => {
+  try {
+    const { caseType } = req.params;
+    const pagination = parsePagination(req.query, { defaultLimit: 20, maxLimit: 100 });
+    
+    if (pagination.error) {
+      return error(res, 400, pagination.error);
+    }
+
+    const rows = await judicialRepository.getCasesByType(
+      caseType, 
+      pagination.limit, 
+      pagination.offset
+    );
+    
+    return success(res, rows, {
+      count: rows.length,
+      limit: pagination.limit,
+      offset: pagination.offset,
+      caseType
+    });
+  } catch (err) {
+    console.error('[Judicial] 案件類型查詢錯誤:', err);
+    return mapDataError(res, err);
+  }
+});
+
+/**
+ * GET /api/judicial/cases/:jid/classification
+ * 取得單一案件分類資訊
+ */
+router.get('/cases/:jid/classification', async (req, res) => {
+  try {
+    const validated = requireNonEmptyString(req.params.jid, 'jid');
+    if (validated.error) {
+      return error(res, 400, validated.error);
+    }
+
+    const classification = await judicialRepository.getCaseClassification(validated.value);
+    if (!classification) {
+      return error(res, 404, '找不到該裁判書');
+    }
+
+    return success(res, classification);
+  } catch (err) {
+    return mapDataError(res, err);
+  }
+});
+
+// ===== v1.1 新增: Hybrid Search =====
+
+/**
+ * GET /api/judicial/search/hybrid
+ * 混合搜尋 - 結合關鍵字與向量相似度
+ * @param q: 搜尋關鍵詞
+ * @param limit: 回傳數量 (預設 20)
+ * @param kw: 關鍵字權重 0-1 (預設 0.5)
+ * @param vw: 向量權重 0-1 (預設 0.5)
+ */
+router.get('/search/hybrid', async (req, res) => {
+  try {
+    const validated = requireNonEmptyString(req.query.q, '搜尋關鍵字');
+    if (validated.error) {
+      return error(res, 400, validated.error);
+    }
+
+    const limit = Math.min(parseInt(req.query.limit, 10) || 20, 100);
+    const keywordWeight = parseFloat(req.query.kw) || 0.5;
+    const vectorWeight = parseFloat(req.query.vw) || 0.5;
+
+    console.log(`[HybridSearch] 關鍵詞: ${validated.value}, 權重: kw=${keywordWeight}, vw=${vectorWeight}`);
+
+    const results = await judicialRepository.hybridSearch(
+      validated.value,
+      limit,
+      keywordWeight,
+      vectorWeight
+    );
+
+    return success(res, {
+      query: validated.value,
+      results,
+      metadata: {
+        limit,
+        keywordWeight,
+        vectorWeight,
+        resultCount: results.length
+      }
+    });
+  } catch (err) {
+    console.error('[Judicial] Hybrid Search 錯誤:', err);
+    return mapDataError(res, err);
+  }
+});
+
+// ===== 現有 API =====
 
 // 搜尋案例
 router.get('/search', async (req, res) => {
@@ -112,7 +256,7 @@ router.post('/auth', async (req, res) => {
   const issuedAt = Date.now();
   const expiresIn = 3600;
   const payload = `${user}:${issuedAt}:${crypto.randomUUID()}`;
-  const token = Buffer.from(payload).toString('base64url');
+  const token = Buffer.from(payload).toString('baseurl');
 
   return success(res, {
     token,

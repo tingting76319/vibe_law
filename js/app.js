@@ -36,8 +36,21 @@ function initApp() {
     }
     
     // 初始化法院模組
+    if (typeof initLawyerModule === 'function') {
+        initLawyerModule();
+    }
+    
+    // 初始化法院模組
     if (typeof initCourtModule === 'function') {
         initCourtModule();
+    }
+    
+    // 初始化訴訟策略模組
+    if (typeof initStatsModule === 'function') {
+        initStatsModule();
+    }
+    if (typeof initStrategyModule === 'function') {
+        initStrategyModule();
     }
     
     // 綁定事件
