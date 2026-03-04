@@ -22,9 +22,10 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
 });
 
+const uploadMaxMb = Number.parseInt(process.env.UPLOAD_MAX_FILE_MB || '256', 10);
 const upload = multer({ 
   storage,
-  limits: { fileSize: 1024 * 1024 * 1024 } // 1GB limit
+  limits: { fileSize: uploadMaxMb * 1024 * 1024 }
 });
 
 // 上傳並匯入
@@ -42,7 +43,7 @@ router.get('/status', uploadPipeline.handleStatus);
 // Multer 檔案大小限制錯誤回應
 router.use((err, req, res, next) => {
   if (err && err.code === 'LIMIT_FILE_SIZE') {
-    return res.status(413).json({ error: '檔案過大，超過上傳限制' });
+    return res.status(413).json({ error: `檔案過大，超過上傳限制 (${uploadMaxMb}MB)` });
   }
   return next(err);
 });

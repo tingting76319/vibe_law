@@ -29,10 +29,16 @@ if (!fs.existsSync(logDir)) {
   fs.mkdirSync(logDir, { recursive: true });
 }
 
+const IMPORT_BATCH_SIZE = Number.parseInt(process.env.UPLOAD_IMPORT_BATCH_SIZE || '100', 10);
+const MAX_PARALLEL_JOBS = Number.parseInt(process.env.UPLOAD_MAX_PARALLEL_JOBS || '1', 10);
+const MAX_QUEUED_JOBS = Number.parseInt(process.env.UPLOAD_MAX_QUEUED_JOBS || '4', 10);
+
 // 簡易背景工作追蹤（單機記憶體版）+ 錯誤日誌
 const uploadJobs = new Map();
 const jobErrors = new Map(); // jobId -> errors[]
-const JOB_TTL_MS = 1000 * 60 * 60; // 1 hour
+const jobQueue = [];
+let activeJobs = 0;
+const JOB_TTL_MS = 1000 * 60 * 60 * 24; // 24 hours
 
 function getJob(jobId) {
   return uploadJobs.get(jobId);
@@ -77,7 +83,7 @@ function getJobErrors(jobId) {
 function cleanupJobs() {
   const now = Date.now();
   for (const [jobId, job] of uploadJobs.entries()) {
-    if (!job.updatedAt || now - job.updatedAt > JOB_TTL_MS) {
+    if ((job.status === 'completed' || job.status === 'failed') && job.updatedAt && now - job.updatedAt > JOB_TTL_MS) {
       uploadJobs.delete(jobId);
       jobErrors.delete(jobId);
       
@@ -91,6 +97,49 @@ function cleanupJobs() {
 }
 
 setInterval(cleanupJobs, 1000 * 60 * 5).unref();
+
+function canAcceptNewJob() {
+  return jobQueue.length < MAX_QUEUED_JOBS;
+}
+
+function enqueueJob(jobMeta) {
+  jobQueue.push(jobMeta);
+  setJob(jobMeta.jobId, {
+    status: 'queued',
+    step: 'queued',
+    queuePosition: jobQueue.length
+  });
+}
+
+function refreshQueuePositions() {
+  for (let i = 0; i < jobQueue.length; i++) {
+    setJob(jobQueue[i].jobId, { queuePosition: i + 1 });
+  }
+}
+
+function runNextJob() {
+  if (activeJobs >= MAX_PARALLEL_JOBS || jobQueue.length === 0) {
+    return;
+  }
+
+  const job = jobQueue.shift();
+  refreshQueuePositions();
+  activeJobs++;
+  setJob(job.jobId, { queuePosition: 0 });
+
+  processUploadJob(job.jobId, job.filePath, job.originalName)
+    .catch((err) => {
+      addJobError(job.jobId, {
+        message: err.message || 'unknown upload job error',
+        stack: err.stack
+      });
+      setJob(job.jobId, { status: 'failed', error: err.message || 'unknown upload job error' });
+    })
+    .finally(() => {
+      activeJobs = Math.max(0, activeJobs - 1);
+      runNextJob();
+    });
+}
 
 /**
  * 帶重試的資料庫查詢
@@ -128,13 +177,44 @@ async function getTotalCount() {
   return Number.parseInt(total.rows[0].count, 10) || 0;
 }
 
+function normalizeItem(item) {
+  return {
+    jid: item.JID || item.jid,
+    jyear: item.JYEAR || item.jyear,
+    jcase: item.JCASE || item.jcase,
+    jno: item.JNO || item.jno,
+    jdate: item.JDATE || item.jdate,
+    jtitle: item.JTITLE || item.jtitle,
+    jfull: item.JFULL || item.jfull || item.JFULLX?.JFULLCONTENT || '',
+    jpdf: item.JPDF || item.jpdf || item.JFULLX?.JFULLPDF || ''
+  };
+}
+
 /**
  * 匯入單筆資料（帶重試）
  */
 async function importItem(item, options = {}) {
+  return importBatch([item], options);
+}
+
+async function importBatch(items, options = {}) {
+  const normalized = items
+    .map(normalizeItem)
+    .filter((row) => typeof row.jid === 'string' && row.jid.length > 0);
+  if (normalized.length === 0) {
+    return;
+  }
+
+  const values = [];
+  const placeholders = normalized.map((row, idx) => {
+    const base = idx * 8;
+    values.push(row.jid, row.jyear, row.jcase, row.jno, row.jdate, row.jtitle, row.jfull, row.jpdf);
+    return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4}, $${base + 5}, $${base + 6}, $${base + 7}, $${base + 8})`;
+  });
+
   const text = `
     INSERT INTO judgments (jid, jyear, jcase, jno, jdate, jtitle, jfull, jpdf)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    VALUES ${placeholders.join(',')}
     ON CONFLICT (jid) DO UPDATE SET
       jyear = EXCLUDED.jyear,
       jcase = EXCLUDED.jcase,
@@ -144,19 +224,16 @@ async function importItem(item, options = {}) {
       jfull = EXCLUDED.jfull,
       jpdf = EXCLUDED.jpdf
   `;
-  
-  const values = [
-    item.JID || item.jid,
-    item.JYEAR || item.jyear,
-    item.JCASE || item.jcase,
-    item.JNO || item.jno,
-    item.JDATE || item.jdate,
-    item.JTITLE || item.jtitle,
-    item.JFULL || item.jfull || item.JFULLX?.JFULLCONTENT || '',
-    item.JPDF || item.jpdf || item.JFULLX?.JFULLPDF || ''
-  ];
-  
-  return queryWithRetry(text, values);
+
+  return queryWithRetry(text, values, options);
+}
+
+async function flushBatch(batch) {
+  if (batch.length === 0) {
+    return 0;
+  }
+  await importBatch(batch);
+  return batch.length;
 }
 
 async function processUploadJob(jobId, filePath, originalName) {
@@ -194,6 +271,8 @@ async function processUploadJob(jobId, filePath, originalName) {
       try {
         const content = file.read();
         let data;
+        const batch = [];
+
         try {
           data = JSON.parse(content);
         } catch (jsonErr) {
@@ -203,8 +282,11 @@ async function processUploadJob(jobId, filePath, originalName) {
           for (const line of lines) {
             try {
               const item = JSON.parse(line);
-              await importItem(item);
-              importedCount++;
+              batch.push(item);
+              if (batch.length >= IMPORT_BATCH_SIZE) {
+                importedCount += await flushBatch(batch);
+                batch.length = 0;
+              }
             } catch (lineErr) {
               errorCount++;
               addJobError(jobId, {
@@ -220,6 +302,7 @@ async function processUploadJob(jobId, filePath, originalName) {
               await yieldToEventLoop();
             }
           }
+          importedCount += await flushBatch(batch);
           processedFiles++;
           setJob(jobId, { processedFiles, imported: importedCount, errors: errorCount });
           continue;
@@ -229,8 +312,11 @@ async function processUploadJob(jobId, filePath, originalName) {
           let itemCount = 0;
           for (const item of data) {
             try {
-              await importItem(item);
-              importedCount++;
+              batch.push(item);
+              if (batch.length >= IMPORT_BATCH_SIZE) {
+                importedCount += await flushBatch(batch);
+                batch.length = 0;
+              }
             } catch (itemErr) {
               errorCount++;
               addJobError(jobId, {
@@ -246,9 +332,10 @@ async function processUploadJob(jobId, filePath, originalName) {
               await yieldToEventLoop();
             }
           }
+          importedCount += await flushBatch(batch);
         } else {
-          await importItem(data);
-          importedCount++;
+          batch.push(data);
+          importedCount += await flushBatch(batch);
         }
       } catch (fileErr) {
         console.error(`[Upload] 檔案處理失敗: ${file.name}`, fileErr.message);
@@ -304,6 +391,17 @@ async function handleUpload(req, res) {
     }
 
     console.log(`[Upload] 收到檔案: ${req.file.originalname}, 大小: ${req.file.size} bytes`);
+    if (!canAcceptNewJob()) {
+      if (req.file?.path && fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      return res.status(503).json({
+        error: '上傳佇列已滿，請稍後再試',
+        activeJobs,
+        queuedJobs: jobQueue.length
+      });
+    }
+
     const jobId = randomUUID();
     setJob(jobId, {
       status: 'queued',
@@ -317,16 +415,22 @@ async function handleUpload(req, res) {
       createdAt: Date.now()
     });
 
-    // 背景處理，避免同步請求超時導致 502
-    setImmediate(() => {
-      processUploadJob(jobId, req.file.path, req.file.originalname);
+    enqueueJob({
+      jobId,
+      filePath: req.file.path,
+      originalName: req.file.originalname
     });
+    setImmediate(runNextJob);
 
     res.status(202).json({
       success: true,
-      message: '檔案已接收，背景匯入中',
+      message: '檔案已接收，排入背景匯入',
       jobId,
-      statusEndpoint: `/api/upload/jobs/${jobId}`
+      statusEndpoint: `/api/upload/jobs/${jobId}`,
+      queue: {
+        activeJobs,
+        queuedJobs: jobQueue.length
+      }
     });
     
   } catch (error) {
@@ -348,6 +452,11 @@ function handleGetJob(req, res) {
   if (job.errors > 0) {
     response.errorDetailsLink = `/api/upload/jobs/${req.params.jobId}/errors`;
   }
+
+  response.queue = {
+    activeJobs,
+    queuedJobs: jobQueue.length
+  };
   
   return res.json(response);
 }
@@ -380,7 +489,13 @@ async function handleStatus(req, res) {
     
     res.json({
       total: total.rows[0].count,
-      byYear: byYear.rows
+      byYear: byYear.rows,
+      queue: {
+        activeJobs,
+        queuedJobs: jobQueue.length,
+        maxParallelJobs: MAX_PARALLEL_JOBS,
+        maxQueuedJobs: MAX_QUEUED_JOBS
+      }
     });
   } catch (error) {
     console.error('[Upload Status] 錯誤:', error);
@@ -402,6 +517,7 @@ module.exports = {
   // 內部函式（供測試）
   processUploadJob,
   importItem,
+  importBatch,
   queryWithRetry,
   getJob,
   getJobErrors,

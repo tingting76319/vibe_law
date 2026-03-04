@@ -74,6 +74,23 @@ npm run test:run
 | GET | /api/judicial/search | 判例搜尋 |
 | GET | /api/judicial/cases | 案例列表 |
 | POST | /api/rag/ask | RAG 問答 |
+| POST | /api/upload/upload | 上傳 ZIP/JSON 並背景匯入 |
+| GET | /api/upload/jobs/:jobId | 查詢匯入工作狀態 |
+| GET | /api/upload/status | 查詢資料庫匯入總量 |
+
+## 📤 大量上傳建議（避免 502）
+
+當單一 ZIP 太大時，反向代理可能回傳 `HTTP 502 Bad Gateway`。建議改用分批上傳：
+
+```bash
+python3 scripts/upload_chunks.py \
+  --folder "/path/to/202412" \
+  --base-url "https://vibe-law.zeabur.app" \
+  --chunk-size 2000
+```
+
+- `--chunk-size` 是每個壓縮檔包含的 JSON 檔數量。
+- 腳本會自動建立小 ZIP、逐批上傳並輪詢 `jobId` 到完成。
 
 ## 📁 專案結構
 
