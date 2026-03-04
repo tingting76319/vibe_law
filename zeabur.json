@@ -19,6 +19,14 @@
       }
     }
   },
+  "cron": [
+    {
+      "name": "update-case-type-stats",
+      "command": "node backend/src/scripts/updateCaseTypeStats.js",
+      "schedule": "0 3 * * *",
+      "description": "每天凌晨 3 點更新判決分類統計"
+    }
+  ],
   "env": [
     {
       "key": "DATABASE_URL",
