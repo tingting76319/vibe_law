@@ -58,7 +58,7 @@ app.get('/health', async (req, res) => {
   res.json({ 
     status: 'ok', 
     timestamp: new Date().toISOString(),
-    version: '1.1',
+    version: '1.2',
     database: process.env.DATABASE_URL ? 'configured' : 'missing',
     features: {
       upload: 'enhanced',
@@ -76,7 +76,7 @@ app.get('/health', async (req, res) => {
 app.get('/api/v11/health', async (req, res) => {
   res.json({ 
     status: 'ok', 
-    version: '1.1',
+    version: '1.2',
     timestamp: new Date().toISOString(),
     features: {
       caseClassification: 'enabled',
