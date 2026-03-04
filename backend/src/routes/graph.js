@@ -11,7 +11,7 @@ const pool = require('../../db/postgres');
 const router = express.Router();
 
 // 取得法官任職年限
-async function getJudgeTenure(validated.value) {
+async function getJudgeTenure(judgeName) {
   try {
     const result = await pool.query(
       'SELECT * FROM judge_tenure_stats WHERE judge_name LIKE $1 LIMIT 1',
@@ -136,11 +136,6 @@ router.get('/judge/:judgeName/cases', async (req, res) => {
 
     console.log(`[Graph] 查詢法官相似案件: name=${validated.value}, limit=${limit}`);
     
-    const result = { status: 'success', judge_name: validated.value, case_count: (await getJudgeTenure(validated.value)).case_count, message: '法官任職年限統計' } // await graphRepository.getJudgeSimilarCases(
-      validated.value, 
-      limit, 
-      options
-    );
 
     return success(res, result);
   } catch (err) {
