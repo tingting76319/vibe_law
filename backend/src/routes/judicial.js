@@ -267,6 +267,17 @@ router.post('/auth', async (req, res) => {
 });
 
 // 測試連線
+// 手動同步判決書
+router.post('/sync', async (req, res) => {
+  try {
+    const judicialApi = require('../services/judicialApi');
+    const result = await judicialApi.fetchLatestJudgments();
+    success(res, { message: '同步完成', count: result?.length || 0 });
+  } catch(e) {
+    error(res, 500, e.message);
+  }
+});
+
 router.get('/test', async (req, res) => {
   try {
     const count = await judicialRepository.getJudgmentCount();

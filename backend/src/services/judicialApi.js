@@ -150,6 +150,16 @@ class JudicialAPI {
   }
 
   // 取得所有案例
+  async fetchLatestJudgments() {
+    try {
+      const result = await this.getJudgmentList();
+      return result;
+    } catch(e) {
+      console.error("[fetchLatestJudgments] Error:", e.message);
+      return [];
+    }
+  }
+
   async getAllCases() {
     if (this.source === 'postgres') {
       const rows = await judicialRepository.getAllJudgments(500, 0);
