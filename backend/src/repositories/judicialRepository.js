@@ -32,12 +32,12 @@ function createJudicialRepository(dbClient) {
       const result = await queryWithTimeout(`
         SELECT 
           CASE 
-            WHEN JCOURT LIKE '%民事%' OR jcase LIKE '%民事%' OR jtitle LIKE '%民事%' THEN '民事'
-            WHEN JCOURT LIKE '%刑事%' OR jcase LIKE '%刑事%' OR jtitle LIKE '%刑事%' THEN '刑事'
-            WHEN JCOURT LIKE '%行政%' OR jcase LIKE '%行政%' OR jtitle LIKE '%行政%' THEN '行政'
-            WHEN JCOURT LIKE '%家事%' OR jcase LIKE '%家事%' OR jtitle LIKE '%家事%' THEN '家事'
-            WHEN JCOURT LIKE '%少年%' OR jcase LIKE '%少年%' OR jtitle LIKE '%少年%' THEN '少年'
-            WHEN JCOURT LIKE '%憲法%' OR jcase LIKE '%憲法%' OR jtitle LIKE '%憲法%' THEN '憲法'
+            WHEN jcourt LIKE '%民事%' OR jcase LIKE '%民事%' OR jtitle LIKE '%民事%' THEN '民事'
+            WHEN jcourt LIKE '%刑事%' OR jcase LIKE '%刑事%' OR jtitle LIKE '%刑事%' THEN '刑事'
+            WHEN jcourt LIKE '%行政%' OR jcase LIKE '%行政%' OR jtitle LIKE '%行政%' THEN '行政'
+            WHEN jcourt LIKE '%家事%' OR jcase LIKE '%家事%' OR jtitle LIKE '%家事%' THEN '家事'
+            WHEN jcourt LIKE '%少年%' OR jcase LIKE '%少年%' OR jtitle LIKE '%少年%' THEN '少年'
+            WHEN jcourt LIKE '%憲法%' OR jcase LIKE '%憲法%' OR jtitle LIKE '%憲法%' THEN '憲法'
             ELSE '其他'
           END as case_type,
           COUNT(*)::int as count
@@ -66,7 +66,7 @@ function createJudicialRepository(dbClient) {
       };
       
       const keywords = typeMap[caseType] || [caseType];
-      const keywordConditions = keywords.map((_, i) => `JCOURT LIKE $${i + 1} OR jcase LIKE $${i + 1} OR jtitle LIKE $${i + 1}`).join(' OR ');
+      const keywordConditions = keywords.map((_, i) => `jcourt LIKE $${i + 1} OR jcase LIKE $${i + 1} OR jtitle LIKE $${i + 1}`).join(' OR ');
       const params = keywords.map(k => `%${k}%`);
       
       const result = await queryWithTimeout(
@@ -83,14 +83,14 @@ function createJudicialRepository(dbClient) {
      */
     async getCaseClassification(jid) {
       const row = await queryWithTimeout(
-        'SELECT JCOURT, jcase, jtitle FROM judgments WHERE jid = $1',
+        'SELECT jcourt, jcase, jtitle FROM judgments WHERE jid = $1',
         [jid]
       );
       
       if (!row.rows[0]) return null;
       
-      const { JCOURT, jcase, jtitle } = row.rows[0];
-      const text = `${JCOURT} ${jcase} ${jtitle}`;
+      const { jcourt, jcase, jtitle } = row.rows[0];
+      const text = `${jcourt} ${jcase} ${jtitle}`;
       
       let caseType = '其他';
       if (text.includes('民事')) caseType = '民事';
@@ -103,7 +103,7 @@ function createJudicialRepository(dbClient) {
       return {
         jid,
         caseType,
-        court: JCOURT,
+        court: jcourt,
         caseNumber: jcase,
         title: jtitle
       };
@@ -159,9 +159,9 @@ function createJudicialRepository(dbClient) {
 
       return result.rows.map((row) => ({
         jid: row.jid || row.JID || null,
-        title: row.jtitle || row.JTITLE || null,
-        caseNumber: row.jcase || row.JCASE || null,
-        court: row.JCOURT || row.JCOURT || null,
+        title: row.jtitle || row.jtitle || null,
+        caseNumber: row.jcase || row.jcase || null,
+        court: row.jcourt || row.jcourt || null,
         date: row.jdate || row.JDATE || null
       }));
     },
@@ -187,7 +187,7 @@ function createJudicialRepository(dbClient) {
       const keywordResults = await queryWithTimeout(
         `
           SELECT 
-            jid, jtitle, JCOURT, jcase, jdate, jfull,
+            jid, jtitle, jcourt, jcase, jdate, jfull,
             (CASE WHEN jtitle ILIKE $1 THEN 3 ELSE 0 END +
              CASE WHEN jfull ILIKE $1 THEN 1 ELSE 0 END +
              CASE WHEN jcase ILIKE $1 THEN 2 ELSE 0 END) as keyword_score
@@ -205,7 +205,7 @@ function createJudicialRepository(dbClient) {
         vectorResults = await queryWithTimeout(
           `
             SELECT 
-              jid, jtitle, JCOURT, jcase, jdate, jfull,
+              jid, jtitle, jcourt, jcase, jdate, jfull,
               1 as vector_score
             FROM judgments
             WHERE embedding IS NOT NULL
