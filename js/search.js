@@ -92,8 +92,7 @@ function getHotAnswers(query) {
             relatedCases: ['109台上1234', '109犯罪偵查']
         },
         '離婚': {
-            title: '離婚程序與            content: `台灣離婚主要有監護權',
-兩種方式：
+            title: '離婚程序與監護權', content: `台灣離婚主要有兩種方式：
 
 1. **協議離婚**（民法第1049條）：
    - 雙方同意
