@@ -311,3 +311,48 @@ router.delete('/:id', async (req, res) => {
 });
 
 module.exports = router;
+
+// ========== 律師資料提取 API ==========
+
+// GET /api/lawyers/extract - 從判決書提取律師資料
+router.get('/extract', async (req, res) => {
+  try {
+    const { limit = 1000 } = req.query;
+    const pool = require('../db/postgres');
+    
+    // 檢查表格是否存在
+    const tableCheck = await pool.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'extracted_lawyers'
+      )
+    `);
+    
+    if (!tableCheck.rows[0].exists) {
+      return res.json({ 
+        status: 'success', 
+        message: '律師資料表尚未建立，請先執行 extractLawyers.js',
+        data: [] 
+      });
+    }
+    
+    // 查詢律師統計
+    const result = await pool.query(`
+      SELECT lawyer_name, COUNT(*) as case_count
+      FROM extracted_lawyers
+      GROUP BY lawyer_name
+      ORDER BY case_count DESC
+      LIMIT 100
+    `);
+    
+    res.json({
+      status: 'success',
+      data: result.rows,
+      total: result.rows.length
+    });
+  } catch (error) {
+    console.error('[lawyers/extract] Error:', error);
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
