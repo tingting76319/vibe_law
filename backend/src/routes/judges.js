@@ -245,3 +245,48 @@ function getJudgeAnnualTrend(judgeId, yearRange) {
 }
 
 module.exports = router;
+
+// ========== 法官資料提取 API ==========
+
+// GET /api/judges/extract - 從判決書提取法官資料
+router.get('/extract', async (req, res) => {
+  try {
+    const { limit = 1000 } = req.query;
+    const pool = require('../db/postgres');
+    
+    // 檢查表格是否存在
+    const tableCheck = await pool.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'extracted_judges'
+      )
+    `);
+    
+    if (!tableCheck.rows[0].exists) {
+      return res.json({ 
+        status: 'success', 
+        message: '法官資料表尚未建立，請先執行 extractJudges.js',
+        data: [] 
+      });
+    }
+    
+    // 查詢法官統計
+    const result = await pool.query(`
+      SELECT judge_name, COUNT(*) as case_count
+      FROM extracted_judges
+      GROUP BY judge_name
+      ORDER BY case_count DESC
+      LIMIT 100
+    `);
+    
+    res.json({
+      status: 'success',
+      data: result.rows,
+      total: result.rows.length
+    });
+  } catch (error) {
+    console.error('[judges/extract] Error:', error);
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
