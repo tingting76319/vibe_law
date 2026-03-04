@@ -29,10 +29,10 @@ document.addEventListener('DOMContentLoaded', function() {
 function initApp() {
     console.log("[DEBUG] initApp called");
     // 初始化法規顯示
-    renderLaws('civil');
+    // renderLaws('civil'); // Removed in v1.2.1
     
     // 初始化獨立法規頁面
-    renderLawsStandalone('civil');
+    // renderLawsStandalone('civil'); // Removed in v1.2.1
     
     // 初始化法官模組
     if (typeof initJudgeModule === 'function') {
