@@ -331,24 +331,17 @@ function renderAIAnswer(data) { console.log("[DEBUG] renderAIAnswer called with:
         `;
     }
     
-    // 生成相關判例 HTML
-    let relatedCasesHtml = '';
-    if (data.relatedCases && data.relatedCases.length > 0) {
-        relatedCasesHtml = `
-            <div class="related-cases">
-                <h4>⚖️ 相關判例</h4>
-                <ul>
-                    ${data.relatedCases.slice(0, 3).map(c => `
-                        <li>
-                            <a href="#" onclick="showCaseDetail('${c.id}'); return false;">
-                                ${c.year}年 ${c.caseNumber} - ${c.title}
-                            </a>
-                            ${c.relatedLaws ? `<span class="case-laws">${c.relatedLaws.join('、')}</span>` : ''}
-                        </li>
-                    `).join('')}
-                </ul>
+    // Render related cases to #cases-list element (max 5)
+    const casesList = document.getElementById('cases-list');
+    if (data.relatedCases && data.relatedCases.length > 0 && casesList) {
+        const topCases = data.relatedCases.slice(0, 5);
+        casesList.innerHTML = topCases.map(c => `
+            <div class="case-card" onclick="showCaseDetail('${c.id}')">
+                <div class="case-title">${c.year}年 ${c.caseNumber || ''} - ${c.title || '案件'}</div>
+                <div class="case-meta">${c.date || ''} | 相關程度: ${Math.round((c.relevanceScore || 0.5) * 100)}%</div>
+                ${c.relatedLaws ? `<div class="case-laws">${c.relatedLaws.join('、')}</div>` : ''}
             </div>
-        `;
+        `).join('');
     }
     
     const html = `
@@ -358,7 +351,6 @@ function renderAIAnswer(data) { console.log("[DEBUG] renderAIAnswer called with:
                 <div class="answer-content">
                     <div class="answer-text">${contentHtml}</div>
                     ${sourcesHtml}
-                    ${relatedCasesHtml}
                 </div>
             </div>
         </div>
