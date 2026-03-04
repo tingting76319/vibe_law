@@ -15,14 +15,14 @@
       ],
       "source": {
         "path": ".",
-        "startCommand": "node backend/src/index.js"
+        "startCommand": "TZ=Asia/Taipei node backend/src/index.js"
       }
     }
   },
   "cron": [
     {
       "name": "update-case-type-stats",
-      "command": "node backend/src/scripts/updateCaseTypeStats.js",
+      "command": "TZ=Asia/Taipei node backend/src/scripts/updateCaseTypeStats.js",
       "schedule": "0 3 * * *",
       "description": "每天凌晨 3 點更新判決分類統計"
     }
@@ -35,6 +35,10 @@
     {
       "key": "NODE_ENV",
       "value": "production"
+    },
+    {
+      "key": "TZ",
+      "value": "Asia/Taipei"
     },
     {
       "key": "MMKey_LAW_LLM",
