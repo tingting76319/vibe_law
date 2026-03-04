@@ -6,6 +6,7 @@
     <title>⚖️ 台灣法律專家知識系統 | Legal-RAG</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/judge.css">
+    <link rel="stylesheet" href="css/court.css">
 </head>
 <body>
     <div class="container">
@@ -18,6 +19,7 @@
             <div class="nav-tabs header-tabs">
                 <button class="nav-tab active" data-view="rag">🔍 法律問答</button>
                 <button class="nav-tab" data-view="judge">👨‍⚖️ 法官數位孿生</button>
+                <button class="nav-tab" data-view="court">🏛️ 法院分析</button>
             </div>
         </header>
 
@@ -317,6 +319,121 @@
             </section>
         </div>
 
+        <!-- 法院分析視圖 -->
+        <div id="view-court" class="view-section hidden">
+            <!-- 法院選擇器 -->
+            <section class="court-selector">
+                <h2>🏛️ 選擇法院</h2>
+                
+                <!-- 法院搜尋過濾器 -->
+                <div class="court-search-filters">
+                    <div class="filter-row">
+                        <input type="text" id="court-search-input" class="filter-input" placeholder="搜尋法院名稱...">
+                        <select id="court-level-filter" class="filter-select">
+                            <option value="">全部層級</option>
+                            <option value="最高法院">最高法院</option>
+                            <option value="高等法院">高等法院</option>
+                            <option value="地方法院">地方法院</option>
+                            <option value="行政法院">行政法院</option>
+                            <option value="智慧財產法院">智慧財產法院</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="court-list" id="court-list">
+                    <!-- 法院列表會動態載入 -->
+                </div>
+            </section>
+
+            <!-- 法院檔案區 -->
+            <section class="court-profile" id="court-profile">
+                <!-- 法院基本資料 -->
+                <div class="court-card">
+                    <div class="court-avatar">
+                        <span class="avatar-placeholder">🏛️</span>
+                    </div>
+                    <div class="court-info">
+                        <h3 class="court-name" id="court-name">請選擇法院</h3>
+                        <p class="court-level" id="court-level">-</p>
+                        <div class="court-meta">
+                            <span class="meta-item">📍 <span id="court-location">-</span></span>
+                            <span class="meta-item">👨‍⚖️ 法官人數: <span id="court-judge-count">-</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 案件統計 -->
+                <div class="court-stats">
+                    <h3>📊 案件統計</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="court-stat-total">0</div>
+                            <div class="stat-label">總案件數</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="court-stat-civil">0</div>
+                            <div class="stat-label">民事案件</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="court-stat-criminal">0</div>
+                            <div class="stat-label">刑事案件</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="court-stat-admin">0</div>
+                            <div class="stat-label">行政案件</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 案件類型分布圖表 -->
+                    <div class="court-chart">
+                        <h4>📈 案件類型分布</h4>
+                        <div class="case-distribution-chart" id="case-distribution-chart">
+                            <!-- 分布圖表會動態渲染 -->
+                        </div>
+                    </div>
+                    
+                    <!-- 判決模式圖表 -->
+                    <div class="court-chart">
+                        <h4>⚖️ 判決模式分析</h4>
+                        <div class="judgment-pattern-chart" id="judgment-pattern-chart">
+                            <!-- 判決模式圖表會動態渲染 -->
+                        </div>
+                    </div>
+                    
+                    <!-- 年度趨勢圖表 -->
+                    <div id="court-trend-chart-container" class="trend-chart-container">
+                        <!-- 年度趨勢圖表會在選擇法院後動態載入 -->
+                    </div>
+                </div>
+
+                <!-- 法官列表 -->
+                <div class="court-judges">
+                    <h3>👨‍⚖️ 所屬法官</h3>
+                    <div class="filter-bar">
+                        <select id="court-judge-style-filter" class="filter-select">
+                            <option value="">全部風格</option>
+                            <option value="維持派">維持派</option>
+                            <option value="撤銷派">撤銷派</option>
+                            <option value="和解派">和解派</option>
+                            <option value="效率派">效率派</option>
+                            <option value="謹慎派">謹慎派</option>
+                        </select>
+                    </div>
+                    <div class="court-judge-list" id="court-judge-list">
+                        <div class="case-empty">請選擇法院查看所屬法官</div>
+                    </div>
+                </div>
+
+                <!-- 熱門案件類型 -->
+                <div class="court-popular-cases">
+                    <h3>🔥 熱門案件類型</h3>
+                    <div class="popular-cases-grid" id="popular-cases-grid">
+                        <!-- 熱門案件類型會動態渲染 -->
+                    </div>
+                </div>
+            </section>
+        </div>
+
         <!-- 底部 -->
         <footer class="footer">
             <p>⚠️ <strong>法律聲明</strong>：本系統僅供參考，不構成法律意見。如有具體法律問題，請諮詢專業律師。</p>
@@ -330,6 +447,7 @@
     <script src="js/search.js"></script>
     <script src="js/rag.js"></script>
     <script src="js/judge.js"></script>
+    <script src="js/court.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

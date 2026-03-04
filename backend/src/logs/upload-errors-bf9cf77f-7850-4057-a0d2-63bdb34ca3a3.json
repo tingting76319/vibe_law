@@ -1,0 +1,7 @@
+[
+  {
+    "timestamp": "2026-03-03T18:51:43.057Z",
+    "message": "僅支援 .zip 或 .json 檔案",
+    "stack": "Error: 僅支援 .zip 或 .json 檔案\n    at processUploadJob (/home/node/.openclaw/workspace/vibe-coding/legal-rag/backend/src/services/uploadPipeline.js:185:13)\n    at Immediate._onImmediate (/home/node/.openclaw/workspace/vibe-coding/legal-rag/backend/src/services/uploadPipeline.js:322:7)\n    at processImmediate (node:internal/timers:485:21)"
+  }
+]

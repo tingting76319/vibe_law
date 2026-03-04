@@ -1,0 +1,8 @@
+[
+  {
+    "timestamp": "2026-03-03T18:50:53.114Z",
+    "message": "",
+    "stack": "AggregateError: \n    at /home/node/.openclaw/workspace/vibe-coding/legal-rag/backend/node_modules/pg-pool/index.js:45:11\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at queryWithRetry (/home/node/.openclaw/workspace/vibe-coding/legal-rag/backend/src/services/uploadPipeline.js:104:22)\n    at processUploadJob (/home/node/.openclaw/workspace/vibe-coding/legal-rag/backend/src/services/uploadPipeline.js:232:15)",
+    "file": "test.json"
+  }
+]

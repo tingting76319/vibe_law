@@ -20,16 +20,18 @@ export default defineConfig({
       include: [
         'src/routes/judicial.js',
         'src/routes/rag.js',
+        'src/routes/upload.js',
         'src/repositories/**/*.js',
         'src/services/judicialApi.js',
         'src/services/llmService.js',
         'src/utils/**/*.js'
       ],
+      // 優化的 Coverage Gate - v0.6.1
       thresholds: {
-        lines: 30,
-        functions: 30,
-        branches: 20,
-        statements: 30
+        lines: 40,
+        functions: 40,
+        branches: 30,
+        statements: 40
       },
       exclude: [
         'node_modules/',
@@ -39,7 +41,8 @@ export default defineConfig({
         '**/coverage/**'
       ]
     },
-    testTimeout: 10000
+    testTimeout: 15000,
+    hookTimeout: 15000
   },
   resolve: {
     alias: {

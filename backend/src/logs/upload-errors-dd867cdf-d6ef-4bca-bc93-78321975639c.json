@@ -1,0 +1,7 @@
+[
+  {
+    "timestamp": "2026-03-03T18:48:51.490Z",
+    "message": "ADM-ZIP: Invalid or unsupported zip format. No END header found",
+    "stack": "Error: ADM-ZIP: Invalid or unsupported zip format. No END header found\n    at Object.INVALID_FORMAT (/home/node/.openclaw/workspace/vibe-coding/legal-rag/backend/node_modules/adm-zip/util/errors.js:56:16)\n    at readMainHeader (/home/node/.openclaw/workspace/vibe-coding/legal-rag/backend/node_modules/adm-zip/zipFile.js:123:49)\n    at new module.exports (/home/node/.openclaw/workspace/vibe-coding/legal-rag/backend/node_modules/adm-zip/zipFile.js:21:9)\n    at new module.exports (/home/node/.openclaw/workspace/vibe-coding/legal-rag/backend/node_modules/adm-zip/adm-zip.js:67:18)\n    at processUploadJob (/home/node/.openclaw/workspace/vibe-coding/legal-rag/backend/src/services/uploadPipeline.js:173:19)\n    at Immediate._onImmediate (/home/node/.openclaw/workspace/vibe-coding/legal-rag/backend/src/services/uploadPipeline.js:322:7)\n    at processImmediate (node:internal/timers:485:21)"
+  }
+]

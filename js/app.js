@@ -1,4 +1,4 @@
-// Legal-RAG 主程式 v0.5
+// Legal-RAG 主程式 v0.7
 // 支持多輪對話和引用來源顯示
 
 // API 端點配置
@@ -15,7 +15,7 @@ function initSession() {
         currentSessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         localStorage.setItem('rag_session_id', currentSessionId);
     }
-    console.log('[App v0.5] 會話 ID:', currentSessionId);
+    console.log('[App v0.7] 會話 ID:', currentSessionId);
     return currentSessionId;
 }
 
@@ -33,6 +33,11 @@ function initApp() {
     // 初始化法官模組
     if (typeof initJudgeModule === 'function') {
         initJudgeModule();
+    }
+    
+    // 初始化法院模組
+    if (typeof initCourtModule === 'function') {
+        initCourtModule();
     }
     
     // 綁定事件
