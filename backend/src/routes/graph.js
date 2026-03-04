@@ -5,6 +5,7 @@
  * 包含：
  * 1. 同一判決的歷史脈絡 API
  * 2. 法官相似案件 API
+ * 3. 法院判決差異分析 API (v1.5)
  */
 const express = require('express');
 const router = express.Router();
@@ -26,6 +27,7 @@ async function getJudgeTenure(judgeName) {
 }
 
 const graphRepository = require('../repositories/graphRepository');
+const courtAnalysis = require('../scripts/courtAnalysis');
 const { success, error } = require('../utils/apiResponse');
 const { parsePagination, requireNonEmptyString } = require('../utils/validation');
 
@@ -195,6 +197,123 @@ router.get('/judge/:judgeName/trend', async (req, res) => {
   }
 });
 
+// ===== 法院判決差異分析 API (v1.5) =====
+
+/**
+ * GET /api/graph/court-analysis
+ * 
+ * 分析不同法院對同類案件的判決差異
+ * 
+ * @query {string} caseType - 案件類型篩選 (民事/刑事/行政/家事/少年/憲法)
+ *                         - 不傳則回傳所有案件類型
+ * 
+ * Response:
+ * {
+ *   success: true,
+ *   data: {
+ *     status: 'success',
+ *     case_type: '民事',
+ *     court_count: 3,
+ *     courts: [
+ *       {
+ *         court: '臺北地方法院',
+ *         court_level: '地方法院',
+ *         case_type: '民事',
+ *         stats: {
+ *           total_cases: 12000,
+ *           plaintiff_win_rate: 30.0,
+ *           defendant_win_rate: 30.0,
+ *           dismissal_rate: 40.0,
+ *           appeal_count: 800,
+ *           appeal_sustained_rate: 65.0,
+ *           appeal_reversed_rate: 35.0
+ *         },
+ *         year_range: { from: 108, to: 112 }
+ *       },
+ *       ...
+ *     ],
+ *     comparison: {
+ *       average: {
+ *         plaintiff_win_rate: 28.5,
+ *         defendant_win_rate: 31.2,
+ *         dismissal_rate: 40.3,
+ *         appeal_sustained_rate: 62.0,
+ *         appeal_reversed_rate: 38.0
+ *       },
+ *       most_pro_plaintiff: { court: '臺中地方法院', rate: 35.0 },
+ *       most_pro_defendant: { court: '臺北地方法院', rate: 32.0 },
+ *       highest_dismissal: { court: '新北地方法院', rate: 45.0 }
+ *     }
+ *   }
+ * }
+ */
+router.get('/court-analysis', async (req, res) => {
+  try {
+    const caseType = req.query.caseType || null;
+    
+    console.log(`[Graph] 查詢法院判決差異分析: caseType=${caseType || '全部'}`);
+    
+    // 驗證案件類型（如果提供的話）
+    const validCaseTypes = ['民事', '刑事', '行政', '家事', '少年', '憲法', null];
+    if (caseType && !validCaseTypes.includes(caseType)) {
+      return error(res, 400, `無效的案件類型: ${caseType}。支援的類型: 民事、刑事、行政、家事、少年、憲法`);
+    }
+
+    // 取得法院分析結果
+    const result = courtAnalysis.compareCourtJudgments(caseType);
+    
+    if (result.status === 'no_data') {
+      return error(res, 404, '沒有找到法院統計資料，請先執行 courtAnalysis.js 腳本');
+    }
+
+    console.log(`[Graph] 回傳 ${result.court_count} 個法院的分析資料`);
+    return success(res, result);
+  } catch (err) {
+    console.error('[Graph] 法院判決差異分析查詢錯誤:', err);
+    return mapDataError(res, err);
+  }
+});
+
+/**
+ * GET /api/graph/court-analysis/refresh
+ * 
+ * 重新計算法院統計資料
+ * 需要管理員權限（暫時不做權限檢查）
+ * 
+ * Response:
+ * {
+ *   success: true,
+ *   data: {
+ *     status: 'success',
+ *     courts_updated: 15,
+ *     message: '法院統計資料已更新'
+ *   }
+ * }
+ */
+router.get('/court-analysis/refresh', async (req, res) => {
+  try {
+    console.log('[Graph] 重新計算法院統計資料...');
+    
+    // 重新計算統計資料
+    courtAnalysis.createCourtStatsTable();
+    const count = courtAnalysis.calculateCourtStatsFromSQLite();
+    
+    // 嘗試從 PostgreSQL 計算
+    courtAnalysis.calculateCourtStatsFromPostgres().catch(() => {});
+    
+    console.log(`[Graph] 已更新 ${count} 筆法院統計資料`);
+    
+    return success(res, {
+      status: 'success',
+      courts_updated: count,
+      message: '法院統計資料已更新'
+    });
+  } catch (err) {
+    console.error('[Graph] 重新計算法院統計資料錯誤:', err);
+    return mapDataError(res, err);
+  }
+});
+
 // ===== Graph RAG 健康檢查 =====
 
 /**
@@ -204,12 +323,14 @@ router.get('/judge/:judgeName/trend', async (req, res) => {
 router.get('/health', async (req, res) => {
   return success(res, {
     status: 'ok',
-    version: '1.4',
+    version: '1.5',
     timestamp: new Date().toISOString(),
     endpoints: {
       'case/:jid/history': '取得案件歷史脈絡',
       'judge/:judgeName/cases': '取得法官相似案件',
-      'judge/:judgeName/trend': '取得法官判決趨勢'
+      'judge/:judgeName/trend': '取得法官判決趨勢',
+      'court-analysis': '法院判決差異分析 (v1.5)',
+      'court-analysis/refresh': '重新計算法院統計'
     }
   });
 });
