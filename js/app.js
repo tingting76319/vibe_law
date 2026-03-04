@@ -188,7 +188,7 @@ async function loadConversationHistory() {
 }
 
 // 執行問答 v0.5 - 串接 RAG API
-async function doAsk() {
+async function doAsk() { console.log('[DEBUG] doAsk called, question:', document.getElementById('qa-input').value);
     const question = document.getElementById('qa-input').value;
     if (!question) return;
     
@@ -304,10 +304,11 @@ function renderAIAnswer(data) { console.log("[DEBUG] renderAIAnswer called with:
     // 處理內容換行
     const contentHtml = data.content.replace(/\n/g, '<br>');
     
-    // Render sources to #sources-list element
+    // Render sources to #sources-list element - only show laws
     const sourcesList = document.getElementById('sources-list');
-    if (data.sources && data.sources.length > 0 && sourcesList) {
-        sourcesList.innerHTML = data.sources.map((source, idx) => `
+    const lawSources = data.sources ? data.sources.filter(s => s.type === 'law') : [];
+    if (lawSources.length > 0 && sourcesList) {
+        sourcesList.innerHTML = lawSources.map((source, idx) => `
             <div class="source-item" data-idx="${idx}">
                 <span class="source-number">[${idx + 1}]</span>
                 ${source.type === 'case' ? `
