@@ -134,7 +134,7 @@ function bindNavEvents() {
 }
 
 // 切換視圖
-function switchView(viewName) {
+function switchView(viewName) { console.log("[DEBUG] switchView called:", viewName);
     // 隱藏所有視圖
     document.querySelectorAll('.view-section').forEach(section => {
         section.classList.add('hidden');
