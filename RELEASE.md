@@ -1,5 +1,121 @@
 # Release Notes
 
+## v1.0.0 - 正式版 (2026-03-04)
+
+### 🎉 正式版發布
+
+本版本為 Legal-RAG v1.0 正式版，整合所有模組並完成測試覆蓋。
+
+### New Features
+
+#### 完整功能整合
+
+**訴訟策略模組 (v0.9)**
+- 訴狀分析：自動解讀原告/被告訴狀內容
+- 趨勢預測：法官判斷趨勢預測、風險評估
+- 策略生成：開庭前建議、質詢要點、辯護方向
+
+**律師媒合模組 (v0.8)**
+- 律師資料庫：律師基本資料、專長領域
+- 案件-律師匹配：智能匹配演算法
+- 推薦系統：根據案件特徵推薦最適律師
+
+**法官/法院模組 (v0.7)**
+- 法官檔案：判決統計、風格分類
+- 法院分析：判決模式、趨勢統計
+- 上訴維持率分析
+
+**法規資料庫 (v0.6)**
+- 法規搜尋與查詢
+- 法規類別管理
+- 批次匯入功能
+
+**強化上傳管線 (v0.6.1)**
+- 超時重試機制
+- 錯誤追蹤與日誌
+- 並發穩定性優化
+
+### Quality and Testing
+
+- **測試覆蓋**: 34 個測試通過 (3 個跳過，需 PostgreSQL)
+- **程式碼品質**: ESLint 檢查通過
+- **單元測試**: judicialRepository, services, API tests
+- **整合測試**: smoke tests, upload flow tests
+
+### API Endpoints
+
+```
+# 主系統
+GET  /health                    - 健康檢查 (v1.0)
+
+# 訴訟策略 API
+POST /api/strategy/analyze-petition   - 訴狀分析
+POST /api/strategy/predict-trend      - 趨勢預測
+POST /api/strategy/generate-strategy  - 策略生成
+
+# 律師媒合 API  
+GET  /api/lawyers               - 律師列表
+GET  /api/lawyers/search        - 律師搜尋
+POST /api/matching/match        - 案件媒合
+POST /api/matching/recommend    - 律師推薦
+
+# 法官/法院 API
+GET  /api/judges/profile/:id    - 法官檔案
+GET  /api/judges/trends/:id     - 法官趨勢
+GET  /api/courts/profile/:id    - 法院檔案
+GET  /api/courts/analysis/:id   - 法院分析
+
+# 法規 API
+GET  /api/laws/search           - 法規搜尋
+GET  /api/laws/:id              - 法規詳情
+
+# 核心 API
+GET  /api/judicial/search       - 判例搜尋
+POST /api/rag/ask              - RAG 問答
+POST /api/upload/upload        - 檔案上傳
+```
+
+### 技術規格
+
+- **後端**: Node.js + Express
+- **資料庫**: SQLite (本地) + PostgreSQL (雲端)
+- **快取**: better-sqlite3
+- **測試框架**: Vitest
+- **程式碼檢查**: ESLint
+
+### Known Issues
+
+- LLM API Key 未設定，AI 問答功能需設定金鑰
+- PostgreSQL 未連接，部分 API 需要資料庫支援
+
+### 安裝說明
+
+```bash
+# 安裝依賴
+npm install
+npm install --prefix backend
+
+# 設定環境變數
+cp .env.example .env
+# 編輯 .env 設定 DATABASE_URL
+
+# 啟動開發伺服器
+npm run dev
+
+# 執行測試
+npm run lint
+npm run test:run
+```
+
+### 下一步
+
+- [ ] 串接真實 LLM API
+- [ ] 部署至正式環境
+- [ ] 建立監控系統
+- [ ] 完善使用者文件
+
+---
+
 ## v0.6.0-beta.1 - API 契約強化與測試閘道版 (2026-03-04)
 
 ### New Features
@@ -37,108 +153,3 @@ GET  /api/judicial/test           - 檢查 PostgreSQL 連線狀態
 
 ---
 
-## v0.5 - 法官趨勢＋RAG 融合版 (2026-03-03)
-
-### 🎉 New Features
-
-#### 法官趨勢分析＋RAG 問答
-- 整合 PostgreSQL 判例資料與多輪 RAG 問答，能同步呈現引用來源、相關案例與關聯法條
-- 對話狀態會儲存在 memory map，支援 `sessionId` 讓多輪上下文保持穩定
-- 新增 `/api/judicial/changelog`、`/api/judicial/auth`、`/api/judicial/test`，改寫錯誤回應都會帶 `status: 'error'`
-- CI pipeline 現在有 `lint`、`test:run`、`build` script 並透過 GitHub Actions 互相串接
-
-### API Endpoints
-```
-POST /api/rag/ask       - RAG 問答（多輪+來源）
-POST /api/rag/clear     - 清除對話歷史
-GET  /api/rag/history   - 取得對話歷史
-GET  /api/rag/health    - RAG 健康檢查
-GET  /api/judicial/search?q=...  - 判例全文搜尋
-GET  /api/judicial/cases         - 取得所有案例
-GET  /api/judicial/cases/:jid    - 查單一案例（找不到回 404）
-GET  /api/judicial/changelog     - 裁判書異動清單（暫時回傳空資料）
-POST /api/judicial/auth          - 模擬登入回傳 mock token
-GET  /api/judicial/test          - 檢查 PostgreSQL 連線
-```
-
-### 測試與品質
-- 單元測試 (Vitest) - 15/15，已連上雲端 PostgreSQL
-- GitHub Actions CI 操作 `lint`、`unit-test`、`build` job
-- RAG multi-turn + citation workflow 已在本地端驗證
-
----
-
-## v0.3 - 法官數位孿生版 (2026-03-01)
-
-### 🎉 New Features
-
-#### 法官數位孿生
-- **法官行為分析** - 分析法官歷史判決模式、裁判風格
-- **判決預測** - 根據案件特徵預測判決結果
-- **相似案例推薦** - 向量相似度計算，精準推薦相關判例
-- **法官檔案頁面** - 完整法官資料、統計數據、歷史判決
-
-#### API Endpoints
-```
-法官列表:         GET  /api/judge/judges
-法官搜尋:         GET  /api/judge/judges/search?q=
-法官行為分析:      GET  /api/judge/judges/:id/analysis
-裁判風格向量:     GET  /api/judge/judges/:id/style-vector
-判決預測:         POST /api/judge/predict
-相似案例:         POST /api/judge/similar
-```
-
-#### 測試與品質
-- 單元測試 (Vitest) - 15 tests passed
-- E2E 測試 (Playwright)
-- CI/CD 自動化測試閘道
-
----
-
-## v0.2 - RAG 問答版 (2026-03-01)
-
-### 🎉 New Features
-- RAG 問答模組
-- LLM 服務整合 (MiniMax/OpenAI)
-- 前端 RAG API 串接
-- 手機版 UI 優化
-
-### API Endpoints
-```
-POST /api/rag/ask    - RAG 問答
-GET  /api/rag/health - RAG 健康檢查
-```
-
----
-
-## v0.1 - 基礎搜尋版 (2026-03-01)
-
-### 🎉 New Features
-- 後端 Express API
-- 6筆 Mock 判例資料
-- 前端搜尋功能
-- Graph RAG 框架
-- GitHub Actions CI/CD
-
-### API Endpoints
-```
-GET /api/judicial/cases     - 取得所有案例
-GET /api/judicial/search?q= - 搜尋案例
-GET /api/judicial/cases/:jid - 取得單一案例
-```
-
----
-
-## 🚀 Upcoming
-
-- [ ] LLM API Key 整合 (AI 問答)
-- [ ] 司法院真實 API 串接 (凌晨時段)
-- [ ] Zeabur 部署上線
-- [ ] v1.0 正式版
-
----
-
-## 📞 Support
-
-如有問題，請開 GitHub Issue：
-https://github.com/tingting76319/vibe_law/issues

@@ -34,3 +34,12 @@ backend/coverage/
 # OpenClaw
 .openclaw/
 .opencode/
+
+# Upload errors
+backend/src/logs/*.json
+
+# Uploads
+backend/uploads/*
+
+# Database
+data/*.db-*

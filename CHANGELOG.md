@@ -2,6 +2,111 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.0.0] - 正式版 (2026-03-04)
+
+### 🎉 正式版發布 - 完整系統上線
+
+本版本為 v1.0 正式版，整合所有模組並完成測試覆蓋。
+
+### Added
+
+- **訴訟策略 API (v0.9)**
+  - 新增 `backend/src/services/strategyService.js` - 訴訟策略服務
+  - 訴狀分析模組：自動解讀訴狀內容、提取關鍵爭點、案件難度評估
+  - 趨勢預測模組：法官画像構建、判決結果預測、風險評估
+  - 策略生成模組：開庭前建議、質詢要點、辯護方向
+
+- **律師媒合 API (v0.8)**
+  - 新增 `backend/src/routes/lawyers.js` - 律師資料 API
+  - 新增 `backend/src/routes/matching.js` - 律師媒合 API
+  - 新增 `backend/src/services/lawyerService.js` - 律師服務
+  - 新增 `backend/src/services/lawyerMatchingEngine.js` - 媒合引擎
+  - 新增 `backend/src/services/lawyerBehaviorAnalysis.js` - 律師行為分析
+
+- **法官/法院邏輯引擎 API (v0.7)**
+  - 新增 `backend/src/routes/judges.js` - 法官相關 API
+  - 新增 `backend/src/routes/courts.js` - 法院相關 API
+  - 新增 `backend/src/services/courtService.js` - 法院服務
+  - 判決統計、法官趨勢分析、法院判決模式
+
+- **法規資料庫 (v0.6)**
+  - 新增 `backend/src/services/lawService.js` - 法規服務
+  - 新增 `backend/src/routes/laws.js` - 法規 API
+  - 法規搜尋、詳情、匯入功能
+
+- **強化上傳管線 (v0.6.1)**
+  - 新增 `backend/src/services/uploadPipeline.js` - 超時重試機制
+  - 錯誤追蹤與詳細日誌
+  - API 錯誤查詢端點
+
+### Changed
+
+- **代碼品質優化**
+  - 修復 `js/lawyer.js` 模板字串語法錯誤
+  - 修復 `strategyService.js` 資料庫路徑問題
+  - ESLint 檢查通過
+
+- **測試覆蓋**
+  - 34 個測試通過 (3 個跳過，需 PostgreSQL)
+  - API 測試、單元測試、整合測試
+
+### API Endpoints (v1.0 完整列表)
+
+```
+# 健康檢查
+GET  /health                      - 主健康檢查 (v1.0)
+GET  /api/v09/health              - 訴訟策略健康檢查
+GET  /api/v08/health              - 律師媒合健康檢查
+GET  /api/v07/health              - 法官/法院健康檢查
+
+# 訴訟策略 API (v0.9)
+POST /api/strategy/analyze-petition     - 訴狀分析
+POST /api/strategy/predict-trend        - 趨勢預測
+POST /api/strategy/generate-strategy    - 策略生成
+
+# 律師媒合 API (v0.8)
+GET  /api/lawyers                       - 律師列表
+GET  /api/lawyers/:id                   - 律師詳情
+GET  /api/lawyers/search                - 律師搜尋
+POST /api/matching/match                - 案件-律師媒合
+POST /api/matching/recommend            - 律師推薦
+
+# 法官/法院 API (v0.7)
+GET  /api/judges/profile/:judgeId       - 法官檔案
+GET  /api/judges/trends/:judgeId        - 法官趨勢
+GET  /api/courts/profile/:courtId       - 法院檔案
+GET  /api/courts/analysis/:courtId      - 法院分析
+GET  /api/courts/trends/*               - 法院趨勢
+
+# 法規 API (v0.6)
+GET  /api/laws/search                    - 法規搜尋
+GET  /api/laws/:lawId                    - 法規詳情
+GET  /api/laws/categories                - 法規類別
+
+# 核心 API
+GET  /api/judicial/search                - 判例搜尋
+GET  /api/judicial/cases                 - 案例列表
+POST /api/rag/ask                        - RAG 問答
+POST /api/upload/upload                   - 檔案上傳
+```
+
+### Known Issues
+
+- LLM API Key 未設定，部分 AI 功能無法使用
+- PostgreSQL 未連接，法官/法院 API 需資料庫支援
+
+### Migration Notes
+
+- v1.0 為主要版本更新，建議全新安裝
+- SQLite 資料庫已自動初始化
+- 所有 API 路由已整合完畢
+
+---
+
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
 ## [v0.7.0] - 法官/法院邏輯引擎 MVP (2026-03-03)
 
 ### Added

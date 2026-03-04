@@ -10,6 +10,9 @@ const lawsRoutes = require('./routes/laws');
 const v04Routes = require('./routes/v04.js');
 const judgesRoutes = require('./routes/judges');
 const courtsRoutes = require('./routes/courts');
+const lawyersRoutes = require('./routes/lawyers');
+const matchingRoutes = require('./routes/matching');
+const strategyRoutes = require('./routes/strategy');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -39,6 +42,13 @@ app.use('/api/laws', lawsRoutes);
 app.use('/api/judges', judgesRoutes);
 app.use('/api/courts', courtsRoutes);
 
+// v0.8.0 律師媒合 API
+app.use('/api/lawyers', lawyersRoutes);
+app.use('/api/matching', matchingRoutes);
+
+// v0.9.0 訴訟策略 API
+app.use('/api/strategy', strategyRoutes);
+
 // v0.4 API Routes
 app.use('/api/v04', v04Routes);
 
@@ -47,17 +57,52 @@ app.get('/health', async (req, res) => {
   res.json({ 
     status: 'ok', 
     timestamp: new Date().toISOString(),
-    version: '0.7',
+    version: '1.0',
     database: process.env.DATABASE_URL ? 'configured' : 'missing',
     features: {
       upload: 'enhanced',
       laws: 'enabled',
-      judgesCourts: 'enabled'
+      judgesCourts: 'enabled',
+      lawyerMatching: 'enabled',
+      litigationStrategy: 'enabled'
     }
   });
 });
 
-// v0.7 health check
+// v0.9 health check
+app.get('/api/v09/health', async (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    version: '1.0',
+    timestamp: new Date().toISOString(),
+    features: {
+      petitionAnalysis: 'enabled',
+      trendPrediction: 'enabled',
+      riskAssessment: 'enabled',
+      courtSuggestions: 'enabled',
+      crossExamination: 'enabled',
+      defenseDirection: 'enabled'
+    }
+  });
+});
+
+// v0.8 health check
+app.get('/api/v08/health', async (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    version: '0.8',
+    timestamp: new Date().toISOString(),
+    features: {
+      lawyerProfiles: 'enabled',
+      lawyerSearch: 'enabled',
+      caseMatching: 'enabled',
+      lawyerRecommendations: 'enabled',
+      matchScoring: 'enabled'
+    }
+  });
+});
+
+// v0.7 health check (legacy)
 app.get('/api/v07/health', async (req, res) => {
   res.json({ 
     status: 'ok', 
@@ -105,9 +150,15 @@ app.get('/upload', (req, res) => {
   res.sendFile(path.join(__dirname, '..', '..', 'upload.html'));
 });
 
+// Serve lawyer.html
+app.get('/lawyer', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', '..', 'lawyer.html'));
+});
+
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Legal-RAG Backend 啟動中...`);
   console.log(`📡 API Server: http://0.0.0.0:${PORT}`);
-  console.log(`🔍 v0.7 Features: 法官/法院邏輯引擎、判決趨勢、法院分析`);
+  console.log(`🔍 v0.9 Features: 訴訟策略 API (訴狀分析、趨勢預測、風險評估)`);
+  console.log(`📋 v0.9 Features: 策略生成 API (開庭建議、質詢要點、辯護方向)`);
 });

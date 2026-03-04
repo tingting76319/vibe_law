@@ -1,0 +1,1626 @@
+/* ========================================
+   Lawyer Matching CSS - v0.8.0
+   律師媒合相關樣式
+   ======================================== */
+
+/* 律師頁籤 */
+.lawyer-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 10px;
+}
+
+.lawyer-tab-btn {
+    padding: 12px 24px;
+    border: none;
+    background: #f5f5f5;
+    color: #666;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 8px 8px 0 0;
+    transition: all 0.2s ease;
+}
+
+.lawyer-tab-btn:hover {
+    background: #e8e8e8;
+    color: #333;
+}
+
+.lawyer-tab-btn.active {
+    background: #4a90d9;
+    color: white;
+    font-weight: 600;
+}
+
+/* 子視圖 */
+.lawyer-sub-view {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 律師搜尋區 */
+.lawyer-search-section {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.lawyer-search-section h2 {
+    margin: 0 0 15px 0;
+    color: #2c3e50;
+    font-size: 20px;
+}
+
+.lawyer-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.filter-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.filter-input, .filter-select {
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.filter-input {
+    flex: 1;
+    min-width: 200px;
+}
+
+.filter-input:focus, .filter-select:focus {
+    outline: none;
+    border-color: #4a90d9;
+}
+
+/* 律師列表 */
+.lawyer-list-section {
+    margin-bottom: 30px;
+}
+
+.lawyer-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.lawyer-loading {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px;
+    color: #888;
+}
+
+/* 律師卡片 */
+.lawyer-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.lawyer-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    border-color: #4a90d9;
+}
+
+.lawyer-card-header {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.lawyer-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+    flex-shrink: 0;
+}
+
+.lawyer-basic-info {
+    flex: 1;
+}
+
+.lawyer-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+}
+
+.lawyer-firm {
+    font-size: 14px;
+    color: #666;
+    margin: 0 0 8px 0;
+}
+
+.lawyer-rating {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.rating-stars {
+    color: #f39c12;
+}
+
+.rating-value {
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+}
+
+/* 專長標籤 */
+.lawyer-specialties {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.specialty-tag {
+    padding: 4px 12px;
+    background: #e3f2fd;
+    color: #1976d2;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.specialty-tag.primary {
+    background: #4a90d9;
+    color: white;
+}
+
+/* 律師統計 */
+.lawyer-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 12px 0;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 12px;
+}
+
+.lawyer-stat {
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: #888;
+}
+
+/* 律師資訊 */
+.lawyer-meta-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+    color: #666;
+}
+
+.lawyer-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.lawyer-meta-item .icon {
+    width: 16px;
+    text-align: center;
+}
+
+/* 可用性狀態 */
+.availability-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.availability-status.available {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.availability-status.busy {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.availability-status.unavailable {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* 案件上傳表單 */
+.case-upload-section {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+.case-upload-section h2 {
+    margin: 0 0 8px 0;
+    color: #2c3e50;
+    font-size: 22px;
+}
+
+.section-desc {
+    color: #666;
+    margin: 0 0 20px 0;
+    font-size: 14px;
+}
+
+.case-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #444;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 12px 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #4a90d9;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.upload-btn {
+    padding: 14px 28px;
+    background: linear-gradient(135deg, #4a90d9 0%, #357abd 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 10px;
+}
+
+.upload-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(74, 144, 217, 0.4);
+}
+
+.upload-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* 風險報告 */
+.risk-report-section {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border-left: 4px solid #f39c12;
+}
+
+.risk-report-section h3 {
+    margin: 0 0 15px 0;
+    color: #2c3e50;
+    font-size: 18px;
+}
+
+.risk-report {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.risk-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.risk-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.risk-icon.high {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.risk-icon.medium {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.risk-icon.low {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.risk-content {
+    flex: 1;
+}
+
+.risk-title {
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 4px 0;
+    font-size: 14px;
+}
+
+.risk-desc {
+    font-size: 13px;
+    color: #666;
+    margin: 0;
+}
+
+/* 律師推薦 */
+.recommendation-section {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+.recommendation-section h3 {
+    margin: 0 0 8px 0;
+    color: #2c3e50;
+    font-size: 18px;
+}
+
+.recommendation-desc {
+    color: #666;
+    margin: 0 0 20px 0;
+    font-size: 14px;
+}
+
+.recommended-lawyers {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* 推薦律師卡片 */
+.recommended-lawyer-card {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 2px solid #e0e0e0;
+    transition: all 0.2s ease;
+}
+
+.recommended-lawyer-card:hover {
+    border-color: #4a90d9;
+    background: white;
+}
+
+.match-score-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: linear-gradient(135deg, #4a90d9 0%, #357abd 100%);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.recommended-lawyer-card {
+    position: relative;
+}
+
+.recommended-lawyer-card .match-score-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.recommended-lawyer-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: white;
+    flex-shrink: 0;
+}
+
+.recommended-lawyer-info {
+    flex: 1;
+}
+
+.recommended-lawyer-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+}
+
+.recommended-lawyer-firm {
+    font-size: 14px;
+    color: #666;
+    margin: 0 0 10px 0;
+}
+
+.recommended-lawyer-match {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 12px;
+}
+
+.match-level {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.match-level.high {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.match-level.medium {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.match-level.low {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.match-percentage {
+    font-size: 20px;
+    font-weight: 700;
+    color: #4a90d9;
+}
+
+.recommended-lawyer-reasons {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.reason-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #555;
+}
+
+.reason-icon {
+    color: #4a90d9;
+}
+
+.recommended-lawyer-specialties {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.contact-lawyer-btn {
+    padding: 10px 20px;
+    background: #4a90d9;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.contact-lawyer-btn:hover {
+    background: #357abd;
+}
+
+/* 匹配記錄 */
+.matches-section {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+.matches-section h2 {
+    margin: 0 0 20px 0;
+    color: #2c3e50;
+    font-size: 22px;
+}
+
+.matches-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.match-history-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+}
+
+.match-history-info h4 {
+    margin: 0 0 6px 0;
+    color: #333;
+    font-size: 15px;
+}
+
+.match-history-meta {
+    font-size: 13px;
+    color: #666;
+}
+
+.match-history-score {
+    text-align: right;
+}
+
+.match-history-percentage {
+    font-size: 24px;
+    font-weight: 700;
+    color: #4a90d9;
+}
+
+.match-history-label {
+    font-size: 12px;
+    color: #888;
+}
+
+/* 律師詳情彈窗 */
+.lawyer-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.lawyer-modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.lawyer-modal-content {
+    background: white;
+    border-radius: 16px;
+ 600px;
+    max-width:    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 30px;
+    position: relative;
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+}
+
+.lawyer-modal.active .lawyer-modal-content {
+    transform: translateY(0);
+}
+
+.lawyer-modal-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: #f0f0f0;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.lawyer-modal-close:hover {
+    background: #e0e0e0;
+}
+
+.lawyer-modal-header {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.lawyer-modal-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    color: white;
+    flex-shrink: 0;
+}
+
+.lawyer-modal-basic {
+    flex: 1;
+}
+
+.lawyer-modal-name {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0 0 6px 0;
+}
+
+.lawyer-modal-firm {
+    font-size: 16px;
+    color: #666;
+    margin: 0 0 10px 0;
+}
+
+.lawyer-modal-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+}
+
+.lawyer-modal-stat {
+    text-align: center;
+}
+
+.lawyer-modal-stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.lawyer-modal-stat-label {
+    font-size: 12px;
+    color: #888;
+}
+
+.lawyer-modal-section {
+    margin-bottom: 20px;
+}
+
+.lawyer-modal-section h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 12px 0;
+}
+
+.lawyer-modal-bio {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #555;
+}
+
+.lawyer-modal-specialties {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.lawyer-modal-contact {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 14px;
+    color: #555;
+}
+
+.lawyer-modal-contact-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 載入動畫 */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #4a90d9;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 空狀態 */
+.lawyer-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #888;
+}
+
+.lawyer-empty-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.lawyer-empty-text {
+    font-size: 16px;
+    margin: 0;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .lawyer-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .lawyer-tabs {
+        flex-direction: column;
+    }
+    
+    .filter-row {
+        flex-direction: column;
+    }
+    
+    .filter-input, .filter-select {
+        width: 100%;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .lawyer-card-header {
+        flex-direction: column;
+    }
+    
+    .lawyer-modal-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .lawyer-modal-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .recommended-lawyer-card {
+        flex-direction: column;
+    }
+}
+
+/* ========================================
+   訴訟策略模組 CSS - v0.9.0
+   Lawyer Workspace & Strategy Report
+   ======================================== */
+
+/* 訴訟策略頁籤 */
+.strategy-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 10px;
+}
+
+.strategy-tab-btn {
+    padding: 10px 20px;
+    border: none;
+    background: #f5f5f5;
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 8px 8px 0 0;
+    transition: all 0.2s ease;
+}
+
+.strategy-tab-btn:hover {
+    background: #e8e8e8;
+    color: #333;
+}
+
+.strategy-tab-btn.active {
+    background: #2d5a7b;
+    color: white;
+    font-weight: 600;
+}
+
+/* 子視圖 */
+.strategy-sub-view {
+    animation: fadeIn 0.3s ease;
+}
+
+/* 律師工作台 */
+.workspace-section {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.workspace-section h2 {
+    margin: 0 0 8px 0;
+    color: #2d5a7b;
+    font-size: 22px;
+}
+
+.section-desc {
+    color: #666;
+    margin-bottom: 24px;
+    font-size: 14px;
+}
+
+/* 表單樣式 */
+.strategy-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.strategy-form .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.strategy-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.strategy-form label {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.strategy-form input,
+.strategy-form select,
+.strategy-form textarea {
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.strategy-form input:focus,
+.strategy-form select:focus,
+.strategy-form textarea:focus {
+    outline: none;
+    border-color: #4a90d9;
+    box-shadow: 0 0 0 3px rgba(74,144,217,0.1);
+}
+
+.strategy-form textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* 按鈕 */
+.form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.primary-btn {
+    padding: 12px 28px;
+    background: #4a90d9;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.primary-btn:hover {
+    background: #357abd;
+    transform: translateY(-1px);
+}
+
+.secondary-btn {
+    padding: 12px 28px;
+    background: #f5f5f5;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.secondary-btn:hover {
+    background: #e8e8e8;
+}
+
+/* 訴狀上傳區 */
+.pleading-upload-section {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.pleading-upload-section h3 {
+    margin: 0 0 8px 0;
+    color: #2d5a7b;
+    font-size: 18px;
+}
+
+.upload-area {
+    position: relative;
+    border: 2px dashed #ccc;
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+    transition: all 0.2s;
+    cursor: pointer;
+    margin-top: 16px;
+}
+
+.upload-area:hover {
+    border-color: #4a90d9;
+    background: #f8f9fa;
+}
+
+.upload-area input[type="file"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.upload-placeholder {
+    pointer-events: none;
+}
+
+.upload-icon {
+    font-size: 48px;
+    display: block;
+    margin-bottom: 12px;
+}
+
+.upload-hint {
+    color: #999;
+    font-size: 13px;
+    margin-top: 8px;
+}
+
+/* 已上傳檔案列表 */
+.uploaded-files {
+    margin-top: 16px;
+}
+
+.uploaded-file {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.uploaded-file-icon {
+    font-size: 24px;
+}
+
+.uploaded-file-info {
+    flex: 1;
+}
+
+.uploaded-file-name {
+    font-weight: 500;
+    color: #333;
+}
+
+.uploaded-file-size {
+    font-size: 12px;
+    color: #999;
+}
+
+.uploaded-file-remove {
+    padding: 6px 12px;
+    background: #ffebee;
+    color: #c62828;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+/* 策略報告 */
+.report-section {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.report-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.report-header h2 {
+    margin: 0 0 8px 0;
+    color: #2d5a7b;
+    font-size: 24px;
+}
+
+.report-subtitle {
+    color: #666;
+    font-size: 14px;
+}
+
+/* 報告摘要卡片 */
+.report-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.summary-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+}
+
+.summary-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.summary-label {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.summary-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2d5a7b;
+}
+
+/* 報告區塊 */
+.report-section-content {
+    margin-bottom: 24px;
+}
+
+.report-section-content h3 {
+    color: #2d5a7b;
+    font-size: 18px;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+/* 攻擊/防守列表 */
+.attack-list,
+.defense-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.attack-card,
+.defense-card {
+    padding: 16px;
+    border-radius: 10px;
+    border-left: 4px solid;
+}
+
+.attack-card {
+    background: #fff5f5;
+    border-left-color: #e53935;
+}
+
+.defense-card {
+    background: #f5f9ff;
+    border-left-color: #4a90d9;
+}
+
+.attack-card .card-type {
+    color: #e53935;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.defense-card .card-type {
+    color: #4a90d9;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.attack-card .card-title,
+.defense-card .card-title {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    font-size: 15px;
+}
+
+.attack-card .card-content,
+.defense-card .card-content {
+    color: #555;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.card-priority {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 8px;
+}
+
+.card-priority.high {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.card-priority.medium {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+.card-priority.low {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+/* 風險列表 */
+.risk-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.risk-card {
+    padding: 16px;
+    background: #fff8e1;
+    border-radius: 10px;
+    border-left: 4px solid #ffc107;
+}
+
+.risk-card.high {
+    background: #ffebee;
+    border-left-color: #e53935;
+}
+
+.risk-card.medium {
+    background: #fff8e1;
+    border-left-color: #ffc107;
+}
+
+.risk-card.low {
+    background: #e8f5e9;
+    border-left-color: #4caf50;
+}
+
+.risk-card .risk-title {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.risk-card .risk-description {
+    color: #555;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.risk-card .risk-suggestion {
+    background: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #666;
+}
+
+/* 法條列表 */
+.law-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+}
+
+.law-card {
+    padding: 14px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s;
+}
+
+.law-card:hover {
+    border-color: #4a90d9;
+    transform: translateY(-2px);
+}
+
+.law-card .law-article {
+    font-weight: 700;
+    color: #2d5a7b;
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+
+.law-card .law-title {
+    color: #666;
+    font-size: 13px;
+}
+
+/* 時間線與預算 */
+.report-extras {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.timeline-card,
+.budget-card {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.timeline-card h4,
+.budget-card h4 {
+    margin: 0 0 16px 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.timeline-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.timeline-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #4a90d9;
+}
+
+.timeline-item.pending .timeline-dot {
+    background: #ddd;
+}
+
+.timeline-content {
+    flex: 1;
+}
+
+.timeline-phase {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.timeline-timeframe {
+    color: #999;
+    font-size: 12px;
+}
+
+.budget-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.budget-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.budget-item:last-child {
+    border-bottom: none;
+}
+
+.budget-item-label {
+    color: #666;
+    font-size: 14px;
+}
+
+.budget-item-value {
+    font-weight: 600;
+    color: #333;
+}
+
+.budget-total {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 2px solid #2d5a7b;
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+    font-weight: 700;
+    color: #2d5a7b;
+}
+
+/* 報告操作按鈕 */
+.report-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.action-btn {
+    padding: 10px 24px;
+    background: #f5f5f5;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.action-btn:hover {
+    background: #e8e8e8;
+}
+
+/* 我的案件 */
+.cases-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+}
+
+.case-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.case-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.case-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.case-card-title {
+    font-weight: 600;
+    color: #333;
+    font-size: 16px;
+}
+
+.case-card-type {
+    padding: 4px 10px;
+    background: #e3f2fd;
+    color: #1976d2;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.case-card-type.civil { background: #e8f5e9; color: #388e3c; }
+.case-card-type.criminal { background: #ffebee; color: #c62828; }
+.case-card-type.family { background: #fce4ec; color: #c2185b; }
+.case-card-type.administrative { background: #fff3e0; color: #f57c00; }
+
+.case-card-description {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.case-card-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: #999;
+}
+
+.case-card-status {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.case-card-status.draft {
+    background: #f5f5f5;
+    color: #666;
+}
+
+.case-card-status.analyzed {
+    background: #e8f5e9;
+    color: #388e3c;
+}
+
+/* 空狀態 */
+.empty-placeholder {
+    padding: 40px;
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+/* 響應式 */
+@media (max-width: 768px) {
+    .strategy-form .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .report-summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .report-extras {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .law-list {
+        grid-template-columns: 1fr;
+    }
+}
