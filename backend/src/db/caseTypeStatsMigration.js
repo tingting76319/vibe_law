@@ -2,7 +2,7 @@
  * 建立案件分類統計表 case_type_stats
  * 用於預先計算各類案件數量，避免即時查詢逾時
  */
-const { pool } = require('./db/postgres');
+const { pool } = require('./postgres');
 
 async function createCaseTypeStatsTable() {
   const client = await pool.connect();
@@ -52,22 +52,17 @@ async function updateCaseTypeStats(clientArg = null) {
   try {
     console.log('[updateCaseTypeStats] 開始更新統計...');
     
-    const result = await client.query(`
-      INSERT INTO case_type_stats (case_type, count, updated_at)
-      VALUES 
-        ('民事', 0, NOW()),
-        ('刑事', 0, NOW()),
-        ('行政', 0, NOW()),
-        ('家事', 0, NOW()),
-        ('少年', 0, NOW()),
-        ('憲法', 0, NOW()),
-        ('其他', 0, NOW())
-      ON CONFLICT (case_type) 
-      DO UPDATE SET 
-        count = EXCLUDED.count,
-        updated_at = NOW()
-      RETURNING case_type, count;
-    `);
+    // 初始化所有類型
+    const defaultTypes = ['民事', '刑事', '行政', '家事', '少年', '憲法', '其他'];
+    
+    for (const type of defaultTypes) {
+      await client.query(`
+        INSERT INTO case_type_stats (case_type, count, updated_at)
+        VALUES ($1, 0, NOW())
+        ON CONFLICT (case_type) 
+        DO UPDATE SET count = EXCLUDED.count, updated_at = NOW()
+      `, [type]);
+    }
     
     // 實際統計各類案件數量
     const statsResult = await client.query(`
