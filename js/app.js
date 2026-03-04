@@ -304,32 +304,28 @@ function renderAIAnswer(data) { console.log("[DEBUG] renderAIAnswer called with:
     // 處理內容換行
     const contentHtml = data.content.replace(/\n/g, '<br>');
     
-    // 生成來源 HTML
-    let sourcesHtml = '';
-    if (data.sources && data.sources.length > 0) {
-        sourcesHtml = `
-            <div class="sources-section">
-                <h4>📚 引用來源</h4>
-                <div class="sources-list">
-                    ${data.sources.map((source, idx) => `
-                        <div class="source-item" data-idx="${idx}">
-                            <span class="source-number">[${idx + 1}]</span>
-                            ${source.type === 'case' ? `
-                                <span class="source-type">判例</span>
-                                <a href="#" onclick="showCaseDetail('${source.id}'); return false;" class="source-title-link">${source.title}</a>
-                                <span class="source-meta">${source.year}年 ${source.caseNumber} | ${source.court || '法院'}</span>
-                                ${source.relatedLaws ? `<span class="source-laws">${source.relatedLaws.join('、')}</span>` : ''}
-                            ` : `
-                                <span class="source-type">法規</span>
-                                <span class="source-title">${source.name}</span>
-                                <span class="source-meta">${source.description || ''}</span>
-                            `}
-                        </div>
-                    `).join('')}
-                </div>
+    // Render sources to #sources-list element
+    const sourcesList = document.getElementById('sources-list');
+    if (data.sources && data.sources.length > 0 && sourcesList) {
+        sourcesList.innerHTML = data.sources.map((source, idx) => `
+            <div class="source-item" data-idx="${idx}">
+                <span class="source-number">[${idx + 1}]</span>
+                ${source.type === 'case' ? `
+                    <span class="source-type">判例</span>
+                    <a href="#" onclick="showCaseDetail('${source.id}'); return false;" class="source-title-link">${source.title}</a>
+                    <span class="source-meta">${source.year}年 ${source.caseNumber} | ${source.court || '法院'}</span>
+                    ${source.relatedLaws ? `<span class="source-laws">${source.relatedLaws.join('、')}</span>` : ''}
+                ` : `
+                    <span class="source-type">法規</span>
+                    <span class="source-title">${source.name}</span>
+                    <span class="source-meta">${source.description || ''}</span>
+                `}
             </div>
-        `;
+        `).join('');
     }
+    
+    // Also keep sourcesHtml for backward compatibility (empty)
+    let sourcesHtml = '';
     
     // Render related cases to #cases-list element (max 5)
     const casesList = document.getElementById('cases-list');
