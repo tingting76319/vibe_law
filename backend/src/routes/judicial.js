@@ -268,11 +268,13 @@ router.post('/auth', async (req, res) => {
 
 // 測試連線
 // 手動同步判決書
+// GET /api/judicial/sync?date=2026-03-04
 router.post('/sync', async (req, res) => {
   try {
     const judicialApi = require('../services/judicialApi');
-    const result = await judicialApi.fetchLatestJudgments();
-    success(res, { message: '同步完成', count: result?.length || 0 });
+    const { date } = req.body || {};
+    const result = await judicialApi.fetchLatestJudgments(date);
+    success(res, { message: '同步完成', count: result?.length || 0, date: date || 'latest' });
   } catch(e) {
     error(res, 500, e.message);
   }

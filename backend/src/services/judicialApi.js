@@ -150,10 +150,18 @@ class JudicialAPI {
   }
 
   // 取得所有案例
-  async fetchLatestJudgments() {
+  async fetchLatestJudgments(targetDate = null) {
     try {
-      const result = await this.getJudgmentList();
-      return result;
+      const list = await this.getJudgmentList();
+      
+      if (!targetDate) {
+        // 如果沒有指定日期，回傳最新的
+        return list;
+      }
+      
+      // 篩選指定日期的判決書
+      const filtered = list.filter(item => item.date === targetDate);
+      return filtered;
     } catch(e) {
       console.error("[fetchLatestJudgments] Error:", e.message);
       return [];
