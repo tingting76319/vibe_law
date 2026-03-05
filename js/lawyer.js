@@ -1174,9 +1174,14 @@ async function analyzeCase(caseId) {
                 strategyState.cases[caseIndex].strategyReport = result.data;
                 strategyState.cases[caseIndex].status = 'analyzed';
             }
+            alert('分析完成！');
+        } else {
+            console.warn('[Strategy] 分析失敗:', result.message);
+            alert('分析失敗: ' + result.message);
         }
     } catch (error) {
         console.error('[Strategy] 分析失敗:', error);
+        alert('分析失敗，請稍後再試');
     }
 }
 
