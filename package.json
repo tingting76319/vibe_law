@@ -1,6 +1,6 @@
 {
   "name": "vibe-law",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Legal RAG Backend API",
   "main": "backend/src/index.js",
   "scripts": {
