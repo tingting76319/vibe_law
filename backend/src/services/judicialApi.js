@@ -42,7 +42,7 @@ class JudicialAPI {
       return { token: this.token };
     }
 
-    if (false) { // Service hour check disabled for testing {
+    if (process.env.FORCE_JUDICIAL_API !== 'true') { // Service hour check disabled for testing {
       throw new Error('目前非本 API 服務時間 (00:00-06:00 (台灣時間))');
     }
 

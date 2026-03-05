@@ -119,7 +119,7 @@ async function loadLawyers() {
         } else {
             // 如果 API 沒有資料，使用 mock data
             console.warn('[Lawyer] API 無資料，使用 Mock 資料');
-            const mockLawyers = getMockLawyers();
+            let mockLawyers = getMockLawyers();
             lawyerListCache = mockLawyers;
             renderLawyerList(mockLawyers);
             // 如果 API 失敗，使用 mock data

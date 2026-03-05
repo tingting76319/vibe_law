@@ -13,7 +13,7 @@ const pool = require('../db/postgres');
 
 async function getJudgeTenure(judgeName) {
   try {
-    const result = await pool.query(
+    let result = await pool.query(
       'SELECT * FROM judge_tenure_stats WHERE judge_name LIKE $1 LIMIT 1',
       [`%${judgeName}%`]
     );
@@ -75,7 +75,7 @@ router.get('/case/:jid/history', async (req, res) => {
     
     console.log(`[Graph] 查詢案件歷史脈絡: jid=${validated.value}, limit=${limit}`);
     
-    const result = await graphRepository.getCaseHistory(validated.value, limit);
+    let result = await graphRepository.getCaseHistory(validated.value, limit);
     
     if (!result.originalCase) {
       return error(res, 404, '找不到該案件');
@@ -182,7 +182,7 @@ router.get('/judge/:judgeName/trend', async (req, res) => {
 
     console.log(`[Graph] 查詢法官趨勢分析: name=${validated.value}, period=${yearFrom}-${yearTo}`);
     
-    const result = await graphRepository.getJudgeTrendAnalysis(
+    let result = await graphRepository.getJudgeTrendAnalysis(
       validated.value,
       yearFrom,
       yearTo
@@ -260,7 +260,7 @@ router.get('/court-analysis', async (req, res) => {
     }
 
     // 取得法院分析結果
-    const result = courtAnalysis.compareCourtJudgments(caseType);
+    let result = courtAnalysis.compareCourtJudgments(caseType);
     
     if (result.status === 'no_data') {
       return error(res, 404, '沒有找到法院統計資料，請先執行 courtAnalysis.js 腳本');
