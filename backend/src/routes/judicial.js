@@ -298,3 +298,42 @@ router.get('/test', async (req, res) => {
 });
 
 module.exports = router;
+
+// ===== 批量儲存判決書 =====
+router.post('/bulk-save', async (req, res) => {
+  try {
+    const { items } = req.body;
+    if (!items || !Array.isArray(items)) {
+      return error(res, 400, '請提供 items 陣列');
+    }
+    
+    const results = [];
+    for (const item of items) {
+      try {
+        await judicialRepository.upsertJudgment(item);
+        results.push({ jid: item.jid, status: 'success' });
+      } catch (e) {
+        results.push({ jid: item.jid, status: 'error', message: e.message });
+      }
+    }
+    
+    success(res, { saved: results.filter(r => r.status === 'success').length, results });
+  } catch(e) {
+    error(res, 500, e.message);
+  }
+});
+
+// 單一儲存
+router.post('/save', async (req, res) => {
+  try {
+    const item = req.body;
+    if (!item.jid) {
+      return error(res, 400, '請提供 jid');
+    }
+    
+    await judicialRepository.upsertJudgment(item);
+    success(res, { jid: item.jid, status: 'saved' });
+  } catch(e) {
+    error(res, 500, e.message);
+  }
+});

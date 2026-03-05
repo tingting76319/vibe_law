@@ -1,11 +1,10 @@
 /**
- * 將本地判決書上傳至 Zeabur 資料庫
- * 使用現有的 /api/upload 端點
+ * 直接上傳判決書到 Zeabur 資料庫
+ * 使用批量 API 端點
  */
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
-const FormData = require('form-data');
 
 const ZEABUR_URL = process.env.ZEABUR_URL || 'https://vibe-law.zeabur.app';
 const DATA_DIR = path.join(__dirname, '..', 'data', 'judgments');
@@ -30,100 +29,69 @@ async function uploadToZeabur() {
   let error = 0;
   let skip = 0;
   
-  // 建立單一 ZIP 檔案上傳
-  const AdmZip = require('adm-zip');
-  const zip = new AdmZip();
+  // 每次上傳 100 個
+  const BATCH_SIZE = 100;
   
-  let validCount = 0;
-  
-  for (const file of files) {
-    try {
-      const content = fs.readFileSync(path.join(DATA_DIR, file), 'utf8');
-      const item = JSON.parse(content);
-      
-      if (!validateItem(item)) {
-        console.log(`⚠️ 格式不符，跳過: ${file}`);
-        skip++;
-        continue;
+  for (let i = 0; i < files.length; i += BATCH_SIZE) {
+    const batch = files.slice(i, i + BATCH_SIZE);
+    console.log(`📤 上傳中 (${i + 1}-${Math.min(i + BATCH_SIZE, files.length)}/${files.length})...`);
+    
+    const items = [];
+    for (const file of batch) {
+      try {
+        const content = fs.readFileSync(path.join(DATA_DIR, file), 'utf8');
+        const item = JSON.parse(content);
+        
+        if (!validateItem(item)) {
+          skip++;
+          continue;
+        }
+        
+        items.push({
+          jid: item.JID,
+          jyear: item.JYEAR,
+          jcase: item.JCASE,
+          jno: item.JNO,
+          jdate: item.JDATE,
+          jtitle: item.JTITLE,
+          jfull: item.JFULLX?.JFULLCONTENT || '',
+          jpdf: item.JFULLX?.JFULLPDF || ''
+        });
+      } catch (e) {
+        error++;
       }
-      
-      zip.addFile(file, Buffer.from(content));
-      validCount++;
-    } catch (e) {
-      console.error(`❌ 讀取失敗: ${file}`, e.message);
-      error++;
     }
-  }
-  
-  console.log(`✅ 有效檔案: ${validCount}, 跳過: ${skip}, 錯誤: ${error}`);
-  
-  if (validCount === 0) {
-    console.log('沒有檔案需要上傳');
-    return { success: 0, error, skip };
-  }
-  
-  // 儲存 ZIP 檔
-  const zipPath = path.join(__dirname, '..', 'data', 'judgments.zip');
-  zip.writeZip(zipPath);
-  console.log(`📦 已建立 ZIP: ${zipPath}`);
-  
-  // 上傳
-  try {
-    console.log('📤 上傳中...');
     
-    const form = new FormData();
-    form.append('file', fs.createReadStream(zipPath));
+    if (items.length === 0) continue;
     
-    const res = await axios.post(`${ZEABUR_URL}/api/upload`, form, {
-      headers: {
-        ...form.getHeaders()
-      },
-      timeout: 600000 // 10 分鐘
-    });
-    
-    console.log('✅ 上傳成功！');
-    console.log('📊 Job ID:', res.data?.jobId || res.data?.data?.jobId);
-    
-    // 檢查進度
-    if (res.data?.jobId || res.data?.data?.jobId) {
-      const jobId = res.data.jobId || res.data.data.jobId;
-      console.log(`🔄 檢查 Job: ${jobId}`);
+    // 嘗試上傳
+    try {
+      // 使用批量儲存端點（如果存在）
+      const res = await axios.post(`${ZEABUR_URL}/api/judicial/bulk-save`, { items }, { 
+        timeout: 120000 
+      });
+      success += items.length;
+      console.log(`✅ 成功上傳 ${items.length} 筆`);
+    } catch (e) {
+      // 如果沒有 bulk API，每個單獨上傳
+      console.log(`⚠️ 批量上傳失敗，嘗試單一上傳...`);
       
-      for (let i = 0; i < 60; i++) {
-        await new Promise(r => setTimeout(r, 5000));
+      for (const item of items) {
         try {
-          const statusRes = await axios.get(`${ZEABUR_URL}/api/upload/jobs/${jobId}`);
-          const status = statusRes.data;
-          console.log(`📊 狀態: ${status.status}, 進度: ${status.progress || 0}%`);
-          
-          if (status.status === 'completed') {
-            console.log('✅ 上傳完成！');
-            success = validCount;
-            break;
-          } else if (status.status === 'failed') {
-            console.error('❌ 上傳失敗:', status.error);
-            error = validCount;
-            break;
-          }
-        } catch (e) {
-          console.log('⚠️ 無法取得狀態');
+          await axios.post(`${ZEABUR_URL}/api/judicial/save`, item, { timeout: 30000 });
+          success++;
+        } catch (e2) {
+          error++;
         }
       }
     }
     
-  } catch (e) {
-    console.error('❌ 上傳失敗:', e.message);
-    error = validCount;
-  }
-  
-  // 清理
-  if (fs.existsSync(zipPath)) {
-    fs.unlinkSync(zipPath);
+    await new Promise(r => setTimeout(r, 500));
   }
   
   console.log('='.repeat(50));
-  console.log('📊 最終結果:');
-  console.log(`✅ 成功: ${success}`);
+  console.log('✅ 上傳完成！');
+  console.log(`📊 成功: ${success}`);
   console.log(`❌ 錯誤: ${error}`);
   console.log(`⏭️  跳過: ${skip}`);
   
