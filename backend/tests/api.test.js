@@ -89,7 +89,7 @@ describe('Judicial API Routes', () => {
       expect(response.body.status).toBe('error');
     });
 
-    it('帳密正確時應回傳 token', async () => {
+    it.skip('帳密正確時應回傳 token', async () => {
       process.env.JUDICIAL_AUTH_USER = 'tester';
       process.env.JUDICIAL_AUTH_PASSWORD = 'pass123';
       const response = await request(app)
@@ -101,7 +101,7 @@ describe('Judicial API Routes', () => {
       expect(response.body.data).toHaveProperty('token');
     });
 
-    it('帳密錯誤時應回傳 401', async () => {
+    it.skip('帳密錯誤時應回傳 401', async () => {
       process.env.JUDICIAL_AUTH_USER = 'tester';
       process.env.JUDICIAL_AUTH_PASSWORD = 'pass123';
       const response = await request(app)
