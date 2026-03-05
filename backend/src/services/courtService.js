@@ -19,24 +19,21 @@ class CourtService {
       if (cached) return cached;
     }
 
-    // 從案件資料中提取法院（只取 court）
-    const courts = db.query(`
-      SELECT DISTINCT court 
-      FROM cases 
+    // 從法官資料中提取法院
+    const courtsResult = db.query(`
+      SELECT DISTINCT court as name
+      FROM judges 
       WHERE court IS NOT NULL AND court != ''
       ORDER BY court
     `);
-
-    // 取得各法院統計
-    const courtData = courts.map(c => {
-      const stats = this.getCourtStats(c.court);
-      return {
-        name: c.court,
-        level: this.inferCourtLevel(c.court),
-        caseCount: stats.totalCases,
-        yearRange: stats.yearRange
-      };
-    });
+    
+    const courts = courtsResult.rows || [];
+    const courtData = courts.map(c => ({
+      name: c.name,
+      code: c.name.substring(0, 4),
+      level: this.inferCourtLevel(c.name),
+      caseCount: 0
+    }));
 
     cacheService.set(cacheKey, courtData, this.cacheTTL);
     return courtData;
