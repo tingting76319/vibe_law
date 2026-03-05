@@ -81,8 +81,8 @@ router.get('/case/:jid/history', async (req, res) => {
       return error(res, 404, '找不到該案件');
     }
 
-    const tenure = await getJudgeTenure(validated.value);
-    result = { ...result, tenure_years: tenure.tenure_years || 0, case_count: tenure.case_count || 0 };
+    const tenureResult = await getJudgeTenure(validated.value);
+    result = { ...result, tenure_years: tenureResult.tenure_years || 0, case_count: tenure.case_count || 0 };
     return success(res, result);
   } catch (err) {
     console.error('[Graph] 案件歷史脈絡查詢錯誤:', err);
@@ -140,8 +140,8 @@ router.get('/judge/:judgeName/cases', async (req, res) => {
     console.log(`[Graph] 查詢法官相似案件: name=${validated.value}, limit=${limit}`);
     
 
-    const tenure = await getJudgeTenure(validated.value);
-    result = { ...result, tenure_years: tenure.tenure_years || 0, case_count: tenure.case_count || 0 };
+    const tenureResult = await getJudgeTenure(validated.value);
+    result = { ...result, tenure_years: tenureResult.tenure_years || 0, case_count: tenure.case_count || 0 };
     return success(res, result);
   } catch (err) {
     console.error('[Graph] 法官相似案件查詢錯誤:', err);
@@ -188,8 +188,8 @@ router.get('/judge/:judgeName/trend', async (req, res) => {
       yearTo
     );
 
-    const tenure = await getJudgeTenure(validated.value);
-    result = { ...result, tenure_years: tenure.tenure_years || 0, case_count: tenure.case_count || 0 };
+    const tenureResult = await getJudgeTenure(validated.value);
+    result = { ...result, tenure_years: tenureResult.tenure_years || 0, case_count: tenure.case_count || 0 };
     return success(res, result);
   } catch (err) {
     console.error('[Graph] 法官趨勢分析查詢錯誤:', err);
