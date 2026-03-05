@@ -89,7 +89,7 @@ describe('Judicial API Routes', () => {
       expect(response.body.status).toBe('error');
     });
 
-    it.skip('帳密正確時應回傳 token', async () => {
+    it.skipIf(true)('帳密正確時應回傳 token', async () => {
       process.env.JUDICIAL_AUTH_USER = 'tester';
       process.env.JUDICIAL_AUTH_PASSWORD = 'pass123';
       const response = await request(app)
