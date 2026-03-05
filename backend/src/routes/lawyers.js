@@ -4,7 +4,7 @@
  */
 const express = require('express');
 const router = express.Router();
-const Lawyer = require('../models/lawyer');
+const lawyerService = require('../services/lawyerService');
 
 // ========== 律師列表 API ==========
 
@@ -33,7 +33,7 @@ router.get('/', async (req, res) => {
 
     let lawyers;
     if (search || Object.keys(filters).some(k => filters[k])) {
-      lawyers = Lawyer.search(search, filters);
+      lawyers = lawyerService.searchLawyers(search, filters);
     } else {
       lawyers = Lawyer.findAll(parseInt(limit), parseInt(offset));
     }
@@ -81,7 +81,7 @@ router.get('/search', async (req, res) => {
       limit: parseInt(limit)
     };
 
-    const lawyers = Lawyer.search(q, filters);
+    const lawyers = lawyerService.searchLawyers(q, filters);
 
     res.json({
       status: 'success',
@@ -110,7 +110,7 @@ router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     
-    const lawyer = Lawyer.findById(id);
+    const lawyer = lawyerService.getLawyerById(id);
     
     if (!lawyer) {
       return res.status(404).json({
@@ -254,7 +254,7 @@ router.put('/:id', async (req, res) => {
     const { id } = req.params;
     const updateData = req.body;
 
-    const existing = Lawyer.findById(id);
+    const existing = lawyerService.getLawyerById(id);
     if (!existing) {
       return res.status(404).json({
         status: 'error',
@@ -285,7 +285,7 @@ router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    const existing = Lawyer.findById(id);
+    const existing = lawyerService.getLawyerById(id);
     if (!existing) {
       return res.status(404).json({
         status: 'error',
