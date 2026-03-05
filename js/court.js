@@ -530,11 +530,12 @@ async function handleCourtComparison() {
         const response = await fetch(url);
         const data = await response.json();
         
-        if (data.status === 'success') {
+        console.log('API Response:', data);
+        if (data.status === 'success' && Array.isArray(data.data)) {
             courtComparisonState.results = data.data;
             renderComparisonResult(data.data);
         } else {
-            alert('載入失敗: ' + data.message);
+            alert('載入失敗: ' + (data.message || '沒有資料'));
         }
     } catch (error) {
         console.error('Comparison error:', error);
@@ -550,16 +551,22 @@ function renderComparisonResult(results) {
     const resultDiv = document.getElementById('comparison-result');
     const tbody = document.getElementById('comparison-tbody');
     
+    // 確保 results 是陣列
+    if (!Array.isArray(results) || results.length === 0) {
+        alert('沒有找到資料');
+        return;
+    }
+    
     // 顯示結果區塊
     resultDiv.classList.remove('hidden');
     
     // 產生表格內容
     tbody.innerHTML = results.map(item => `
         <tr>
-            <td>${item.court_name}</td>
-            <td>${item.total_cases.toLocaleString()}</td>
-            <td>${item.unique_case_types}</td>
-            <td>${item.avg_content_length.toLocaleString()} 字</td>
+            <td>${item.court_name || item.court_code}</td>
+            <td>${item.total_cases?.toLocaleString() || 0}</td>
+            <td>${item.unique_case_types || 0}</td>
+            <td>${item.avg_content_length?.toLocaleString() || 0} 字</td>
         </tr>
     `).join('');
     
