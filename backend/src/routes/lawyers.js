@@ -384,3 +384,53 @@ router.post('/bulk', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// ===== v1.6: 律師數位孿生 API =====
+
+// GET /api/lawyers/:id/stats - 律師統計分析
+router.get('/:id/stats', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const stats = await lawyerService.getLawyerStats(id);
+    
+    if (!stats) {
+      return res.status(404).json({ status: 'error', message: '律師不存在' });
+    }
+    
+    res.json({ status: 'success', data: stats });
+  } catch (e) {
+    console.error('[lawyers/:id/stats] Error:', e);
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
+
+// GET /api/lawyers/:id/style - 律師風格分析
+router.get('/:id/style', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const style = await lawyerService.getLawyerStyle(id);
+    
+    if (!style) {
+      return res.status(404).json({ status: 'error', message: '律師不存在' });
+    }
+    
+    res.json({ status: 'success', data: style });
+  } catch (e) {
+    console.error('[lawyers/:id/style] Error:', e);
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
+
+// GET /api/lawyers/:id/cases - 律師歷史案件
+router.get('/:id/cases', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { limit = 20 } = req.query;
+    const cases = await lawyerService.getLawyerCases(id, parseInt(limit));
+    
+    res.json({ status: 'success', data: cases, count: cases.length });
+  } catch (e) {
+    console.error('[lawyers/:id/cases] Error:', e);
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});

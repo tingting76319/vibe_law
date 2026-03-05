@@ -92,6 +92,11 @@ function switchLawyerSubView(viewName) {
         if (typeof initStrategyModule === 'function') {
             // 已初始化
         }
+    } else if (viewName === 'twin') {
+        // 切換到律師數位孿生視圖
+        if (typeof initLawyerTwin === 'function') {
+            initLawyerTwin();
+        }
     }
 }
 
@@ -1603,3 +1608,191 @@ function printReport() {
     `);
     printWindow.document.close();
 }
+
+// ===== v1.6: 律師數位孿生 =====
+
+const LAWYER_TWIN_API = '/api/lawyers';
+
+let lawyerTwinState = {
+    lawyers: [],
+    selectedLawyer: null
+};
+
+// 初始化律師數位孿生模組
+function initLawyerTwin() {
+    const searchBtn = document.getElementById('twin-search-btn');
+    const searchInput = document.getElementById('twin-search-input');
+    
+    if (searchBtn) {
+        searchBtn.addEventListener('click', handleTwinSearch);
+    }
+    
+    if (searchInput) {
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleTwinSearch();
+        });
+    }
+    
+    // 載入律師列表
+    loadTwinLawyers();
+}
+
+// 載入律師列表
+async function loadTwinLawyers() {
+    const listContainer = document.getElementById('twin-lawyer-list');
+    if (!listContainer) return;
+    
+    try {
+        const response = await fetch(`${LAWYER_TWIN_API}?limit=50`);
+        const result = await response.json();
+        
+        if (result.status === 'success' && result.data.length > 0) {
+            lawyerTwinState.lawyers = result.data;
+            renderTwinLawyerList(result.data);
+        } else {
+            listContainer.innerHTML = '<p>尚無律師資料，請先上傳律師資料</p>';
+        }
+    } catch (e) {
+        console.error('[LawyerTwin] 載入失敗:', e);
+        listContainer.innerHTML = '<p>載入失敗，請稍後再試</p>';
+    }
+}
+
+// 搜尋律師
+async function handleTwinSearch() {
+    const searchInput = document.getElementById('twin-search-input');
+    const query = searchInput.value.trim();
+    
+    if (!query) {
+        loadTwinLawyers();
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${LAWYER_TWIN_API}/search?q=${encodeURIComponent(query)}`);
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            renderTwinLawyerList(result.data);
+        }
+    } catch (e) {
+        console.error('[LawyerTwin] 搜尋失敗:', e);
+    }
+}
+
+// 渲染律師列表
+function renderTwinLawyerList(lawyers) {
+    const listContainer = document.getElementById('twin-lawyer-list');
+    if (!listContainer) return;
+    
+    if (lawyers.length === 0) {
+        listContainer.innerHTML = '<p>沒有找到律師</p>';
+        return;
+    }
+    
+    listContainer.innerHTML = lawyers.map(lawyer => `
+        <div class="twin-lawyer-card" onclick="selectTwinLawyer(${lawyer.id})">
+            <h4>${lawyer.name || '未知'}</h4>
+            <p>${lawyer.specialty || '綜合'}</p>
+            <p>🏛️ ${lawyer.court || '各法院'}</p>
+        </div>
+    `).join('');
+}
+
+// 選擇律師
+async function selectTwinLawyer(lawyerId) {
+    const detailContainer = document.getElementById('twin-detail');
+    if (!detailContainer) return;
+    
+    try {
+        // 取得律師基本資料
+        const lawyerRes = await fetch(`${LAWYER_TWIN_API}/${lawyerId}`);
+        const lawyerData = await lawyerRes.json();
+        
+        if (lawyerData.status !== 'success') {
+            alert('找不到律師資料');
+            return;
+        }
+        
+        const lawyer = lawyerData.data;
+        
+        // 取得統計資料
+        const statsRes = await fetch(`${LAWYER_TWIN_API}/${lawyerId}/stats`);
+        const statsData = await statsRes.json();
+        
+        // 取得風格分析
+        const styleRes = await fetch(`${LAWYER_TWIN_API}/${lawyerId}/style`);
+        const styleData = await styleRes.json();
+        
+        // 顯示詳情
+        document.getElementById('twin-lawyer-name').textContent = lawyer.name || '未知';
+        document.getElementById('twin-lawyer-specialty').textContent = lawyer.specialty || '綜合';
+        document.getElementById('twin-win-rate').textContent = (lawyer.win_rate || 0) + '%';
+        document.getElementById('twin-total-cases').textContent = lawyer.total_cases || 0;
+        document.getElementById('twin-style').textContent = styleData.data?.style || '穩健型';
+        
+        // 顯示案件分布
+        if (statsData.data?.case_stats) {
+            renderTwinCaseChart(statsData.data.case_stats);
+        }
+        
+        // 顯示歷史案件
+        const casesRes = await fetch(`${LAWYER_TWIN_API}/${lawyerId}/cases?limit=10`);
+        const casesData = await casesRes.json();
+        
+        if (casesData.data) {
+            renderTwinHistoryCases(casesData.data);
+        }
+        
+        detailContainer.classList.remove('hidden');
+        
+    } catch (e) {
+        console.error('[LawyerTwin] 載入詳情失敗:', e);
+    }
+}
+
+// 渲染案件分布圖
+function renderTwinCaseChart(caseStats) {
+    const chartContainer = document.getElementById('twin-case-chart');
+    if (!chartContainer) return;
+    
+    const maxCases = Math.max(...caseStats.map(s => s.count));
+    
+    chartContainer.innerHTML = caseStats.map(stat => {
+        const percentage = (stat.count / maxCases) * 100;
+        return `
+            <div class="case-bar-container">
+                <div class="case-bar-label">${stat.case_type || '未知'}</div>
+                <div class="case-bar-bg">
+                    <div class="case-bar" style="width: ${percentage}%"></div>
+                </div>
+                <div class="case-bar-value">${stat.count}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+// 渲染歷史案件
+function renderTwinHistoryCases(cases) {
+    const container = document.getElementById('twin-history-cases');
+    if (!container) return;
+    
+    container.innerHTML = cases.map(c => `
+        <div class="twin-case-item">
+            <strong>${c.jcase || ''} ${c.jno || ''}</strong>
+            <p>${c.jtitle || ''}</p>
+            <small>${c.jdate || ''}</small>
+        </div>
+    `).join('');
+}
+
+// 添加樣式
+const twinStyle = document.createElement('style');
+twinStyle.textContent = `
+    .case-bar-container { display: flex; align-items: center; margin: 10px 0; }
+    .case-bar-label { width: 120px; font-size: 14px; }
+    .case-bar-bg { flex: 1; height: 20px; background: #e0e0e0; border-radius: 10px; overflow: hidden; }
+    .case-bar { height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); border-radius: 10px; }
+    .case-bar-value { width: 50px; text-align: right; font-weight: bold; }
+`;
+document.head.appendChild(twinStyle);

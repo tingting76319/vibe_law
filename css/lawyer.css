@@ -1624,3 +1624,109 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* v1.6: 律師數位孿生 */
+.twin-section {
+    padding: 20px;
+}
+
+.twin-search {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.twin-search input {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.twin-lawyer-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.twin-lawyer-card {
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.twin-lawyer-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.twin-detail {
+    margin-top: 30px;
+}
+
+.twin-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    color: white;
+}
+
+.twin-avatar {
+    font-size: 48px;
+}
+
+.twin-info h3 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.twin-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.twin-stats .stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.twin-stats .stat-value {
+    font-size: 28px;
+    font-weight: bold;
+    color: #667eea;
+}
+
+.twin-stats .stat-label {
+    color: #666;
+    margin-top: 5px;
+}
+
+.twin-chart, .twin-cases {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.twin-case-item {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.twin-case-item:last-child {
+    border-bottom: none;
+}
