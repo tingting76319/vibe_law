@@ -410,20 +410,10 @@ class CourtService {
   async compareCourtJudgments(caseType, year = null) {
     let yearCondition = year ? `AND jyear = '${year}'` : '';
     
-    const query = `
-      SELECT 
-        SUBSTRING(jid FROM 1 FOR 4) as court_code,
-        COUNT(*) as total_cases,
-        COUNT(DISTINCT jcase) as unique_case_types,
-        AVG(LENGTH(jfull)) as avg_content_length
-      FROM judgments 
-      WHERE jcase LIKE '%${caseType}%' ${yearCondition}
-      GROUP BY SUBSTRING(jid FROM 1 FOR 4)
-      ORDER BY total_cases DESC
-      LIMIT 20
-    `;
+    const query = "SELECT SUBSTRING(jid FROM 1 FOR 4) as court_code, COUNT(*) as total_cases, COUNT(DISTINCT jcase) as unique_case_types, AVG(LENGTH(jfull)) as avg_content_length FROM judgments WHERE jcase LIKE '%" + caseType + "%' " + yearCondition + " GROUP BY SUBSTRING(jid FROM 1 FOR 4) ORDER BY total_cases DESC LIMIT 20";
     
     const result = db.prepare(query).all();
+    const rows = result;
     
     const courts = await this.getAllCourts();
     const courtMap = {};
@@ -431,7 +421,7 @@ class CourtService {
       courtMap[c.code || c.name] = c.name;
     });
     
-    return result.rows.map(row => ({
+    return result.map(row => ({
       court_code: row.court_code,
       court_name: courtMap[row.court_code] || row.court_code,
       total_cases: parseInt(row.total_cases),
@@ -448,18 +438,12 @@ class CourtService {
       yearList.push(currentYear - i);
     }
     
-    const query = `
-      SELECT jyear, COUNT(*) as case_count, COUNT(DISTINCT jcase) as case_types
-      FROM judgments 
-      WHERE jid LIKE '${courtId}%'
-        AND jyear IN (${yearList.join(',')})
-      GROUP BY jyear
-      ORDER BY jyear DESC
-    `;
+    const query = "SELECT jyear, COUNT(*) as case_count, COUNT(DISTINCT jcase) as case_types FROM judgments WHERE jid LIKE '" + courtId + "%' AND jyear IN (" + yearList.join(',') + ") GROUP BY jyear ORDER BY jyear DESC";
     
     const result = db.prepare(query).all();
+    const rows = result;
     
-    return result.rows.map(row => ({
+    return result.map(row => ({
       year: row.jyear,
       case_count: parseInt(row.case_count),
       case_types: parseInt(row.case_types)
