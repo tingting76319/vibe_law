@@ -297,7 +297,7 @@ function renderLawyerCard(lawyer) {
                 </div>
                 <div class="lawyer-meta-item">
                     <span class="icon">💰</span>
-                    <span>${lawyer.hourly_rate ? `時薪 $${lawyer.hourly_rate}` : '電洽'}</span>
+                    <span>${'電洽'}</span>
                 </div>
             </div>
             
@@ -786,8 +786,7 @@ function getMockLawyers() {
             years_of_experience: 15,
             rating: 4.8,
             success_rate: 85,
-            case_stats: { total_cases: 328, wins: 279, losses: 49 },
-            hourly_rate: 8000,
+            case_stats: { total_cases: 328, wins: 279, losses: 49 }
             court_admission: ['台北', '新北', '桃園'],
             office_address: '台北市大安區忠孝東路四段',
             contact_email: 'chen@lawfirm.com',
@@ -805,8 +804,7 @@ function getMockLawyers() {
             years_of_experience: 12,
             rating: 4.9,
             success_rate: 88,
-            case_stats: { total_cases: 256, wins: 225, losses: 31 },
-            hourly_rate: 7000,
+            case_stats: { total_cases: 256, wins: 225, losses: 31 }
             court_admission: ['台北', '新北', '台中'],
             office_address: '台北市信義區松高路',
             contact_email: 'lin@lawfirm.com',
@@ -824,8 +822,7 @@ function getMockLawyers() {
             years_of_experience: 20,
             rating: 4.7,
             success_rate: 78,
-            case_stats: { total_cases: 512, wins: 399, losses: 113 },
-            hourly_rate: 10000,
+            case_stats: { total_cases: 512, wins: 399, losses: 113 }
             court_admission: ['台北', '新北', '高雄', '台中'],
             office_address: '台北市中正區重慶南路',
             contact_email: 'wang@lawfirm.com',
@@ -843,8 +840,7 @@ function getMockLawyers() {
             years_of_experience: 8,
             rating: 4.6,
             success_rate: 82,
-            case_stats: { total_cases: 145, wins: 119, losses: 26 },
-            hourly_rate: 9000,
+            case_stats: { total_cases: 145, wins: 119, losses: 26 }
             court_admission: ['台北', '新北', '智慧財產法院'],
             office_address: '台北市南港區園區街',
             contact_email: 'zhang@lawfirm.com',
@@ -862,8 +858,7 @@ function getMockLawyers() {
             years_of_experience: 18,
             rating: 4.9,
             success_rate: 90,
-            case_stats: { total_cases: 287, wins: 258, losses: 29 },
-            hourly_rate: 15000,
+            case_stats: { total_cases: 287, wins: 258, losses: 29 }
             court_admission: ['台北', '新北', '台中', '高雄'],
             office_address: '台北市中山區南京東路',
             contact_email: 'lee@lawfirm.com',
@@ -881,8 +876,7 @@ function getMockLawyers() {
             years_of_experience: 10,
             rating: 4.5,
             success_rate: 80,
-            case_stats: { total_cases: 198, wins: 158, losses: 40 },
-            hourly_rate: 6000,
+            case_stats: { total_cases: 198, wins: 158, losses: 40 }
             court_admission: ['新北', '桃園', '台中'],
             office_address: '新北市板橋區縣民大道',
             contact_email: 'huang@lawfirm.com',

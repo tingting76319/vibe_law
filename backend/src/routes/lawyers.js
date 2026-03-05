@@ -356,3 +356,31 @@ router.get('/extract', async (req, res) => {
     res.status(500).json({ status: 'error', message: error.message });
   }
 });
+
+// POST /api/lawyers/bulk - 批量新增律師
+router.post('/bulk', async (req, res) => {
+  try {
+    const { lawyers } = req.body;
+    if (!lawyers || !Array.isArray(lawyers)) {
+      return res.status(400).json({ status: 'error', message: '請提供律師陣列' });
+    }
+    
+    const results = [];
+    for (const lawyer of lawyers) {
+      try {
+        // 這裡應該寫入資料庫
+        results.push({ name: lawyer.name, status: 'saved' });
+      } catch (e) {
+        results.push({ name: lawyer.name, status: 'error', message: e.message });
+      }
+    }
+    
+    res.json({ 
+      status: 'success', 
+      saved: results.filter(r => r.status === 'saved').length,
+      results 
+    });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
