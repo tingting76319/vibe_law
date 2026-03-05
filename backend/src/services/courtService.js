@@ -20,12 +20,12 @@ class CourtService {
     }
 
     // 從案件資料中提取法院（只取 court）
-    const courts = db.prepare(`
+    const courts = db.query(`
       SELECT DISTINCT court 
       FROM cases 
       WHERE court IS NOT NULL AND court != ''
       ORDER BY court
-    `).all();
+    `);
 
     // 取得各法院統計
     const courtData = courts.map(c => {
@@ -53,7 +53,7 @@ class CourtService {
 
   // 取得法院基本統計
   getCourtStats(courtName) {
-    const stats = db.prepare(`
+    const stats = db.query(`
       SELECT 
         COUNT(*) as totalCases,
         MIN(year) as minYear,
@@ -82,7 +82,7 @@ class CourtService {
     }
 
     // 先嘗試直接用 courtId 查詢案件
-    const court = db.prepare(`
+    const court = db.query(`
       SELECT DISTINCT court
       FROM cases 
       WHERE court = ?
@@ -90,7 +90,7 @@ class CourtService {
 
     if (!court) {
       // 嘗試用 ID 查詢法官所屬法院
-      const judge = db.prepare(`
+      const judge = db.query(`
         SELECT court FROM judge_profiles WHERE id = ?
       `).get(courtId);
       
@@ -118,7 +118,7 @@ class CourtService {
     const stats = this.getCourtStats(courtName);
     
     // 案件類型分布
-    const typeDistribution = db.prepare(`
+    const typeDistribution = db.query(`
       SELECT 
         case_type as type,
         COUNT(*) as count
@@ -129,7 +129,7 @@ class CourtService {
     `).all(courtName);
 
     // 判決結果分布
-    const resultDistribution = db.prepare(`
+    const resultDistribution = db.query(`
       SELECT 
         result,
         COUNT(*) as count
@@ -141,7 +141,7 @@ class CourtService {
     `).all(courtName);
 
     // 法官清單
-    const judges = db.prepare(`
+    const judges = db.query(`
       SELECT id, name, position, specialty
       FROM judge_profiles 
       WHERE court = ?
@@ -149,7 +149,7 @@ class CourtService {
     `).all(courtName);
 
     // 年度趨勢
-    const annualTrend = db.prepare(`
+    const annualTrend = db.query(`
       SELECT 
         year,
         COUNT(*) as count,
@@ -217,7 +217,7 @@ class CourtService {
     }
 
     // 取得法官判決傾向
-    const judgeTendencies = db.prepare(`
+    const judgeTendencies = db.query(`
       SELECT 
         j.id,
         j.name,
@@ -285,7 +285,7 @@ class CourtService {
 
     query += ' GROUP BY case_type ORDER BY count DESC';
 
-    const stats = db.prepare(query).all(...params);
+    const stats = db.query(query).all(...params);
     
     return stats.map(s => ({
       type: s.case_type || '其他',
@@ -296,7 +296,7 @@ class CourtService {
   // 取得常引用法條
   getTopLaws(courtName, yearRange) {
     // 取得有法條的案件
-    const casesWithLaws = db.prepare(`
+    const casesWithLaws = db.query(`
       SELECT id, related_laws FROM cases 
       WHERE court = ? AND related_laws IS NOT NULL AND related_laws != ''
       ${yearRange ? 'AND year BETWEEN ? AND ?' : ''}
@@ -351,7 +351,7 @@ class CourtService {
     const cached = cacheService.get(cacheKey);
     if (cached) return cached;
 
-    const courts = db.prepare(`
+    const courts = db.query(`
       SELECT DISTINCT court as name
       FROM cases 
       WHERE court LIKE ?
