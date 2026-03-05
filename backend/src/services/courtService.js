@@ -423,7 +423,7 @@ class CourtService {
       LIMIT 20
     `;
     
-    const result = await db.query(query);
+    const result = db.prepare(query).all();
     
     const courts = await this.getAllCourts();
     const courtMap = {};
@@ -457,7 +457,7 @@ class CourtService {
       ORDER BY jyear DESC
     `;
     
-    const result = await db.query(query);
+    const result = db.prepare(query).all();
     
     return result.rows.map(row => ({
       year: row.jyear,
