@@ -193,3 +193,61 @@ router.get('/trends/court-patterns', async (req, res) => {
 });
 
 module.exports = router;
+
+// ===== v1.5 新增: 法院判決差異分析 =====
+
+// GET /api/courts/compare - 比較不同法院對同類案件的判決
+router.get('/compare', async (req, res) => {
+  try {
+    const { caseType, year } = req.query;
+    
+    if (!caseType) {
+      return res.status(400).json({
+        status: 'error',
+        message: '請提供案件類型 (caseType)'
+      });
+    }
+    
+    const result = await courtService.compareCourtJudgments(caseType, year);
+    
+    res.json({
+      status: 'success',
+      data: result,
+      meta: {
+        timestamp: new Date().toISOString(),
+        caseType: caseType,
+        year: year || 'all'
+      }
+    });
+  } catch (error) {
+    console.error('[courts/compare] Error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: error.message
+    });
+  }
+});
+
+// GET /api/courts/trend/:courtId - 法院判決趨勢分析
+router.get('/trend/:courtId', async (req, res) => {
+  try {
+    const { courtId } = req.params;
+    const { years } = req.query;
+    
+    const result = await courtService.getCourtTrend(courtId, years || 3);
+    
+    res.json({
+      status: 'success',
+      data: result,
+      meta: {
+        timestamp: new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    console.error('[courts/trend] Error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: error.message
+    });
+  }
+});

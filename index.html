@@ -376,7 +376,72 @@
                 </div>
             </section>
 
-            <!-- 法院檔案區 -->
+            
+            <!-- v1.5: 法院判決差異分析 -->
+            <section class="court-comparison" id="court-comparison">
+                <h2>⚖️ 法院判決差異分析</h2>
+                <p class="section-desc">比較不同法院對同類案件的判決差異</p>
+                
+                <!-- 比較選項 -->
+                <div class="comparison-controls">
+                    <div class="form-group">
+                        <label>案件類型 *</label>
+                        <select id="comparison-case-type" required>
+                            <option value="">請選擇案件類型</option>
+                            <option value="民事">民事</option>
+                            <option value="刑事">刑事</option>
+                            <option value="行政">行政</option>
+                            <option value="家事">家事</option>
+                            <option value="勞動">勞動</option>
+                            <option value="交通">交通</option>
+                            <option value="損害賠償">損害賠償</option>
+                            <option value="契約">契約</option>
+                            <option value="房地產">房地產</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>年份</label>
+                        <select id="comparison-year">
+                            <option value="">全部年份</option>
+                            <option value="115">115年</option>
+                            <option value="114">114年</option>
+                            <option value="113">113年</option>
+                            <option value="112">112年</option>
+                            <option value="111">111年</option>
+                        </select>
+                    </div>
+                    <button id="compare-btn" class="primary-btn">🔍 開始比較</button>
+                </div>
+                
+                <!-- 比較結果 -->
+                <div id="comparison-result" class="comparison-result hidden">
+                    <h3>📊 判決差異比較結果</h3>
+                    <div class="comparison-table-container">
+                        <table class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>法院</th>
+                                    <th>案件數量</th>
+                                    <th>案件類型數</th>
+                                    <th>平均內容長度</th>
+                                </tr>
+                            </thead>
+                            <tbody id="comparison-tbody">
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- 差異分析圖表 -->
+                    <div class="comparison-charts">
+                        <div class="chart-card">
+                            <h4>📈 各法院案件數量</h4>
+                            <div id="comparison-chart-cases"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+<!-- 法院檔案區 -->
             <section class="court-profile" id="court-profile">
                 <!-- 法院基本資料 -->
                 <div class="court-card">

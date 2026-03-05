@@ -412,3 +412,96 @@
     text-align: center;
     color: var(--text-secondary, #718096);
 }
+
+/* v1.5: Court Comparison */
+.court-comparison {
+    padding: 20px;
+    margin-top: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.court-comparison h2 {
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.comparison-controls {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+
+.comparison-controls .form-group {
+    flex: 1;
+    min-width: 150px;
+}
+
+.comparison-controls label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #555;
+}
+
+.comparison-controls select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.comparison-result {
+    margin-top: 20px;
+}
+
+.comparison-result.hidden {
+    display: none;
+}
+
+.comparison-table-container {
+    overflow-x: auto;
+    margin: 20px 0;
+}
+
+.comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.comparison-table th,
+.comparison-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.comparison-table th {
+    background: #4a90d9;
+    color: white;
+    font-weight: 600;
+}
+
+.comparison-table tr:hover {
+    background: #f5f5f5;
+}
+
+.comparison-charts {
+    margin-top: 20px;
+}
+
+.chart-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.chart-card h4 {
+    margin-bottom: 15px;
+    color: #333;
+}

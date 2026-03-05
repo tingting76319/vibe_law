@@ -22,6 +22,7 @@ const CASE_TYPE_ICONS = {
 
 // 初始化法院模組
 function initCourtModule() {
+    initCourtComparison();
     renderCourtList();
     bindCourtEvents();
 }
@@ -495,3 +496,128 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 100);
 });
+
+// ===== v1.5: Court Comparison Functions =====
+
+let courtComparisonState = {
+    results: null
+};
+
+// 初始化法院比較功能
+function initCourtComparison() {
+    const compareBtn = document.getElementById('compare-btn');
+    if (compareBtn) {
+        compareBtn.addEventListener('click', handleCourtComparison);
+    }
+}
+
+// 處理法院比較
+async function handleCourtComparison() {
+    const caseType = document.getElementById('comparison-case-type').value;
+    const year = document.getElementById('comparison-year').value;
+    
+    if (!caseType) {
+        alert('請選擇案件類型');
+        return;
+    }
+    
+    const compareBtn = document.getElementById('compare-btn');
+    compareBtn.disabled = true;
+    compareBtn.textContent = '🔄 載入中...';
+    
+    try {
+        const url = `/api/courts/compare?caseType=${encodeURIComponent(caseType)}${year ? '&year=' + year : ''}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            courtComparisonState.results = data.data;
+            renderComparisonResult(data.data);
+        } else {
+            alert('載入失敗: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Comparison error:', error);
+        alert('載入失敗，請稍後再試');
+    } finally {
+        compareBtn.disabled = false;
+        compareBtn.textContent = '🔍 開始比較';
+    }
+}
+
+// 渲染比較結果
+function renderComparisonResult(results) {
+    const resultDiv = document.getElementById('comparison-result');
+    const tbody = document.getElementById('comparison-tbody');
+    
+    // 顯示結果區塊
+    resultDiv.classList.remove('hidden');
+    
+    // 產生表格內容
+    tbody.innerHTML = results.map(item => `
+        <tr>
+            <td>${item.court_name}</td>
+            <td>${item.total_cases.toLocaleString()}</td>
+            <td>${item.unique_case_types}</td>
+            <td>${item.avg_content_length.toLocaleString()} 字</td>
+        </tr>
+    `).join('');
+    
+    // 渲染圖表
+    renderComparisonChart(results);
+}
+
+// 渲染比較圖表
+function renderComparisonChart(results) {
+    const chartContainer = document.getElementById('comparison-chart-cases');
+    if (!chartContainer) return;
+    
+    // 簡單的文字圖表
+    const maxCases = Math.max(...results.map(r => r.total_cases));
+    
+    chartContainer.innerHTML = results.map(item => {
+        const percentage = (item.total_cases / maxCases) * 100;
+        return `
+            <div class="chart-bar-container">
+                <div class="chart-label">${item.court_name}</div>
+                <div class="chart-bar-bg">
+                    <div class="chart-bar" style="width: ${percentage}%"></div>
+                </div>
+                <div class="chart-value">${item.total_cases.toLocaleString()}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+// 添加圖表樣式
+const style = document.createElement('style');
+style.textContent = `
+    .chart-bar-container {
+        display: flex;
+        align-items: center;
+        margin: 10px 0;
+    }
+    .chart-label {
+        width: 150px;
+        font-size: 14px;
+    }
+    .chart-bar-bg {
+        flex: 1;
+        height: 20px;
+        background: #e0e0e0;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .chart-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #4a90d9, #67b26f);
+        border-radius: 10px;
+        transition: width 0.5s ease;
+    }
+    .chart-value {
+        width: 80px;
+        text-align: right;
+        font-weight: 600;
+    }
+`;
+document.head.appendChild(style);

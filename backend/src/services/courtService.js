@@ -405,6 +405,66 @@ class CourtService {
 
     return patterns;
   }
+
+  // ===== v1.5 新增: 法院判決差異分析 =====
+  async compareCourtJudgments(caseType, year = null) {
+    let yearCondition = year ? `AND jyear = '${year}'` : '';
+    
+    const query = `
+      SELECT 
+        SUBSTRING(jid FROM 1 FOR 4) as court_code,
+        COUNT(*) as total_cases,
+        COUNT(DISTINCT jcase) as unique_case_types,
+        AVG(LENGTH(jfull)) as avg_content_length
+      FROM judgments 
+      WHERE jcase LIKE '%${caseType}%' ${yearCondition}
+      GROUP BY SUBSTRING(jid FROM 1 FOR 4)
+      ORDER BY total_cases DESC
+      LIMIT 20
+    `;
+    
+    const result = await db.query(query);
+    
+    const courts = await this.getAllCourts();
+    const courtMap = {};
+    courts.forEach(c => {
+      courtMap[c.code || c.name] = c.name;
+    });
+    
+    return result.rows.map(row => ({
+      court_code: row.court_code,
+      court_name: courtMap[row.court_code] || row.court_code,
+      total_cases: parseInt(row.total_cases),
+      unique_case_types: parseInt(row.unique_case_types),
+      avg_content_length: Math.round(parseFloat(row.avg_content_length) || 0)
+    }));
+  }
+
+  async getCourtTrend(courtId, years = 3) {
+    const currentYear = new Date().getFullYear() - 1911;
+    const yearList = [];
+    
+    for (let i = 0; i < years; i++) {
+      yearList.push(currentYear - i);
+    }
+    
+    const query = `
+      SELECT jyear, COUNT(*) as case_count, COUNT(DISTINCT jcase) as case_types
+      FROM judgments 
+      WHERE jid LIKE '${courtId}%'
+        AND jyear IN (${yearList.join(',')})
+      GROUP BY jyear
+      ORDER BY jyear DESC
+    `;
+    
+    const result = await db.query(query);
+    
+    return result.rows.map(row => ({
+      year: row.jyear,
+      case_count: parseInt(row.case_count),
+      case_types: parseInt(row.case_types)
+    }));
+  }
 }
 
 module.exports = new CourtService();
