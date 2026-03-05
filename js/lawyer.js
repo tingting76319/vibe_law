@@ -108,10 +108,15 @@ async function loadLawyers() {
         const response = await fetch(`${LAWYER_API_BASE}?limit=50`);
         const result = await response.json();
         
-        if (result.status === 'success') {
-            lawyerListCache = result.data || [];
+        if (result.status === 'success' && result.data && result.data.length > 0) {
+            lawyerListCache = result.data;
             renderLawyerList(lawyerListCache);
         } else {
+            // 如果 API 沒有資料，使用 mock data
+            console.warn('[Lawyer] API 無資料，使用 Mock 資料');
+            const mockLawyers = getMockLawyers();
+            lawyerListCache = mockLawyers;
+            renderLawyerList(mockLawyers);
             // 如果 API 失敗，使用 mock data
             console.warn('[Lawyer] API 失敗，使用 Mock 資料');
             const mockLawyers = getMockLawyers();
@@ -158,10 +163,15 @@ async function searchLawyers() {
         const response = await fetch(`${LAWYER_API_BASE}/search?${params}`);
         const result = await response.json();
         
-        if (result.status === 'success') {
-            lawyerListCache = result.data || [];
+        if (result.status === 'success' && result.data && result.data.length > 0) {
+            lawyerListCache = result.data;
             renderLawyerList(lawyerListCache);
         } else {
+            // 如果 API 沒有資料，使用 mock data
+            console.warn('[Lawyer] API 無資料，使用 Mock 資料');
+            const mockLawyers = getMockLawyers();
+            lawyerListCache = mockLawyers;
+            renderLawyerList(mockLawyers);
             // 本地過濾
             filterLawyersLocal(query, specialty, court, minExperience);
         }
