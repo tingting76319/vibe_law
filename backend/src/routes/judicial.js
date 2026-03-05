@@ -235,8 +235,8 @@ router.get('/changelog', async (req, res) => {
 
 // API 帳密驗證
 router.post('/auth', async (req, res) => {
-  const configuredUser = process.env.JUDICIAL_AUTH_USER;
-  const configuredPassword = process.env.JUDICIAL_AUTH_PASSWORD;
+  const configuredUser = process.env.JUDICIAL_AUTH_USER || process.env.JUDICIAL_USER;
+  const configuredPassword = process.env.JUDICIAL_AUTH_PASSWORD || process.env.JUDICIAL_PASSWORD;
 
   if (!configuredUser || !configuredPassword) {
     return error(res, 503, 'auth 功能尚未設定');
