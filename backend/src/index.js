@@ -61,7 +61,7 @@ app.get('/health', async (req, res) => {
   res.json({ 
     status: 'ok', 
     timestamp: new Date().toISOString(),
-    version: '1.5',
+    version: '1.5.0',
     database: process.env.DATABASE_URL ? 'configured' : 'missing',
     features: {
       upload: 'enhanced',
@@ -80,7 +80,7 @@ app.get('/health', async (req, res) => {
 app.get('/api/v14/health', async (req, res) => {
   res.json({ 
     status: 'ok', 
-    version: '1.5',
+    version: '1.5.0',
     timestamp: new Date().toISOString(),
     features: {
       caseHistory: 'enabled',
@@ -94,7 +94,7 @@ app.get('/api/v14/health', async (req, res) => {
 app.get('/api/v11/health', async (req, res) => {
   res.json({ 
     status: 'ok', 
-    version: '1.2',
+    version: '1.5.0',
     timestamp: new Date().toISOString(),
     features: {
       caseClassification: 'enabled',
@@ -109,7 +109,7 @@ app.get('/api/v11/health', async (req, res) => {
 app.get('/api/v09/health', async (req, res) => {
   res.json({ 
     status: 'ok', 
-    version: '1.0',
+    version: '1.5.0',
     timestamp: new Date().toISOString(),
     features: {
       petitionAnalysis: 'enabled',
@@ -126,7 +126,7 @@ app.get('/api/v09/health', async (req, res) => {
 app.get('/api/v08/health', async (req, res) => {
   res.json({ 
     status: 'ok', 
-    version: '0.8',
+    version: '1.5.0',
     timestamp: new Date().toISOString(),
     features: {
       lawyerProfiles: 'enabled',
@@ -142,7 +142,7 @@ app.get('/api/v08/health', async (req, res) => {
 app.get('/api/v07/health', async (req, res) => {
   res.json({ 
     status: 'ok', 
-    version: '0.7',
+    version: '1.5.0',
     timestamp: new Date().toISOString(),
     features: {
       judgeProfile: 'enabled',
@@ -161,7 +161,7 @@ app.get('/api/v07/health', async (req, res) => {
 app.get('/api/v04/health', async (req, res) => {
   res.json({ 
     status: 'ok', 
-    version: '0.6',
+    version: '1.5.0',
     timestamp: new Date().toISOString(),
     features: {
       vectorEmbedding: 'enabled',
