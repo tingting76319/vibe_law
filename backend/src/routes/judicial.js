@@ -40,7 +40,7 @@ router.get('/stats/case-types', async (req, res) => {
     };
     
     stats.forEach(row => {
-      if (Object.prototype.hasOwnProperty.call(result(row.case_type)) {
+      if (Object.prototype.hasOwnProperty.call(result, row.case_type) {
         result[row.case_type] = row.count;
       }
     });
