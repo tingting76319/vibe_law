@@ -222,7 +222,7 @@ router.post('/', async (req, res) => {
     }
 
     // 檢查律師證號是否已存在
-    const existing = lawyerService.getLawyerByBarNumber(lawyerData.bar_number);
+    const existing = await lawyerService.getLawyerByBarNumber(lawyerData.bar_number);
     if (existing) {
       return res.status(409).json({
         status: 'error',
@@ -231,7 +231,7 @@ router.post('/', async (req, res) => {
       });
     }
 
-    const lawyer = lawyerService.createLawyer(lawyerData);
+    const lawyer = await lawyerService.createLawyer(lawyerData);
 
     res.status(201).json({
       status: 'success',
