@@ -263,7 +263,7 @@ router.put('/:id', async (req, res) => {
       });
     }
 
-    const lawyer = Lawyer.update(id, updateData);
+    const lawyer = lawyerService.updateLawyer(id, updateData);
 
     res.json({
       status: 'success',
@@ -294,7 +294,7 @@ router.delete('/:id', async (req, res) => {
       });
     }
 
-    Lawyer.delete(id);
+    lawyerService.deleteLawyer(id);
 
     res.json({
       status: 'success',
