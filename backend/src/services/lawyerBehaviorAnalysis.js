@@ -1,6 +1,7 @@
 /**
  * Lawyer Behavior Analysis Service - 律師行為分析服務
  * v0.8.0 - 律師媒合 MVP
+const lawyerService = require("./lawyerService");
  * 分析律師歷史案件、提取執業風格
  */
 const Lawyer = require('../models/lawyer');
@@ -76,7 +77,7 @@ class LawyerBehaviorAnalysis {
 
   // 分析律師執業模式
   analyzePracticePatterns(lawyerId) {
-    const lawyer = Lawyer.findById(lawyerId);
+    const lawyer = lawyerService.getLawyerById(lawyerId);
     if (!lawyer) {
       return { error: '律師不存在' };
     }
@@ -336,7 +337,7 @@ class LawyerBehaviorAnalysis {
 
   // 提取律師風格向量
   extractStyleVector(lawyerId) {
-    const lawyer = Lawyer.findById(lawyerId);
+    const lawyer = lawyerService.getLawyerById(lawyerId);
     if (!lawyer) return null;
 
     const vector = {
@@ -445,12 +446,12 @@ class LawyerBehaviorAnalysis {
 
   // 搜尋律師
   searchLawyers(keyword) {
-    return Lawyer.search(keyword);
+    return lawyerService.searchLawyers(keyword);
   }
 
   // 取得所有律師摘要
   getAllLawyers() {
-    return Lawyer.findAll(100, 0);
+    return lawyerService.getAllLawyers(100, 0);
   }
 }
 

@@ -2,6 +2,7 @@
  * 媒合 API Routes - v0.8.0
  * 案件-律師匹配、推薦結果、匹配度評分 API
  */
+const lawyerService = require("../services/lawyerService");
 const express = require('express');
 const router = express.Router();
 const MatchingService = require('../services/matchingService');
@@ -76,7 +77,7 @@ router.post('/score', async (req, res) => {
       });
     }
 
-    const lawyer = Lawyer.findById(lawyerId);
+    const lawyer = lawyerService.getLawyerById(lawyerId);
     if (!lawyer) {
       return res.status(404).json({
         status: 'error',
@@ -140,7 +141,7 @@ router.post('/batch-score', async (req, res) => {
 
     const results = [];
     for (const lawyerId of lawyerIds) {
-      const lawyer = Lawyer.findById(lawyerId);
+      const lawyer = lawyerService.getLawyerById(lawyerId);
       if (lawyer) {
         const score = MatchingService.calculateMatchScore(caseData, lawyer);
         const matchLevel = MatchingService.getMatchLevel(score);
@@ -273,7 +274,7 @@ router.get('/evaluate/:lawyerId', async (req, res) => {
   try {
     const { lawyerId } = req.params;
 
-    const lawyer = Lawyer.findById(lawyerId);
+    const lawyer = lawyerService.getLawyerById(lawyerId);
     if (!lawyer) {
       return res.status(404).json({
         status: 'error',

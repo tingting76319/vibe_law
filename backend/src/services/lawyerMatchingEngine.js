@@ -1,6 +1,7 @@
 /**
  * Lawyer Matching Engine - 律師媒合引擎
  * v0.8.0 - 律師媒合 MVP
+const lawyerService = require("./lawyerService");
  * 
  * 核心功能：
  * 1. 規則分數計算
@@ -494,17 +495,17 @@ class LawyerMatchingEngine {
     // 1. 先按專長領域篩選
     const mappedSpecialties = this._mapCaseTypeToSpecialties(caseType);
     if (mappedSpecialties.length > 0) {
-      candidates = Lawyer.findBySpecialty(mappedSpecialties[0], 100);
+      candidates = lawyerService.getLawyersBySpecialty(mappedSpecialties[0], 100);
     }
 
     // 2. 如果沒有結果，獲取全部律師
     if (candidates.length === 0) {
-      candidates = Lawyer.findAll(100, 0);
+      candidates = lawyerService.getAllLawyers(100, 0);
     }
 
     // 3. 按法院進一步篩選
     if (court) {
-      const courtCandidates = Lawyer.findByCourt(court, 50);
+      const courtCandidates = lawyerService.getLawyersByCourt(court, 50);
       if (courtCandidates.length > 0) {
         // 合併並按評分排序
         const combined = [...new Map([...candidates, ...courtCandidates].map(l => [l.id, l])).values()];

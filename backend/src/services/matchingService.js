@@ -21,7 +21,7 @@ const MatchingService = {
     const { limit = 10, minMatchScore = 0.3 } = options;
     
     // 取得所有可用律師
-    const lawyers = Lawyer.findAll(100, 0);
+    const lawyers = lawyerService.getAllLawyers(100, 0);
     const availableLawyers = lawyers.filter(l => l.availability_status === 'available');
     
     // 計算每個律師的匹配度
