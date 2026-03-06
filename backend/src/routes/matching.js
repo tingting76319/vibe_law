@@ -6,7 +6,6 @@ const lawyerService = require("../services/lawyerService");
 const express = require('express');
 const router = express.Router();
 const MatchingService = require('../services/matchingService');
-const Lawyer = require('../models/lawyer');
 
 // ========== 案件-律師匹配 API ==========
 
