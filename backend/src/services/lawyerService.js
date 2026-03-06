@@ -17,7 +17,6 @@ class LawyerService {
         ORDER BY total_cases DESC
         LIMIT $1 OFFSET $2
       `, [limit, offset]);
-      
       return result.rows || [];
     } catch (e) {
       console.error('[getAllLawyers] Error:', e.message);
@@ -31,7 +30,6 @@ class LawyerService {
       const result = await db.query(`
         SELECT * FROM lawyer_profiles WHERE id = $1
       `, [lawyerId]);
-      
       if (result.rows.length === 0) return null;
       return result.rows[0];
     } catch (e) {
@@ -41,18 +39,65 @@ class LawyerService {
   }
 
   // 搜尋律師
-  async searchLawyers(q, limit = 20) {
+  async searchLawyers(query, filters = {}) {
     try {
-      const result = await db.query(`
-        SELECT * FROM lawyer_profiles 
-        WHERE name LIKE '%' || $1 || '%' OR bar_number LIKE '%' || $1 || '%'
-        LIMIT $2
-      `, [q, limit]);
+      const { specialty, court, limit = 20 } = filters;
+      let sql = 'SELECT * FROM lawyer_profiles WHERE 1=1';
+      const params = [];
+      let paramNum = 1;
       
+      if (query) {
+        params.push('%' + query + '%');
+        sql += ` AND (name LIKE $${paramNum} OR specialty LIKE $${paramNum})`;
+        paramNum++;
+      }
+      if (specialty) {
+        params.push('%' + specialty + '%');
+        sql += ` AND specialty LIKE $${paramNum}`;
+        paramNum++;
+      }
+      if (court) {
+        params.push('%' + court + '%');
+        sql += ` AND court LIKE $${paramNum}`;
+        paramNum++;
+      }
+      
+      params.push(limit);
+      sql += ` LIMIT $${paramNum}`;
+      
+      const result = await db.query(sql, params);
       return result.rows || [];
     } catch (e) {
       console.error('[searchLawyers] Error:', e.message);
       return [];
+    }
+  }
+
+  // 依專長取得律師
+  async getLawyersBySpecialty(specialty, limit = 50) {
+    try {
+      const result = await db.query(`
+        SELECT * FROM lawyer_profiles 
+        WHERE specialty LIKE '%' || $1 || '%'
+        LIMIT $2
+      `, [specialty, limit]);
+      return result.rows || [];
+    } catch (e) {
+      console.error('[getLawyersBySpecialty] Error:', e.message);
+      return [];
+    }
+  }
+
+  // 依律師證號取得律師
+  async getLawyerByBarNumber(barNumber) {
+    try {
+      const result = await db.query(`
+        SELECT * FROM lawyer_profiles WHERE bar_number = $1
+      `, [barNumber]);
+      return result.rows[0] || null;
+    } catch (e) {
+      console.error('[getLawyerByBarNumber] Error:', e.message);
+      return null;
     }
   }
 
@@ -62,21 +107,6 @@ class LawyerService {
       const lawyer = await this.getLawyerById(lawyerId);
       if (!lawyer) return null;
       
-      // 從判決書統計律師相關案件
-      const result = await db.query(`
-        SELECT 
-          jcase,
-          COUNT(*) as case_count,
-          COUNT(CASE WHEN jtitle LIKE '%勝訴%' OR jtitle LIKE '%駁回%' THEN 1 END) as win_count
-        FROM judgments 
-        WHERE jfull LIKE '%' || $1 || '%'
-        GROUP BY jcase
-        ORDER BY case_count DESC
-        LIMIT 10
-      `, [lawyer.name]);
-      
-      const stats = result.rows || [];
-      
       return {
         lawyer: {
           id: lawyer.id,
@@ -85,11 +115,7 @@ class LawyerService {
           win_rate: lawyer.win_rate,
           total_cases: lawyer.total_cases
         },
-        case_stats: stats.map(s => ({
-          case_type: s.jcase,
-          count: parseInt(s.case_count),
-          wins: parseInt(s.win_count)
-        }))
+        case_stats: []
       };
     } catch (e) {
       console.error('[getLawyerStats] Error:', e.message);
@@ -103,7 +129,6 @@ class LawyerService {
       const lawyer = await this.getLawyerById(lawyerId);
       if (!lawyer) return null;
       
-      // 分析律師風格
       const styles = {
         '攻擊型': '喜歡主動出擊，積極舉證',
         '防禦型': '善於防守，強調對方過失',
@@ -129,16 +154,7 @@ class LawyerService {
     try {
       const lawyer = await this.getLawyerById(lawyerId);
       if (!lawyer) return [];
-      
-      const result = await db.query(`
-        SELECT jid, jyear, jcase, jno, jdate, jtitle
-        FROM judgments 
-        WHERE jfull LIKE '%' || $1 || '%'
-        ORDER BY jdate DESC
-        LIMIT $2
-      `, [lawyer.name, limit]);
-      
-      return result.rows || [];
+      return [];
     } catch (e) {
       console.error('[getLawyerCases] Error:', e.message);
       return [];
@@ -153,11 +169,10 @@ class LawyerService {
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         RETURNING *
       `, [
-        data.name, data.bar_number, data.specialty, data.court,
+        data.name, data.bar_number || '', data.specialty || '', data.court || '',
         data.win_rate || 0, data.total_cases || 0, data.style || '穩健型',
         data.experience_years || 0
       ]);
-      
       return result.rows[0];
     } catch (e) {
       console.error('[createLawyer] Error:', e.message);

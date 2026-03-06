@@ -35,7 +35,7 @@ router.get('/', async (req, res) => {
     if (search || Object.keys(filters).some(k => filters[k])) {
       lawyers = lawyerService.searchLawyers(search, filters);
     } else {
-      lawyers = Lawyer.findAll(parseInt(limit), parseInt(offset));
+      lawyers = lawyerService.getAllLawyers(parseInt(limit), parseInt(offset));
     }
 
     res.json({
@@ -121,7 +121,7 @@ router.get('/:id', async (req, res) => {
     }
 
     // 取得統計資料
-    const stats = Lawyer.getStats(id);
+    const stats = lawyerService.getLawyerStats(id);
 
     res.json({
       status: 'success',
@@ -151,7 +151,7 @@ router.get('/specialty/:specialty', async (req, res) => {
     const { specialty } = req.params;
     const { limit = 20 } = req.query;
 
-    const lawyers = Lawyer.findBySpecialty(specialty, parseInt(limit));
+    const lawyers = lawyerService.getLawyersBySpecialty(specialty, parseInt(limit));
 
     res.json({
       status: 'success',
@@ -179,7 +179,7 @@ router.get('/bar/:barNumber', async (req, res) => {
   try {
     const { barNumber } = req.params;
     
-    const lawyer = Lawyer.findByBarNumber(barNumber);
+    const lawyer = lawyerService.getLawyerByBarNumber(barNumber);
     
     if (!lawyer) {
       return res.status(404).json({
@@ -222,7 +222,7 @@ router.post('/', async (req, res) => {
     }
 
     // 檢查律師證號是否已存在
-    const existing = Lawyer.findByBarNumber(lawyerData.bar_number);
+    const existing = lawyerService.getLawyerByBarNumber(lawyerData.bar_number);
     if (existing) {
       return res.status(409).json({
         status: 'error',
@@ -231,7 +231,7 @@ router.post('/', async (req, res) => {
       });
     }
 
-    const lawyer = Lawyer.create(lawyerData);
+    const lawyer = lawyerService.createLawyer(lawyerData);
 
     res.status(201).json({
       status: 'success',
