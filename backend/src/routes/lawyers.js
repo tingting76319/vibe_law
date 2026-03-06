@@ -254,7 +254,7 @@ router.put('/:id', async (req, res) => {
     const { id } = req.params;
     const updateData = req.body;
 
-    const existing = lawyerService.getLawyerById(id);
+    const existing = await lawyerService.getLawyerById(id);
     if (!existing) {
       return res.status(404).json({
         status: 'error',
@@ -263,7 +263,7 @@ router.put('/:id', async (req, res) => {
       });
     }
 
-    const lawyer = lawyerService.updateLawyer(id, updateData);
+    const lawyer = await lawyerService.updateLawyer(id, updateData);
 
     res.json({
       status: 'success',
@@ -285,7 +285,7 @@ router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    const existing = lawyerService.getLawyerById(id);
+    const existing = await lawyerService.getLawyerById(id);
     if (!existing) {
       return res.status(404).json({
         status: 'error',
