@@ -4,6 +4,7 @@
  */
 const express = require('express');
 const router = express.Router();
+const db = require('../db/postgres');
 const lawyerService = require('../services/lawyerService');
 
 // ========== 律師列表 API ==========
@@ -431,6 +432,33 @@ router.get('/:id/cases', async (req, res) => {
     res.json({ status: 'success', data: cases, count: cases.length });
   } catch (e) {
     console.error('[lawyers/:id/cases] Error:', e);
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
+
+// POST /api/lawyers/init - 初始化資料表
+router.post('/init', async (req, res) => {
+  try {
+    // 建立律師資料表（如果不存在）
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS lawyer_profiles (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        bar_number VARCHAR(50) UNIQUE,
+        specialty VARCHAR(200),
+        court VARCHAR(100),
+        win_rate FLOAT DEFAULT 0,
+        total_cases INTEGER DEFAULT 0,
+        style VARCHAR(50) DEFAULT '穩健型',
+        experience_years INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+    
+    res.json({ status: 'success', message: 'lawyer_profiles 表已建立' });
+  } catch (e) {
+    console.error('[lawyers/init] Error:', e);
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
