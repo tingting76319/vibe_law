@@ -343,18 +343,24 @@ router.get('/db-stats', async (req, res) => {
   try {
     const db = require('../db/postgres');
     
-    const judgmentsCount = await db.query('SELECT COUNT(*) as count FROM judgments');
-    const judgesCount = await db.query('SELECT COUNT(*) as count FROM extracted_judges');
-    const lawyersCount = await db.query('SELECT COUNT(*) as count FROM lawyer_profiles');
+    let result = { judgments: 0, judges: 0, lawyers: 0 };
     
-    res.json({
-      status: 'success',
-      data: {
-        judgments: parseInt(judgmentsCount.rows[0].count),
-        judges: parseInt(judgesCount.rows[0].count),
-        lawyers: parseInt(lawyersCount.rows[0].count)
-      }
-    });
+    try {
+      const r1 = await db.query('SELECT COUNT(*) as count FROM judgments');
+      result.judgments = parseInt(r1.rows[0]?.count || 0);
+    } catch(e) {}
+    
+    try {
+      const r2 = await db.query('SELECT COUNT(*) as count FROM extracted_judges');
+      result.judges = parseInt(r2.rows[0]?.count || 0);
+    } catch(e) {}
+    
+    try {
+      const r3 = await db.query('SELECT COUNT(*) as count FROM lawyer_profiles');
+      result.lawyers = parseInt(r3.rows[0]?.count || 0);
+    } catch(e) {}
+    
+    res.json({ status: 'success', data: result });
   } catch (e) {
     res.status(500).json({ status: 'error', message: e.message });
   }
