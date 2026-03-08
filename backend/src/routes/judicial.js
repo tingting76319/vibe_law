@@ -365,3 +365,64 @@ router.get('/db-stats', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 提取法官資料
+router.post('/extract-judges', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    console.log('🔍 開始提取法官資料...');
+    
+    const judgments = await db.query('SELECT id, jid, jyear, jcase, jdate, jfull FROM judgments ORDER BY id LIMIT 10000');
+    
+    const judgeMap = new Map();
+    const judgePattern = /法\s*官\s*([^\n\r]{2,4})/g;
+    const chiefPattern = /審判長\s*([^\n\r]{2,4})/g;
+    
+    for (const row of judgments.rows) {
+      const text = row.jfull || '';
+      const court = (row.jid || '').substring(0, 4);
+      
+      let match;
+      while ((match = judgePattern.exec(text)) !== null) {
+        const name = match[1].trim();
+        if (name.length >= 2 && name.length <= 4 && !name.includes('法')) {
+          const key = `${name}_${court}`;
+          if (!judgeMap.has(key)) {
+            judgeMap.set(key, { judge_name: name, court, jid: row.jid, jyear: row.jyear, jcase: row.jcase, jdate: row.jdate });
+          }
+        }
+      }
+      
+      while ((match = chiefPattern.exec(text)) !== null) {
+        const name = match[1].trim();
+        if (name.length >= 2 && name.length <= 4) {
+          const key = `${name}_${court}`;
+          if (!judgeMap.has(key)) {
+            judgeMap.set(key, { judge_name: name, court, jid: row.jid, jyear: row.jyear, jcase: row.jcase, jdate: row.jdate });
+          }
+        }
+      }
+    }
+    
+    // 儲存到資料庫
+    let saved = 0;
+    for (const judge of judgeMap.values()) {
+      try {
+        await db.query(`
+          INSERT INTO extracted_judges (judge_name, court, jid, jyear, jcase, jdate)
+          VALUES ($1, $2, $3, $4, $5, $6)
+          ON CONFLICT DO NOTHING
+        `, [judge.judge_name, judge.court, judge.jid, judge.jyear, judge.jcase, judge.jdate]);
+        saved++;
+      } catch(e) {}
+    }
+    
+    console.log(`✅ 完成！提取 ${judgeMap.size} 位法官`);
+    
+    res.json({ status: 'success', extracted: judgeMap.size, saved });
+  } catch (e) {
+    console.error('Error:', e);
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
