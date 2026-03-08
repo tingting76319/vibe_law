@@ -337,3 +337,25 @@ router.post('/save', async (req, res) => {
     error(res, 500, e.message);
   }
 });
+
+// 取得資料庫統計
+router.get('/db-stats', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    const judgmentsCount = await db.query('SELECT COUNT(*) as count FROM judgments');
+    const judgesCount = await db.query('SELECT COUNT(*) as count FROM extracted_judges');
+    const lawyersCount = await db.query('SELECT COUNT(*) as count FROM lawyer_profiles');
+    
+    res.json({
+      status: 'success',
+      data: {
+        judgments: parseInt(judgmentsCount.rows[0].count),
+        judges: parseInt(judgesCount.rows[0].count),
+        lawyers: parseInt(lawyersCount.rows[0].count)
+      }
+    });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
