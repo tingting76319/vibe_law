@@ -5,12 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vibe Law - UI Design v2.0 Mockup</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
       --primary: #1a365d;
       --secondary: #2c5282;
@@ -18,411 +13,121 @@
       --bg: #f7fafc;
       --text: #2d3748;
       --success: #38a169;
-      --warning: #dd6b20;
-      --error: #e53e3e;
       --border: #e2e8f0;
     }
-    
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
     
     /* Header */
-    .header {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-      color: white;
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    
-    .header h1 {
-      font-size: 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    
-    .header .settings-btn {
-      background: rgba(255,255,255,0.2);
-      border: none;
-      color: white;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      cursor: pointer;
-    }
+    .header { background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+    .header h1 { font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .header .settings-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; }
     
     /* Navigation Tabs */
-    .nav-tabs {
-      background: white;
-      display: flex;
-      gap: 0;
-      padding: 0 2rem;
-      border-bottom: 2px solid var(--border);
-      overflow-x: auto;
-    }
-    
-    .nav-tab {
-      background: none;
-      border: none;
-      padding: 1rem 1.5rem;
-      font-size: 0.95rem;
-      color: var(--text);
-      cursor: pointer;
-      border-bottom: 3px solid transparent;
-      transition: all 0.2s;
-      white-space: nowrap;
-    }
-    
-    .nav-tab:hover {
-      background: #f7fafc;
-    }
-    
-    .nav-tab.active {
-      border-bottom-color: var(--accent);
-      color: var(--primary);
-      font-weight: 600;
-    }
+    .nav-tabs { background: white; display: flex; gap: 0; padding: 0 2rem; border-bottom: 2px solid var(--border); overflow-x: auto; }
+    .nav-tab { background: none; border: none; padding: 1rem 1.5rem; font-size: 0.95rem; color: var(--text); cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s; white-space: nowrap; }
+    .nav-tab:hover { background: #f7fafc; }
+    .nav-tab.active { border-bottom-color: var(--accent); color: var(--primary); font-weight: 600; }
     
     /* Main Content */
-    .main-content {
-      padding: 2rem;
-      min-height: calc(100vh - 140px);
-    }
+    .main-content { padding: 2rem; display: none; }
+    .main-content.active { display: block; }
     
-    /* Search Bar */
-    .search-section {
-      background: white;
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    
-    .search-bar {
-      display: flex;
-      gap: 1rem;
-    }
-    
-    .search-input {
-      flex: 1;
-      padding: 0.875rem 1rem;
-      border: 2px solid var(--border);
-      border-radius: 8px;
-      font-size: 1rem;
-      transition: border-color 0.2s;
-    }
-    
-    .search-input:focus {
-      outline: none;
-      border-color: var(--secondary);
-    }
-    
-    .search-btn {
-      background: var(--accent);
-      color: white;
-      border: none;
-      padding: 0.875rem 2rem;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.1s;
-    }
-    
-    .search-btn:hover {
-      transform: scale(1.02);
-    }
+    /* Search */
+    .search-section { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .search-bar { display: flex; gap: 1rem; }
+    .search-input { flex: 1; padding: 0.875rem 1rem; border: 2px solid var(--border); border-radius: 8px; font-size: 1rem; }
+    .search-input:focus { outline: none; border-color: var(--secondary); }
+    .search-btn { background: var(--accent); color: white; border: none; padding: 0.875rem 2rem; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; }
     
     /* Sub Tabs */
-    .sub-tabs {
-      display: flex;
-      gap: 0.5rem;
-      margin-top: 1rem;
-    }
+    .sub-tabs { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+    .sub-tab { background: #edf2f7; border: none; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.875rem; cursor: pointer; }
+    .sub-tab.active { background: var(--primary); color: white; }
     
-    .sub-tab {
-      background: #edf2f7;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
-      font-size: 0.875rem;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    
-    .sub-tab.active {
-      background: var(--primary);
-      color: white;
-    }
-    
-    /* Two Column Layout */
-    .two-column {
-      display: grid;
-      grid-template-columns: 350px 1fr;
-      gap: 1.5rem;
-    }
+    /* Two Column */
+    .two-column { display: grid; grid-template-columns: 350px 1fr; gap: 1.5rem; }
     
     /* Card */
-    .card {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-      overflow: hidden;
-    }
+    .card { background: white; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow: hidden; }
+    .card-header { padding: 1rem 1.25rem; background: #f7fafc; border-bottom: 1px solid var(--border); font-weight: 600; }
+    .card-body { padding: 1rem; }
     
-    .card-header {
-      padding: 1rem 1.25rem;
-      background: #f7fafc;
-      border-bottom: 1px solid var(--border);
-      font-weight: 600;
-    }
+    /* List */
+    .list-item { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 0.75rem; }
+    .list-item:hover { background: #f7fafc; }
+    .list-item.active { background: #ebf8ff; border-left: 3px solid var(--secondary); }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--secondary), var(--primary)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; }
+    .info { flex: 1; }
+    .name { font-weight: 600; color: var(--primary); }
+    .meta { font-size: 0.8rem; color: #718096; }
     
-    .card-body {
-      padding: 1rem;
-    }
+    /* Badge */
+    .badge { padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+    .badge-attack { background: #fed7d7; color: #c53030; }
+    .badge-defense { background: #c6f6d5; color: #276749; }
+    .badge-balanced { background: #bee3f8; color: #2b6cb0; }
+    .badge-pragmatic { background: #faf089; color: #975a16; }
     
-    /* List Items */
-    .list-item {
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
-      transition: background 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
+    /* Stats */
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1rem 0; }
+    .stat-box { background: #f7fafc; padding: 1rem; border-radius: 8px; text-align: center; }
+    .stat-box .value { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+    .stat-box .label { font-size: 0.8rem; color: #718096; }
     
-    .list-item:hover {
-      background: #f7fafc;
-    }
-    
-    .list-item.active {
-      background: #ebf8ff;
-      border-left: 3px solid var(--secondary);
-    }
-    
-    .list-item .avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: background: linear-gradient 50%;
-     (135deg, var(--secondary), var(--primary));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: 600;
-    }
-    
-    .list-item .info {
-      flex: 1;
-    }
-    
-    .list-item .name {
-      font-weight: 600;
-      color: var(--primary);
-    }
-    
-    .list-item .meta {
-      font-size: 0.8rem;
-      color: #718096;
-    }
-    
-    .badge {
-      padding: 0.25rem 0.5rem;
-      border-radius: 4px;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-    
-    .badge-style {
-      background: #fed7d7;
-      color: #c53030;
-    }
-    
-    .badge-style.defense {
-      background: #c6f6d5;
-      color: #276749;
-    }
-    
-    .badge-style.balanced {
-      background: #bee3f8;
-      color: #2b6cb0;
-    }
-    
-    .badge-style.pragmatic {
-      background: #faf089;
-      color: #975a16;
-    }
-    
-    /* Detail View */
-    .detail-header {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-bottom: 1rem;
-    }
-    
-    .detail-avatar {
-      width: 64px;
-      height: 64px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--secondary), var(--primary));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 1.5rem;
-      font-weight: 600;
-    }
-    
-    .detail-title h2 {
-      color: var(--primary);
-      margin-bottom: 0.25rem;
-    }
-    
-    .detail-title p {
-      color: #718096;
-      font-size: 0.9rem;
-    }
-    
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
-      margin: 1rem 0;
-    }
-    
-    .stat-box {
-      background: #f7fafc;
-      padding: 1rem;
-      border-radius: 8px;
-      text-align: center;
-    }
-    
-    .stat-box .value {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--primary);
-    }
-    
-    .stat-box .label {
-      font-size: 0.8rem;
-      color: #718096;
-    }
-    
-    .action-btn {
-      width: 100%;
-      padding: 0.75rem;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 0.5rem;
-      transition: transform 0.1s;
-    }
-    
-    .action-btn.primary {
-      background: var(--accent);
-      color: white;
-    }
-    
-    .action-btn.secondary {
-      background: #edf2f7;
-      color: var(--text);
-    }
+    /* Buttons */
+    .action-btn { width: 100%; padding: 0.75rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 0.5rem; }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-secondary { background: #edf2f7; color: var(--text); }
     
     /* Admin Grid */
-    .admin-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1.5rem;
-    }
+    .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; }
+    .admin-card { background: white; border-radius: 12px; padding: 1.5rem; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s; }
+    .admin-card:hover { transform: translateY(-2px); }
+    .admin-card .icon { font-size: 2.5rem; margin-bottom: 1rem; }
+    .admin-card h3 { color: var(--primary); margin-bottom: 0.5rem; }
     
-    .admin-card {
-      background: white;
-      border-radius: 12px;
-      padding: 1.5rem;
-      text-align: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
+    /* Court Comparison */
+    .court-select { display: flex; gap: 1rem; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .court-select select { padding: 0.5rem 1rem; border: 2px solid var(--border); border-radius: 8px; font-size: 1rem; }
+    .vs { font-weight: bold; color: var(--accent); }
     
-    .admin-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
+    /* Judge Timeline */
+    .timeline { border-left: 3px solid var(--border); padding-left: 1.5rem; margin: 1rem 0; }
+    .timeline-item { position: relative; padding-bottom: 1.5rem; }
+    .timeline-item::before { content: ''; position: absolute; left: -1.6rem; top: 0.25rem; width: 12px; height: 12px; border-radius: 50%; background: var(--secondary); }
+    .timeline-date { font-size: 0.85rem; color: #718096; }
+    .timeline-content { background: #f7fafc; padding: 0.75rem; border-radius: 8px; margin-top: 0.5rem; }
     
-    .admin-card .icon {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
-    }
-    
-    .admin-card h3 {
-      color: var(--primary);
-      margin-bottom: 0.5rem;
-    }
-    
-    .admin-card .stats {
-      font-size: 0.9rem;
-      color: #718096;
-    }
+    /* Search Results */
+    .result-item { padding: 1rem; border-bottom: 1px solid var(--border); }
+    .result-item h4 { color: var(--primary); margin-bottom: 0.25rem; }
+    .result-item p { font-size: 0.9rem; color: #718096; }
+    .result-tags { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+    .result-tag { background: #edf2f7; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; }
     
     /* Responsive */
-    @media (max-width: 1024px) {
-      .two-column {
-        grid-template-columns: 1fr;
-      }
-    }
-    
-    @media (max-width: 768px) {
-      .header h1 {
-        font-size: 1.2rem;
-      }
-      
-      .nav-tabs {
-        padding: 0 1rem;
-      }
-      
-      .nav-tab {
-        padding: 0.75rem 1rem;
-        font-size: 0.85rem;
-      }
-      
-      .main-content {
-        padding: 1rem;
-      }
-      
-      .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
+    @media (max-width: 1024px) { .two-column { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) { .header h1 { font-size: 1.2rem; } .nav-tabs { padding: 0 1rem; } .main-content { padding: 1rem; } }
   </style>
 </head>
 <body>
   <!-- Header -->
   <header class="header">
     <h1>🏛️ Vibe Law - Taiwan Legal RAG</h1>
-    <button class="settings-btn">⚙️ 系統管理</button>
+    <button class="settings-btn">⚙️</button>
   </header>
   
   <!-- Navigation Tabs -->
   <nav class="nav-tabs">
-    <button class="nav-tab active">🔍 智慧搜尋</button>
-    <button class="nav-tab">👨⚖️ 法官專區</button>
-    <button class="nav-tab">🏛️ 法院數據</button>
-    <button class="nav-tab">👔 律師服務</button>
-    <button class="nav-tab">⚙️ 系統管理</button>
+    <button class="nav-tab active" data-tab="search">🔍 智慧搜尋</button>
+    <button class="nav-tab" data-tab="judge">👨⚖️ 法官專區</button>
+    <button class="nav-tab" data-tab="court">🏛️ 法院數據</button>
+    <button class="nav-tab" data-tab="lawyer">👔 律師服務</button>
+    <button class="nav-tab" data-tab="admin">⚙️ 系統管理</button>
   </nav>
   
-  <!-- Main Content: 智慧搜尋 -->
-  <main class="main-content">
+  <!-- Tab 1: 智慧搜尋 -->
+  <main class="main-content active" id="tab-search">
     <div class="search-section">
       <div class="search-bar">
         <input type="text" class="search-input" placeholder="🔍 輸入問題或關鍵字...">
@@ -437,91 +142,292 @@
     </div>
     
     <div class="two-column">
-      <!-- Left: Search Results -->
       <div class="card">
         <div class="card-header">搜尋結果</div>
         <div class="card-body" style="padding:0;">
-          <div class="list-item active">
-            <div class="avatar">陳</div>
-            <div class="info">
-              <div class="name">陳文卿律師</div>
-              <div class="meta">民事訴訟 · 臺北地方法院</div>
+          <div class="result-item">
+            <h4>民事訴訟請求權時效計算</h4>
+            <p>依民法第127條規定，請求權時效為15年...</p>
+            <div class="result-tags">
+              <span class="result-tag">民法</span>
+              <span class="result-tag">時效</span>
             </div>
-            <span class="badge badge-style">攻擊型</span>
           </div>
-          <div class="list-item">
-            <div class="avatar">李</div>
-            <div class="info">
-              <div class="name">李進建律師</div>
-              <div class="meta">刑事訴訟 · 臺灣高等法院</div>
+          <div class="result-item">
+            <h4>侵權行為損害賠償範圍</h4>
+            <p>依民法第184條，侵權行為之損害賠償...</p>
+            <div class="result-tags">
+              <span class="result-tag">民法</span>
+              <span class="result-tag">侵權</span>
             </div>
-            <span class="badge badge-style defense">防禦型</span>
           </div>
-          <div class="list-item">
-            <div class="avatar">林</div>
-            <div class="info">
-              <div class="name">林維信律師</div>
-              <div class="meta">行政訴訟 · 臺北高等行政法院</div>
+          <div class="result-item">
+            <h4>勞動契約終止合法性</h4>
+            <p>勞動基準法第11條規定，雇主終止勞動契約...</p>
+            <div class="result-tags">
+              <span class="result-tag">勞動法</span>
+              <span class="result-tag">終止</span>
             </div>
-            <span class="badge badge-style balanced">穩健型</span>
-          </div>
-          <div class="list-item">
-            <div class="avatar">黃</div>
-            <div class="info">
-              <div class="name">黃珮茹律師</div>
-              <div class="meta">家事訴訟 · 臺灣高等法院</div>
-            </div>
-            <span class="badge badge-style pragmatic">妥協型</span>
           </div>
         </div>
       </div>
       
-      <!-- Right: Detail -->
       <div class="card">
-        <div class="card-header">律師詳情</div>
+        <div class="card-header">詳細內容</div>
         <div class="card-body">
-          <div class="detail-header">
-            <div class="detail-avatar">陳</div>
-            <div class="detail-title">
-              <h2>陳文卿律師</h2>
-              <p>專長：民事訴訟 | 法院：臺北地方法院</p>
-            </div>
-          </div>
-          
+          <h3 style="color: var(--primary); margin-bottom: 0.5rem;">民事訴訟請求權時效計算</h3>
+          <p style="color: #718096; margin-bottom: 1rem;">分類：民法 · 時效</p>
           <div class="stats-grid">
-            <div class="stat-box">
-              <div class="value">45</div>
-              <div class="label">案件數</div>
-            </div>
-            <div class="stat-box">
-              <div class="value">72%</div>
-              <div class="label">勝訴率</div>
-            </div>
-            <div class="stat-box">
-              <div class="value">攻擊型</div>
-              <div class="label">風格</div>
-            </div>
+            <div class="stat-box"><div class="value">127</div><div class="label">相關法條</div></div>
+            <div class="stat-box"><div class="value">234</div><div class="label">相關判例</div></div>
+            <div class="stat-box"><div class="value">89</div><div class="label">引用次數</div></div>
           </div>
-          
-          <div style="margin: 1rem 0;">
-            <h4 style="margin-bottom: 0.5rem;">📊 風格分析</h4>
-            <p style="color: #718096; font-size: 0.9rem;">
-              擅長主動出擊，積極舉證，喜歡挑戰對方論點。在案件中常使用「抗辯」、「舉證責任」等攻擊性策略。
-            </p>
-          </div>
-          
-          <div style="margin: 1rem 0;">
-            <h4 style="margin-bottom: 0.5rem;">🏛️ 執業法院</h4>
-            <p style="color: #718096; font-size: 0.9rem;">
-              臺北地方法院、臺灣高等法院
-            </p>
-          </div>
-          
-          <button class="action-btn primary">📞 立即委託</button>
-          <button class="action-btn secondary">📋 查看過往案例</button>
+          <p style="margin-top: 1rem;">依民法第127條規定，請求權時效期間為15年，但下列請求權不在此限...</p>
+          <button class="action-btn btn-primary" style="margin-top: 1rem;">📖 閱讀全文</button>
         </div>
       </div>
     </div>
   </main>
+  
+  <!-- Tab 2: 法官專區 -->
+  <main class="main-content" id="tab-judge">
+    <div class="search-section">
+      <div class="search-bar">
+        <input type="text" class="search-input" placeholder="👨⚖️ 輸入法官姓名...">
+        <button class="search-btn">搜尋</button>
+      </div>
+      <div class="sub-tabs">
+        <button class="sub-tab active">法官列表</button>
+        <button class="sub-tab">時間線</button>
+        <button class="sub-tab">分析報告</button>
+      </div>
+    </div>
+    
+    <div class="two-column">
+      <div class="card">
+        <div class="card-header">法官列表</div>
+        <div class="card-body" style="padding:0;">
+          <div class="list-item active">
+            <div class="avatar">王</div>
+            <div class="info"><div class="name">王小明</div><div class="meta">臺灣高等法院 · 民事庭</div></div>
+          </div>
+          <div class="list-item">
+            <div class="avatar">李</div>
+            <div class="info"><div class="name">李志強</div><div class="meta">臺北地方法院 · 刑事庭</div></div>
+          </div>
+          <div class="list-item">
+            <div class="avatar">張</div>
+            <div class="info"><div class="name">張淑芬</div><div class="meta">高雄地方法院 · 家事庭</div></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">法官詳情 - 王小明</div>
+        <div class="card-body">
+          <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+            <div class="avatar" style="width:64px;height:64px;font-size:1.5rem;">王</div>
+            <div><h3 style="color:var(--primary);">王小明 法官</h3><p style="color:#718096;">臺灣高等法院 · 民事庭</p></div>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-box"><div class="value">1,234</div><div class="label">審理案件</div></div>
+            <div class="stat-box"><div class="value">85%</div><div class="label">維持率</div></div>
+            <div class="stat-box"><div class="value">12年</div><div class="label">資歷</div></div>
+          </div>
+          <h4 style="margin: 1rem 0 0.5rem;">📅 任职时间线</h4>
+          <div class="timeline">
+            <div class="timeline-item"><div class="timeline-date">2024 - 至今</div><div class="timeline-content">臺灣高等法院民事庭法官</div></div>
+            <div class="timeline-item"><div class="timeline-date">2018 - 2024</div><div class="timeline-content">臺北地方法院民事庭法官</div></div>
+            <div class="timeline-item"><div class="timeline-date">2012 - 2018</div><div class="timeline-content">桃園地方法院法官</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- Tab 3: 法院數據 -->
+  <main class="main-content" id="tab-court">
+    <div class="search-section">
+      <div class="court-select">
+        <select><option>臺北地方法院</option><option>臺灣高等法院</option><option>高雄地方法院</option></select>
+        <span class="vs">VS</span>
+        <select><option>臺灣高等法院</option><option>臺北地方法院</option><option>高雄地方法院</option></select>
+        <button class="search-btn">比較</button>
+      </div>
+      <div class="sub-tabs">
+        <button class="sub-tab active">法院比較</button>
+        <button class="sub-tab">趨勢分析</button>
+        <button class="sub-tab">判決分類</button>
+      </div>
+    </div>
+    
+    <div class="two-column">
+      <div class="card">
+        <div class="card-header">比較結果</div>
+        <div class="card-body">
+          <table style="width:100%;border-collapse:collapse;">
+            <tr style="border-bottom:1px solid var(--border);"><td style="padding:0.5rem;">案件量</td><td style="text-align:right;color:var(--primary);font-weight:bold;">45,678</td><td style="text-align:right;color:var(--secondary);font-weight:bold;">32,456</td></tr>
+            <tr style="border-bottom:1px solid var(--border);"><td style="padding:0.5rem;">平均審理天數</td><td style="text-align:right;">185天</td><td style="text-align:right;">210天</td></tr>
+            <tr style="border-bottom:1px solid var(--border);"><td style="padding:0.5rem;">調解成立率</td><td style="text-align:right;">42%</td><td style="text-align:right;">38%</td></tr>
+            <tr style="border-bottom:1px solid var(--border);"><td style="padding:0.5rem;">上訴維持率</td><td style="text-align:right;">78%</td><td style="text-align:right;">82%</td></tr>
+            <tr><td style="padding:0.5rem;">平均賠償金額</td><td style="text-align:right;">85萬</td><td style="text-align:right;">120萬</td></tr>
+          </table>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">圖表顯示</div>
+        <div class="card-body">
+          <div style="margin-bottom:1rem;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:0.25rem;"><span>案件量</span><span>45,678 vs 32,456</span></div>
+            <div style="background:#edf2f7;height:24px;border-radius:4px;overflow:hidden;display:flex;">
+              <div style="width:58%;background:var(--primary);"></div><div style="width:42%;background:var(--secondary);"></div>
+            </div>
+          </div>
+          <div style="margin-bottom:1rem;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:0.25rem;"><span>調解成立率</span><span>42% vs 38%</span></div>
+            <div style="background:#edf2f7;height:24px;border-radius:4px;overflow:hidden;display:flex;">
+              <div style="width:42%;background:var(--success);"></div><div style="width:38%;background:#48bb78;"></div>
+            </div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:0.25rem;"><span>上訴維持率</span><span>78% vs 82%</span></div>
+            <div style="background:#edf2f7;height:24px;border-radius:4px;overflow:hidden;display:flex;">
+              <div style="width:78%;background:var(--accent);"></div><div style="width:82%;background:#dd6b20;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- Tab 4: 律師服務 -->
+  <main class="main-content" id="tab-lawyer">
+    <div class="search-section">
+      <div class="search-bar">
+        <input type="text" class="search-input" placeholder="👔 輸入律師姓名或專長...">
+        <button class="search-btn">搜尋</button>
+      </div>
+      <div class="sub-tabs">
+        <button class="sub-tab active">律師列表</button>
+        <button class="sub-tab">智慧推薦</button>
+        <button class="sub-tab">訴訟策略</button>
+        <button class="sub-tab">數位孿生</button>
+      </div>
+    </div>
+    
+    <div class="two-column">
+      <div class="card">
+        <div class="card-header">律師列表</div>
+        <div class="card-body" style="padding:0;">
+          <div class="list-item active">
+            <div class="avatar">陳</div>
+            <div class="info"><div class="name">陳文卿</div><div class="meta">民事訴訟 · 臺北地方法院</div></div>
+            <span class="badge badge-attack">攻擊型</span>
+          </div>
+          <div class="list-item">
+            <div class="avatar">李</div>
+            <div class="info"><div class="name">李進建</div><div class="meta">刑事訴訟 · 臺灣高等法院</div></div>
+            <span class="badge badge-defense">防禦型</span>
+          </div>
+          <div class="list-item">
+            <div class="avatar">林</div>
+            <div class="info"><div class="name">林維信</div><div class="meta">行政訴訟 · 臺北高等行政法院</div></div>
+            <span class="badge badge-balanced">穩健型</span>
+          </div>
+          <div class="list-item">
+            <div class="avatar">黃</div>
+            <div class="info"><div class="name">黃珮茹</div><div class="meta">家事訴訟 · 臺灣高等法院</div></div>
+            <span class="badge badge-pragmatic">妥協型</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">律師詳情 - 陳文卿</div>
+        <div class="card-body">
+          <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;">
+            <div class="avatar" style="width:64px;height:64px;font-size:1.5rem;">陳</div>
+            <div><h3 style="color:var(--primary);">陳文卿 律師</h3><p style="color:#718096;">專長：民事訴訟 | 法院：臺北地方法院</p></div>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-box"><div class="value">45</div><div class="label">案件數</div></div>
+            <div class="stat-box"><div class="value">72%</div><div class="label">勝訴率</div></div>
+            <div class="stat-box"><div class="value">攻擊型</div><div class="label">風格</div></div>
+          </div>
+          <div style="margin:1rem 0;">
+            <h4>📊 風格分析</h4>
+            <p style="color:#718096;font-size:0.9rem;">擅長主動出擊，積極舉證，喜歡挑戰對方論點。在案件中常使用「抗辯」、「舉證責任」等攻擊性策略。</p>
+          </div>
+          <button class="action-btn btn-primary">📞 立即委託</button>
+          <button class="action-btn btn-secondary">📋 查看過往案例</button>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- Tab 5: 系統管理 -->
+  <main class="main-content" id="tab-admin">
+    <div class="admin-grid">
+      <div class="admin-card">
+        <div class="icon">📤</div>
+        <h3>📤 資料上傳</h3>
+        <p style="color:#718096;margin-top:0.5rem;">上傳判決書、法規更新</p>
+      </div>
+      <div class="admin-card">
+        <div class="icon">📊</div>
+        <h3>📊 數據概覽</h3>
+        <p style="color:#718096;margin-top:0.5rem;">判決書: 530萬 | 法官: 1,100 | 律師: 5,259</p>
+      </div>
+      <div class="admin-card">
+        <div class="icon">⚙️</div>
+        <h3>⚙️ 系統設定</h3>
+        <p style="color:#718096;margin-top:0.5rem;">API金鑰、同步排程、備份</p>
+      </div>
+      <div class="admin-card">
+        <div class="icon">🔄</div>
+        <h3>🔄 資料同步</h3>
+        <p style="color:#718096;margin-top:0.5rem;">手動觸發與排程管理</p>
+      </div>
+      <div class="admin-card">
+        <div class="icon">📈</div>
+        <h3>📈 分析報告</h3>
+        <p style="color:#718096;margin-top:0.5rem;">系統效能與使用統計</p>
+      </div>
+      <div class="admin-card">
+        <div class="icon">🔔</div>
+        <h3>🔔 通知中心</h3>
+        <p style="color:#718096;margin-top:0.5rem;">同步狀態、更新提醒</p>
+      </div>
+    </div>
+  </main>
+  
+  <script>
+    // Tab Switching
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.main-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+      });
+    });
+    
+    // Sub Tab Switching
+    document.querySelectorAll('.sub-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        tab.parentElement.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+      });
+    });
+    
+    // List Item Click
+    document.querySelectorAll('.list-item').forEach(item => {
+      item.addEventListener('click', () => {
+        item.parentElement.querySelectorAll('.list-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+      });
+    });
+  </script>
 </body>
 </html>
