@@ -776,7 +776,7 @@ router.post('/fix-lawyer-names', async (req, res) => {
     const db = require('../db/postgres');
     
     // 移除結尾的 "律"
-    await db.query(`UPDATE lawyer_profiles SUBSTRING(name FROM 1 FOR LENGTH(name)-1) WHERE name LIKE '%律' WHERE name LIKE '%律'`);
+    await db.query(`UPDATE lawyer_profiles SET name = SUBSTRING(name FROM 1 FOR LENGTH(name)-1) WHERE name LIKE '%律'`);
     
     const count = await db.query('SELECT COUNT(*) as c FROM lawyer_profiles');
     res.json({ status: 'success', remaining: parseInt(count.rows[0].c) });
