@@ -1064,3 +1064,74 @@ router.post('/set-lawyer-styles-simple', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 自動分析律師風格（從判決書內容）
+router.post('/auto-analyze-lawyer-styles', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    // 風格關鍵詞權重
+    const styleWeights = {
+      '攻擊型': ['抗辯', '舉證', '請求', '主張', '侵權行為', '損害賠償', '違約', '應負責任', '過失'],
+      '防禦型': ['否認', '辯稱', '誤會', '無過失', '不成立', '無因果關係', '不可歸責', '依法不應'],
+      '妥協型': ['和解', '調解', '撤回告訴', '願意賠償', '協商', '讓步', '調處', '訴訟上和解'],
+      '穩健型': ['證據顯示', '依法論', '應依程序', '管轄錯誤', '適法性', '依法應為', '程式違法']
+    };
+    
+    // 取得有案件的律師
+    const lawyers = await db.query(`
+      SELECT lp.id, lp.name 
+      FROM lawyer_profiles lp
+      WHERE lp.total_cases > 0
+      LIMIT 50
+    `);
+    
+    let updated = 0;
+    
+    for (const lawyer of lawyers.rows || []) {
+      // 取得此律師的判決書內文
+      const cases = await db.query(`
+        SELECT jfull FROM judgments 
+        WHERE jfull LIKE '%${lawyer.name}%'
+        LIMIT 20
+      `);
+      
+      if (cases.rows.length === 0) continue;
+      
+      // 統計風格分數
+      const scores = { '攻擊型': 0, '防禦型': 0, '妥協型': 0, '穩健型': 0 };
+      
+      for (const c of cases.rows) {
+        const text = c.jfull || '';
+        for (const [style, keywords] of Object.entries(styleWeights)) {
+          for (const kw of keywords) {
+            if (text.includes(kw)) scores[style]++;
+          }
+        }
+      }
+      
+      // 找出最高分的風格
+      let maxStyle = '穩健型';
+      let maxScore = 0;
+      for (const [style, score] of Object.entries(scores)) {
+        if (score > maxScore) {
+          maxScore = score;
+          maxStyle = style;
+        }
+      }
+      
+      // 更新資料庫
+      await db.query(`
+        UPDATE lawyer_profiles 
+        SET style = $1, total_cases = $2 
+        WHERE id = $3
+      `, [maxStyle, cases.rows.length, lawyer.id]);
+      
+      updated++;
+    }
+    
+    res.json({ status: 'success', updated });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
