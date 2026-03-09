@@ -696,3 +696,33 @@ router.post('/clean-lawyers', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 更嚴格清理律師名稱
+router.post('/clean-lawyers-v2', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    // 刪除包含這些關鍵詞的記錄
+    const keywords = ['上列', '下稱', '即為', '即', '抗告人', '為代理', '受命', '分別', '原告', '被告', '法定', '訴訟', '法院', '本件', '此致', '第三人'];
+    let totalDeleted = 0;
+    
+    for (const kw of keywords) {
+      const r = await db.query(`DELETE FROM lawyer_profiles WHERE name LIKE '%${kw}%'`);
+      totalDeleted += parseInt(r.rowCount || 0);
+    }
+    
+    // 刪除結尾為 "因" 的
+    const r2 = await db.query(`DELETE FROM lawyer_profiles WHERE name LIKE '%因'`);
+    totalDeleted += parseInt(r2.rowCount || 0);
+    
+    // 刪除太短或太長的名字
+    const r3 = await db.query(`DELETE FROM lawyer_profiles WHERE LENGTH(name) < 3 OR LENGTH(name) > 5`);
+    totalDeleted += parseInt(r3.rowCount || 0);
+    
+    const count = await db.query('SELECT COUNT(*) as c FROM lawyer_profiles');
+    
+    res.json({ status: 'success', deleted: totalDeleted, remaining: parseInt(count.rows[0].c) });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
