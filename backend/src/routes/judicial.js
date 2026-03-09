@@ -748,3 +748,24 @@ router.post('/clean-lawyers-final', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 最終清理
+router.post('/clean-lawyers-check', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    // 刪除非名字
+    const invalid = ['或具有', '具有律', '或具有律'];
+    for (const name of invalid) {
+      await db.query(`DELETE FROM lawyer_profiles WHERE name LIKE '%${name}%'`);
+    }
+    
+    // 只保留 3-4 個字且以律結尾
+    await db.query(`DELETE FROM lawyer_profiles WHERE LENGTH(name) != 4`);
+    
+    const count = await db.query('SELECT COUNT(*) as c FROM lawyer_profiles');
+    res.json({ status: 'success', remaining: parseInt(count.rows[0].c) });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
