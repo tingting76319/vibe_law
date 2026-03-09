@@ -769,3 +769,18 @@ router.post('/clean-lawyers-check', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 移除律師名字結尾的"律"
+router.post('/fix-lawyer-names', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    // 移除結尾的 "律"
+    await db.query(`UPDATE lawyer_profiles SET name = RTRIM(LEADING '律' FROM name) WHERE name LIKE '%律'`);
+    
+    const count = await db.query('SELECT COUNT(*) as c FROM lawyer_profiles');
+    res.json({ status: 'success', remaining: parseInt(count.rows[0].c) });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
