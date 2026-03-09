@@ -606,3 +606,36 @@ router.post('/extract-lawyers', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 簡化版律師提取
+router.post('/extract-lawyers-v2', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    // 1. 建立表
+    await db.query(`CREATE TABLE IF NOT EXISTS lawyer_profiles (id SERIAL PRIMARY KEY, name TEXT UNIQUE)`).catch(()=>{});
+    
+    // 2. 提取律師（少量測試）
+    const result = await db.query('SELECT jfull FROM judgments LIMIT 1000');
+    
+    const lawyers = new Set();
+    for (const row of result.rows) {
+      const matches = row.jfull?.match(/(?:律師|訴訟代理人)[^\u4e00-\u9fa5]{0,5}([\u4e00-\u9fa5]{2,4})/g) || [];
+      for (const m of matches) {
+        const name = m.replace(/(?:律師|訴訟代理人)/, '').trim();
+        if (name.length >= 2 && name.length <= 4) lawyers.add(name);
+      }
+    }
+    
+    // 3. 儲存
+    for (const name of lawyers) {
+      await db.query(`INSERT INTO lawyer_profiles (name) VALUES ($1) ON CONFLICT DO NOTHING`, [name]).catch(()=>{});
+    }
+    
+    const count = await db.query('SELECT COUNT(*) as c FROM lawyer_profiles');
+    
+    res.json({ status: 'success', extracted: lawyers.size, total: parseInt(count.rows[0].c) });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
