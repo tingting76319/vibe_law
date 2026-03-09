@@ -528,10 +528,10 @@ router.post('/extract-lawyers', async (req, res) => {
     
     // 從 extracted_lawyers 匯入到 lawyer_profiles
     await db.query(`
-      INSERT INTO lawyer_profiles (name, court, specialty, total_cases)
-      SELECT lawyer_name, court, jcase, COUNT(*) as cnt
+      INSERT INTO lawyer_profiles (name, specialty, court, total_cases)
+      SELECT lawyer_name, jcase, court, COUNT(*) as cnt
       FROM extracted_lawyers
-      GROUP BY lawyer_name, court, jcase
+      GROUP BY lawyer_name, jcase, court
       ON CONFLICT (name) DO UPDATE SET total_cases = lawyer_profiles.total_cases + EXCLUDED.total_cases
     `);
     
