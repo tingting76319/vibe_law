@@ -789,3 +789,18 @@ router.post('/fix-lawyer-names', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 取得律師表結構
+router.post('/lawyer-schema', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    const result = await db.query(`
+      SELECT column_name, data_type 
+      FROM information_schema.columns 
+      WHERE table_name = 'lawyer_profiles'
+    `);
+    res.json({ status: 'success', columns: result.rows });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
