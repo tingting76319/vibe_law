@@ -9,6 +9,8 @@
 | coder3 | Coder 3 | 測試/CI/CD | ✅ 就緒 |
 | research1 | Research 1 | RAG演算法 | ✅ 就緒 |
 | research2 | Research 2 | 律師數位孿生 | ✅ 就緒 |
+| research3 | Research 3 | 律師數位孿生 | ✅ 就緒 |
+| research4 | Research 4 | 律師數位孿生 | ✅ 就緒 |
 
 ## 協作流程
 
