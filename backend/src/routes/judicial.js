@@ -858,3 +858,47 @@ router.post('/enhance-lawyers', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 快速增強律師資料（只處理前100個）
+router.post('/enhance-lawyers-fast', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    // 新增欄位
+    await db.query(`ALTER TABLE lawyer_profiles ADD COLUMN IF NOT EXISTS specialty TEXT`).catch(()=>{});
+    await db.query(`ALTER TABLE lawyer_profiles ADD COLUMN IF NOT EXISTS court TEXT`).catch(()=>{});
+    await db.query(`ALTER TABLE lawyer_profiles ADD COLUMN IF NOT EXISTS total_cases INTEGER DEFAULT 0`).catch(()=>{});
+    await db.query(`ALTER TABLE lawyer_profiles ADD COLUMN IF NOT EXISTS style TEXT DEFAULT '穩健型'`).catch(()=>{});
+    
+    // 只處理前100個律師
+    const lawyers = await db.query('SELECT name FROM lawyer_profiles LIMIT 100');
+    
+    let updated = 0;
+    for (const lawyer of lawyers.rows || []) {
+      const name = lawyer.name;
+      
+      const cases = await db.query(`
+        SELECT jcase, SUBSTRING(jid FROM 1 FOR 4) as court, COUNT(*) as cnt
+        FROM judgments 
+        WHERE jfull LIKE '%' || $1 || '%'
+        GROUP BY jcase, court
+        ORDER BY cnt DESC
+        LIMIT 1
+      `, [name]);
+      
+      if (cases.rows && cases.rows.length > 0) {
+        const c = cases.rows[0];
+        await db.query(`
+          UPDATE lawyer_profiles 
+          SET specialty = $1, court = $2, total_cases = $3
+          WHERE name = $4
+        `, [c.jcase, c.court, parseInt(c.cnt), name]);
+        updated++;
+      }
+    }
+    
+    res.json({ status: 'success', updated });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
