@@ -726,3 +726,25 @@ router.post('/clean-lawyers-v2', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 最終清理
+router.post('/clean-lawyers-final', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    // 只保留以 "律" 結尾的合法名字
+    await db.query(`DELETE FROM lawyer_profiles WHERE name NOT LIKE '%律' OR LENGTH(name) != 4`);
+    
+    // 刪除特定無效名字
+    const invalid = ['閱覽卷宗', '温令行律'];
+    for (const name of invalid) {
+      await db.query(`DELETE FROM lawyer_profiles WHERE name = $1`, [name]);
+    }
+    
+    const count = await db.query('SELECT COUNT(*) as c FROM lawyer_profiles');
+    
+    res.json({ status: 'success', remaining: parseInt(count.rows[0].c) });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
