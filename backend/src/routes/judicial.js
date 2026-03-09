@@ -552,3 +552,57 @@ router.post('/extract-lawyers', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 建立律師資料表並提取資料
+router.post('/extract-lawyers', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    // 1. 建立 extracted_lawyers 表
+    await db.query(`CREATE TABLE IF NOT EXISTS extracted_lawyers (
+      id SERIAL PRIMARY KEY,
+      lawyer_name TEXT,
+      UNIQUE(lawyer_name)
+    )`).catch(()=>{});
+    
+    // 2. 建立 lawyer_profiles 表
+    await db.query(`CREATE TABLE IF NOT EXISTS lawyer_profiles (
+      id SERIAL PRIMARY KEY,
+      name TEXT UNIQUE,
+      specialty TEXT,
+      win_rate FLOAT DEFAULT 0,
+      total_cases INTEGER DEFAULT 0,
+      style TEXT DEFAULT '穩健型'
+    )`).catch(()=>{});
+    
+    // 3. 提取律師
+    const judgments = await db.query('SELECT jid, jyear, jcase, jfull FROM judgments ORDER BY id LIMIT 20000');
+    
+    const lawyers = new Set();
+    const pattern = /(?:律師|訴訟代理人|選任辯護人)[^\u4e00-\u9fa5]*([\u4e00-\u9fa5]{2,4})/g;
+    
+    for (const row of judgments.rows) {
+      let match;
+      while ((match = pattern.exec(row.jfull || '')) !== null) {
+        const name = match[1].trim();
+        if (name.length >= 2 && name.length <= 4 && !name.includes('律')) {
+          lawyers.add(name);
+        }
+      }
+    }
+    
+    // 4. 儲存
+    let saved = 0;
+    for (const name of lawyers) {
+      await db.query(`INSERT INTO extracted_lawyers (lawyer_name) VALUES ($1) ON CONFLICT DO NOTHING`, [name]).catch(()=>{});
+      await db.query(`INSERT INTO lawyer_profiles (name, total_cases) VALUES ($1, 1) ON CONFLICT (name) DO UPDATE SET total_cases = lawyer_profiles.total_cases + 1`, [name]).catch(()=>{});
+      saved++;
+    }
+    
+    const total = await db.query('SELECT COUNT(*) as c FROM lawyer_profiles');
+    
+    res.json({ status: 'success', extracted: lawyers.size, saved, total: parseInt(total.rows[0].c) });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
