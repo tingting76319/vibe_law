@@ -1561,3 +1561,85 @@ router.post('/full-lawyer-analysis', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 批次處理律師分析（每次10位）
+router.post('/batch-lawyer-analysis', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    const styleKeywords = {
+      '攻擊型': ['質疑', '漏洞', '錯誤', '不成立', '矛盾', '反駁', '駁斥', '有利', '優勢', '應當', '違法'],
+      '防禦型': ['否認', '抗辯', '程序', '合法', '正當', '權利', '保護', '異議', '救濟', '舉證責任', '撤銷', '駁回'],
+      '妥協型': ['協商', '調解', '和解', '讓步', '共識', '合作', '善意', '體諒', '平衡', '務實'],
+      '穩健型': ['依法', '依據', '規定', '法條', '構成', '要件', '事實', '證據', '分析', '認為', '可能']
+    };
+    
+    // 每次處理10位律師
+    const lawyers = await db.query(`
+      SELECT id, name FROM lawyer_profiles 
+      WHERE (total_cases IS NULL OR total_cases = 0)
+      LIMIT 10
+    `);
+    
+    if (lawyers.rows.length === 0) {
+      return res.json({ status: 'done', message: 'All lawyers processed' });
+    }
+    
+    let processed = 0;
+    
+    for (const lawyer of lawyers.rows) {
+      try {
+        const cases = await db.query(`
+          SELECT jfull FROM judgments 
+          WHERE jfull LIKE '%' || $1 || '%'
+          LIMIT 50
+        `, [lawyer.name]);
+        
+        const caseCount = cases.rows.length;
+        if (caseCount === 0) continue;
+        
+        const scores = { '攻擊型': 0, '防禦型': 0, '妥協型': 0, '穩健型': 0 };
+        
+        for (const c of cases.rows) {
+          const text = c.jfull || '';
+          for (const [style, keywords] of Object.entries(styleKeywords)) {
+            for (const kw of keywords) {
+              if (text.includes(kw)) scores[style]++;
+            }
+          }
+        }
+        
+        let maxStyle = '穩健型';
+        let maxScore = 0;
+        for (const [style, score] of Object.entries(scores)) {
+          if (score > maxScore) { maxScore = score; maxStyle = style; }
+        }
+        
+        await db.query(`
+          UPDATE lawyer_profiles 
+          SET total_cases = $1, style = $2 
+          WHERE id = $3
+        `, [caseCount, maxStyle, lawyer.id]);
+        
+        processed++;
+      } catch (e) {
+        console.error(`Error processing ${lawyer.name}:`, e.message);
+      }
+    }
+    
+    // 取得剩餘數量
+    const remaining = await db.query(`
+      SELECT COUNT(*) as count FROM lawyer_profiles 
+      WHERE total_cases IS NULL OR total_cases = 0
+    `);
+    
+    res.json({ 
+      status: 'success', 
+      processed, 
+      remaining: parseInt(remaining.rows[0].count),
+      next: 'Call this endpoint again to continue'
+    });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
