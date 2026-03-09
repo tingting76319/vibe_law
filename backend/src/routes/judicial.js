@@ -1135,3 +1135,20 @@ router.post('/auto-analyze-lawyer-styles', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 取得防禦型律師
+router.post('/get-defensive-lawyers', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    const result = await db.query(`
+      SELECT name, specialty, court, total_cases, style 
+      FROM lawyer_profiles 
+      WHERE style = '防禦型' AND total_cases > 0
+      ORDER BY total_cases DESC
+      LIMIT 20
+    `);
+    res.json({ status: 'success', data: result.rows });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
