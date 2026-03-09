@@ -1423,3 +1423,23 @@ router.post('/init-lawyer-courts', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 檢查表格結構
+router.post('/check-tables', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    // 檢查 extracted_lawyers 欄位
+    const el = await db.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'extracted_lawyers'`);
+    
+    // 檢查 lawyer_profiles 欄位
+    const lp = await db.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'lawyer_profiles'`);
+    
+    res.json({ 
+      extracted_lawyers: el.rows.map(r => r.column_name),
+      lawyer_profiles: lp.rows.map(r => r.column_name)
+    });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
