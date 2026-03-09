@@ -34,9 +34,9 @@ router.get('/', async (req, res) => {
 
     let lawyers;
     if (search || Object.keys(filters).some(k => filters[k])) {
-      lawyers = lawyerService.searchLawyers(search, filters);
+      lawyers = await lawyerService.searchLawyers(search, filters);
     } else {
-      lawyers = lawyerService.getAllLawyers(parseInt(limit), parseInt(offset));
+      lawyers = await lawyerService.getAllLawyers(parseInt(limit), parseInt(offset));
     }
 
     res.json({
@@ -82,7 +82,7 @@ router.get('/search', async (req, res) => {
       limit: parseInt(limit)
     };
 
-    const lawyers = lawyerService.searchLawyers(q, filters);
+    const lawyers = await lawyerService.searchLawyers(q, filters);
 
     res.json({
       status: 'success',
@@ -111,7 +111,7 @@ router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     
-    const lawyer = lawyerService.getLawyerById(id);
+    const lawyer = await lawyerService.getLawyerById(id);
     
     if (!lawyer) {
       return res.status(404).json({
@@ -122,7 +122,7 @@ router.get('/:id', async (req, res) => {
     }
 
     // 取得統計資料
-    const stats = lawyerService.getLawyerStats(id);
+    const stats = await lawyerService.getLawyerStats(id);
 
     res.json({
       status: 'success',
@@ -152,7 +152,7 @@ router.get('/specialty/:specialty', async (req, res) => {
     const { specialty } = req.params;
     const { limit = 20 } = req.query;
 
-    const lawyers = lawyerService.getLawyersBySpecialty(specialty, parseInt(limit));
+    const lawyers = await lawyerService.getLawyersBySpecialty(specialty, parseInt(limit));
 
     res.json({
       status: 'success',
@@ -180,7 +180,7 @@ router.get('/bar/:barNumber', async (req, res) => {
   try {
     const { barNumber } = req.params;
     
-    const lawyer = lawyerService.getLawyerByBarNumber(barNumber);
+    const lawyer = await lawyerService.getLawyerByBarNumber(barNumber);
     
     if (!lawyer) {
       return res.status(404).json({
