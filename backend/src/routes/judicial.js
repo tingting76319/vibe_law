@@ -442,3 +442,110 @@ router.post('/optimize-judges', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// ===== 律師資料處理 =====
+
+// 建立律師資料表並提取資料
+router.post('/extract-lawyers', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    // 建立律師資料表
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS extracted_lawyers (
+        id SERIAL PRIMARY KEY,
+        lawyer_name TEXT,
+        jid TEXT,
+        jyear TEXT,
+        jcase TEXT,
+        jdate TEXT,
+        court TEXT,
+        UNIQUE(lawyer_name, jid)
+      )
+    `);
+    
+    // 建立索引
+    await db.query('CREATE INDEX IF NOT EXISTS idx_extracted_lawyers_name ON extracted_lawyers(lawyer_name)');
+    await db.query('CREATE INDEX IF NOT EXISTS idx_extracted_lawyers_court ON extracted_lawyers(court)');
+    
+    // 提取律師（從判決書中的律師關鍵詞）
+    const judgments = await db.query('SELECT id, jid, jyear, jcase, jdate, jfull FROM judgments ORDER BY id LIMIT 50000');
+    
+    const lawyerMap = new Map();
+    const lawyerPattern = /(?:律師|訴訟代理人|選任辯護人)[^\u4e00-\u9fa5]*([\u4e00-\u9fa5]{2,4})/g;
+    
+    for (const row of judgments.rows) {
+      const text = row.jfull || '';
+      const court = (row.jid || '').substring(0, 4);
+      
+      let match;
+      while ((match = lawyerPattern.exec(text)) !== null) {
+        const name = match[1].trim();
+        if (name.length >= 2 && name.length <= 4) {
+          const key = `${name}_${row.jid}`;
+          if (!lawyerMap.has(key)) {
+            lawyerMap.set(key, {
+              lawyer_name: name,
+              jid: row.jid,
+              jyear: row.jyear,
+              jcase: row.jcase,
+              jdate: row.jdate,
+              court: court
+            });
+          }
+        }
+      }
+    }
+    
+    // 儲存到資料庫
+    let saved = 0;
+    for (const lawyer of lawyerMap.values()) {
+      try {
+        await db.query(`
+          INSERT INTO extracted_lawyers (lawyer_name, jid, jyear, jcase, jdate, court)
+          VALUES ($1, $2, $3, $4, $5, $6)
+          ON CONFLICT DO NOTHING
+        `, [lawyer.lawyer_name, lawyer.jid, lawyer.jyear, lawyer.jcase, lawyer.jdate, lawyer.court]);
+        saved++;
+      } catch(e) {}
+    }
+    
+    // 建立 lawyer_profiles 表並匯入
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS lawyer_profiles (
+        id SERIAL PRIMARY KEY,
+        name TEXT UNIQUE,
+        bar_number TEXT,
+        specialty TEXT,
+        court TEXT,
+        win_rate FLOAT DEFAULT 0,
+        total_cases INTEGER DEFAULT 0,
+        style TEXT DEFAULT '穩健型',
+        experience_years INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+    
+    // 從 extracted_lawyers 匯入到 lawyer_profiles
+    await db.query(`
+      INSERT INTO lawyer_profiles (name, court, specialty, total_cases)
+      SELECT lawyer_name, court, jcase, COUNT(*) as cnt
+      FROM extracted_lawyers
+      GROUP BY lawyer_name, court, jcase
+      ON CONFLICT (name) DO UPDATE SET total_cases = lawyer_profiles.total_cases + EXCLUDED.total_cases
+    `);
+    
+    // 統計
+    const stats = await db.query('SELECT COUNT(*) as count FROM lawyer_profiles');
+    
+    res.json({ 
+      status: 'success', 
+      extracted: lawyerMap.size,
+      saved: saved,
+      total_lawyers: parseInt(stats.rows[0].count)
+    });
+  } catch (e) {
+    console.error('Error:', e);
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
