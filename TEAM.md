@@ -7,6 +7,7 @@
 | coder1 | Coder 1 | 前端開發 | ✅ 就緒 |
 | coder2 | Coder 2 | 後端開發 | ✅ 就緒 |
 | coder3 | Coder 3 | 測試/CI/CD | ✅ 就緒 |
+| designer1 | Designer 1 | UI/UX設計 | ✅ 就緒 |
 | research1 | Research 1 | RAG演算法 | ✅ 就緒 |
 | research2 | Research 2 | 律師數位孿生 | ✅ 就緒 |
 | research3 | Research 3 | 律師數位孿生 | ✅ 就緒 |
