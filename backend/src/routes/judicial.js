@@ -804,3 +804,57 @@ router.post('/lawyer-schema', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 新增律師欄位並提取資料
+router.post('/enhance-lawyers', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    // 1. 新增欄位
+    await db.query(`ALTER TABLE lawyer_profiles ADD COLUMN IF NOT EXISTS specialty TEXT`).catch(()=>{});
+    await db.query(`ALTER TABLE lawyer_profiles ADD COLUMN IF NOT EXISTS court TEXT`).catch(()=>{});
+    await db.query(`ALTER TABLE lawyer_profiles ADD COLUMN IF NOT EXISTS total_cases INTEGER DEFAULT 0`).catch(()=>{});
+    await db.query(`ALTER TABLE lawyer_profiles ADD COLUMN IF NOT EXISTS win_rate FLOAT DEFAULT 0`).catch(()=>{});
+    await db.query(`ALTER TABLE lawyer_profiles ADD COLUMN IF NOT EXISTS style TEXT DEFAULT '穩健型'`).catch(()=>{});
+    
+    // 2. 從判決書提取律師專長和法院
+    const lawyers = await db.query('SELECT name FROM lawyer_profiles');
+    
+    let updated = 0;
+    for (const lawyer of lawyers.rows || []) {
+      const name = lawyer.name;
+      
+      // 找尋找此律師的案件
+      const cases = await db.query(`
+        SELECT jcase, SUBSTRING(jid FROM 1 FOR 4) as court, COUNT(*) as cnt
+        FROM judgments 
+        WHERE jfull LIKE '%' || $1 || '%律師%'
+        GROUP BY jcase, court
+        ORDER BY cnt DESC
+        LIMIT 1
+      `, [name]);
+      
+      if (cases.rows && cases.rows.length > 0) {
+        const c = cases.rows[0];
+        await db.query(`
+          UPDATE lawyer_profiles 
+          SET specialty = $1, court = $2, total_cases = $3
+          WHERE name = $4
+        `, [c.jcase, c.court, parseInt(c.cnt), name]);
+        updated++;
+      }
+    }
+    
+    // 3. 隨機設定風格（示範用）
+    const styles = ['攻擊型', '防禦型', '妥協型', '穩健型'];
+    await db.query(`
+      UPDATE lawyer_profiles 
+      SET style = $1
+      WHERE style IS NULL OR style = ''
+    `, [styles[Math.floor(Math.random() * styles.length)]]);
+    
+    res.json({ status: 'success', updated });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
