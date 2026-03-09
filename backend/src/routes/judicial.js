@@ -1361,3 +1361,34 @@ router.post('/update-lawyer-courts', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 建立法院欄位並更新
+router.post('/migrate-lawyer-courts', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    // 新增 court 欄位（如果沒有）
+    try { await db.query(`ALTER TABLE lawyer_profiles ADD COLUMN IF NOT EXISTS court TEXT`); } catch(e) {}
+    
+    // 從 extracted_lawyers 統計每個律師的法院
+    const lawyers = await db.query(`
+      SELECT lawyer_name, array_agg(DISTINCT court) as courts
+      FROM extracted_lawyers
+      WHERE court IS NOT NULL AND court != ''
+      GROUP BY lawyer_name
+    `);
+    
+    let updated = 0;
+    for (const l of lawyers.rows || []) {
+      const courts = (l.courts || []).filter(c => c).join(',');
+      if (courts) {
+        await db.query(`UPDATE lawyer_profiles SET court = $1 WHERE name = $2`, [courts, l.lawyer_name]);
+        updated++;
+      }
+    }
+    
+    res.json({ status: 'success', updated });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
