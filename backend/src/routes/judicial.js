@@ -468,6 +468,9 @@ router.post('/extract-lawyers', async (req, res) => {
     await db.query('CREATE INDEX IF NOT EXISTS idx_extracted_lawyers_name ON extracted_lawyers(lawyer_name)');
     await db.query('CREATE INDEX IF NOT EXISTS idx_extracted_lawyers_court ON extracted_lawyers(court)');
     
+    // 新增欄位（如果不存在）
+    try { await db.query('ALTER TABLE extracted_lawyers ADD COLUMN IF NOT EXISTS court TEXT'); } catch(e) {}
+    
     // 提取律師（從判決書中的律師關鍵詞）
     const judgments = await db.query('SELECT id, jid, jyear, jcase, jdate, jfull FROM judgments ORDER BY id LIMIT 50000');
     
