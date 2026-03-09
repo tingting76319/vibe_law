@@ -1493,3 +1493,71 @@ router.post('/check-lawyer-count', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 完整流程：提取案件並分析風格
+router.post('/full-lawyer-analysis', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    const styleKeywords = {
+      '攻擊型': ['質疑', '漏洞', '錯誤', '不成立', '矛盾', '反駁', '駁斥', '有利', '優勢', '應當', '違法'],
+      '防禦型': ['否認', '抗辯', '程序', '合法', '正當', '權利', '保護', '異議', '救濟', '舉證責任', '撤銷', '駁回'],
+      '妥協型': ['協商', '調解', '和解', '讓步', '共識', '合作', '善意', '體諒', '平衡', '務實'],
+      '穩健型': ['依法', '依據', '規定', '法條', '構成', '要件', '事實', '證據', '分析', '認為', '可能']
+    };
+    
+    // 取得需要處理的律師（沒有案件數據的）
+    const lawyers = await db.query(`
+      SELECT id, name FROM lawyer_profiles 
+      WHERE total_cases IS NULL OR total_cases = 0
+      LIMIT 50
+    `);
+    
+    let processed = 0;
+    
+    for (const lawyer of lawyers.rows || []) {
+      // 1. 搜尋判決書全文
+      const cases = await db.query(`
+        SELECT jfull FROM judgments 
+        WHERE jfull LIKE '%' || $1 || '%'
+        LIMIT 100
+      `, [lawyer.name]);
+      
+      const caseCount = cases.rows.length;
+      
+      if (caseCount === 0) continue;
+      
+      // 2. 計算出現次數 & 3. 分析風格
+      const scores = { '攻擊型': 0, '防禦型': 0, '妥協型': 0, '穩健型': 0 };
+      
+      for (const c of cases.rows) {
+        const text = c.jfull || '';
+        for (const [style, keywords] of Object.entries(styleKeywords)) {
+          for (const kw of keywords) {
+            if (text.includes(kw)) scores[style]++;
+          }
+        }
+      }
+      
+      // 找出最高分風格
+      let maxStyle = '穩健型';
+      let maxScore = 0;
+      for (const [style, score] of Object.entries(scores)) {
+        if (score > maxScore) { maxScore = score; maxStyle = style; }
+      }
+      
+      // 4. 更新資料庫
+      await db.query(`
+        UPDATE lawyer_profiles 
+        SET total_cases = $1, style = $2 
+        WHERE id = $3
+      `, [caseCount, maxStyle, lawyer.id]);
+      
+      processed++;
+    }
+    
+    res.json({ status: 'success', processed });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
