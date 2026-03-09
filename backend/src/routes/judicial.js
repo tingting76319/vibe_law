@@ -1319,3 +1319,14 @@ router.post('/smart-analyze-lawyer-styles', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 取得已分析的律師數量
+router.post('/get-analyzed-count', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    const result = await db.query(`SELECT COUNT(*) as count FROM lawyer_profiles WHERE total_cases > 0`);
+    res.json({ status: 'success', count: parseInt(result.rows[0].count) });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
