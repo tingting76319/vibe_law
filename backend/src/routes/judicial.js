@@ -922,3 +922,17 @@ router.post('/set-lawyer-style', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 搜尋律師
+router.post('/search-lawyer', async (req, res) => {
+  try {
+    const { name } = req.body;
+    const db = require('../db/postgres');
+    
+    const result = await db.query('SELECT * FROM lawyer_profiles WHERE name LIKE $1 LIMIT 10', ['%' + name + '%']);
+    
+    res.json({ status: 'success', data: result.rows });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
