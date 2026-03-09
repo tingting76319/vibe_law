@@ -936,3 +936,66 @@ router.post('/search-lawyer', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 分析律師風格
+router.post('/analyze-lawyer-styles', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    // 風格關鍵詞
+    const styleKeywords = {
+      '攻擊型': ['抗辯', '舉證', '請求', '主張', '侵權', '違約', '損害賠償', '應負', '過失'],
+      '防禦型': ['不知', '非因', '否認', '辯稱', '誤會', '無過失', '無因果關係', '不成立'],
+      '妥協型': ['和解', '調解', '撤回', '願意賠償', '協商', '讓步', '調處'],
+      '穩健型': ['證據', '依法', '應依', '程序', '管轄', '適法', '依法論']
+    };
+    
+    // 只分析前200個律師
+    const lawyers = await db.query('SELECT id, name FROM lawyer_profiles LIMIT 200');
+    
+    let analyzed = 0;
+    
+    for (const lawyer of lawyers.rows || []) {
+      const name = lawyer.name;
+      
+      // 取得此律師的判決書
+      const cases = await db.query(`
+        SELECT jfull FROM judgments 
+        WHERE jfull LIKE '%' || $1 || '%'
+        LIMIT 50
+      `, [name]);
+      
+      if (cases.rows.length === 0) continue;
+      
+      // 統計關鍵詞出現次數
+      const counts = { '攻擊型': 0, '防禦型': 0, '妥協型': 0, '穩健型': 0 };
+      
+      for (const c of cases.rows) {
+        const text = c.jfull || '';
+        for (const [style, keywords] of Object.entries(styleKeywords)) {
+          for (const kw of keywords) {
+            if (text.includes(kw)) counts[style]++;
+          }
+        }
+      }
+      
+      // 找出最高分的風格
+      let maxStyle = '穩健型';
+      let maxCount = 0;
+      for (const [style, count] of Object.entries(counts)) {
+        if (count > maxCount) {
+          maxCount = count;
+          maxStyle = style;
+        }
+      }
+      
+      // 更新資料庫
+      await db.query('UPDATE lawyer_profiles SET style = $1 WHERE id = $2', [maxStyle, lawyer.id]);
+      analyzed++;
+    }
+    
+    res.json({ status: 'success', analyzed });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
