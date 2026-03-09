@@ -902,3 +902,23 @@ router.post('/enhance-lawyers-fast', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 設定律師風格
+router.post('/set-lawyer-style', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    const styles = ['攻擊型', '防禦型', '妥協型', '穩健型'];
+    
+    // 隨機設定風格
+    const lawyers = await db.query('SELECT id FROM lawyer_profiles');
+    
+    for (const l of lawyers.rows || []) {
+      const style = styles[Math.floor(Math.random() * styles.length)];
+      await db.query('UPDATE lawyer_profiles SET style = $1 WHERE id = $2', [style, l.id]);
+    }
+    
+    res.json({ status: 'success', updated: lawyers.rows.length });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
