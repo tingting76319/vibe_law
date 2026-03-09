@@ -1721,3 +1721,75 @@ router.post('/get-cache-status', async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+
+// 快速批次分析（減少搜尋量）
+router.post('/quick-batch-analysis', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    const styleKeywords = {
+      '攻擊型': ['抗辯', '請求', '主張', '侵權', '違約', '損害賠償'],
+      '防禦型': ['否認', '辯稱', '無過失', '不成立'],
+      '妥協型': ['和解', '調解', '撤回', '協商'],
+      '穩健型': ['依法', '證據', '程序', '管轄']
+    };
+    
+    // 每次處理5位，只搜尋20筆判決書
+    const lawyers = await db.query(`
+      SELECT id, name FROM lawyer_profiles 
+      WHERE (total_cases IS NULL OR total_cases = 0)
+      LIMIT 5
+    `);
+    
+    if (lawyers.rows.length === 0) {
+      return res.json({ status: 'done', message: 'All lawyers processed' });
+    }
+    
+    let processed = 0;
+    
+    for (const lawyer of lawyers.rows) {
+      try {
+        // 限制只搜尋20筆
+        const cases = await db.query(`
+          SELECT jfull FROM judgments 
+          WHERE jfull LIKE '%' || $1 || '%'
+          LIMIT 20
+        `, [lawyer.name]);
+        
+        const caseCount = cases.rows.length;
+        if (caseCount === 0) continue;
+        
+        const scores = { '攻擊型': 0, '防禦型': 0, '妥協型': 0, '穩健型': 0 };
+        
+        for (const c of cases.rows) {
+          const text = c.jfull || '';
+          for (const [style, keywords] of Object.entries(styleKeywords)) {
+            for (const kw of keywords) {
+              if (text.includes(kw)) scores[style]++;
+            }
+          }
+        }
+        
+        let maxStyle = '穩健型';
+        let maxScore = 0;
+        for (const [style, score] of Object.entries(scores)) {
+          if (score > maxScore) { maxScore = score; maxStyle = style; }
+        }
+        
+        await db.query(`
+          UPDATE lawyer_profiles 
+          SET total_cases = $1, style = $2 
+          WHERE id = $3
+        `, [caseCount, maxStyle, lawyer.id]);
+        
+        processed++;
+      } catch (e) {
+        console.error(`Error: ${e.message}`);
+      }
+    }
+    
+    res.json({ status: 'success', processed, remaining: 'Call again to continue' });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
