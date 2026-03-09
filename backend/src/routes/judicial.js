@@ -671,3 +671,28 @@ router.post('/extract-lawyers-full', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 清理律師名稱
+router.post('/clean-lawyers', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    // 刪除非律師名稱
+    const invalid = ['上列', '下稱', '即為', '分別', '原告', '被告', '第三人', '法定', '訴訟', '法院', '本件', '此致', '受命', '審判', '書記'];
+    
+    let deleted = 0;
+    for (const word of invalid) {
+      const result = await db.query(`DELETE FROM lawyer_profiles WHERE name LIKE '%${word}%'`);
+      deleted += parseInt(result.rowCount || 0);
+    }
+    
+    // 刪除結尾為 "律" 但不正確的
+    await db.query(`DELETE FROM lawyer_profiles WHERE name LIKE '%律律'`);
+    
+    const count = await db.query('SELECT COUNT(*) as c FROM lawyer_profiles');
+    
+    res.json({ status: 'success', deleted, remaining: parseInt(count.rows[0].c) });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
