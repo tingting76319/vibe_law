@@ -1330,3 +1330,34 @@ router.post('/get-analyzed-count', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 更新律師法院欄位（儲存多個法院）
+router.post('/update-lawyer-courts', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    // 找出有多個法院的律師
+    const lawyers = await db.query(`
+      SELECT lawyer_name, array_agg(DISTINCT court) as courts, COUNT(*) as cnt
+      FROM extracted_lawyers
+      WHERE court IS NOT NULL AND court != ''
+      GROUP BY lawyer_name
+      HAVing COUNT(DISTINCT court) > 1
+      LIMIT 100
+    `);
+    
+    let updated = 0;
+    
+    for (const l of lawyers.rows || []) {
+      const courts = l.courts.filter(c => c).join(',');
+      await db.query(`
+        UPDATE lawyer_profiles SET court = $1 WHERE name = $2
+      `, [courts, l.lawyer_name]);
+      updated++;
+    }
+    
+    res.json({ status: 'success', updated, sample: lawyers.rows.slice(0, 5) });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
