@@ -426,3 +426,19 @@ router.post('/extract-judges', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 建立法官資料表索引
+router.post('/optimize-judges', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    // 建立索引
+    await db.query('CREATE INDEX IF NOT EXISTS idx_extracted_judges_court ON extracted_judges(court)');
+    await db.query('CREATE INDEX IF NOT EXISTS idx_extracted_judges_jyear ON extracted_judges(jyear)');
+    await db.query('CREATE INDEX IF NOT EXISTS idx_extracted_judges_jcase ON extracted_judges(jcase)');
+    
+    res.json({ status: 'success', message: '索引建立完成' });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
