@@ -1152,3 +1152,60 @@ router.post('/get-defensive-lawyers', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 擴充分析律師風格
+router.post('/expand-lawyer-analysis', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    const styleWeights = {
+      '攻擊型': ['抗辯', '舉證', '請求', '主張', '侵權', '損害賠償', '違約', '應負'],
+      '防禦型': ['否認', '辯稱', '誤會', '無過失', '不成立', '無因果', '不可歸責'],
+      '妥協型': ['和解', '調解', '撤回', '願意賠償', '協商', '讓步', '調處'],
+      '穩健型': ['證據', '依法', '應依', '程序', '管轄', '適法', '違法']
+    };
+    
+    // 取得有案件的律師
+    const lawyers = await db.query(`
+      SELECT id, name FROM lawyer_profiles 
+      WHERE total_cases > 0 AND (style IS NULL OR style = '')
+      LIMIT 100
+    `);
+    
+    let updated = 0;
+    
+    for (const lawyer of lawyers.rows || []) {
+      const cases = await db.query(`
+        SELECT jfull FROM judgments 
+        WHERE jfull LIKE '%${lawyer.name}%'
+        LIMIT 30
+      `);
+      
+      if (cases.rows.length === 0) continue;
+      
+      const scores = { '攻擊型': 0, '防禦型': 0, '妥協型': 0, '穩健型': 0 };
+      
+      for (const c of cases.rows) {
+        const text = c.jfull || '';
+        for (const [style, keywords] of Object.entries(styleWeights)) {
+          for (const kw of keywords) {
+            if (text.includes(kw)) scores[style]++;
+          }
+        }
+      }
+      
+      let maxStyle = '穩健型';
+      let maxScore = 0;
+      for (const [style, score] of Object.entries(scores)) {
+        if (score > maxScore) { maxScore = score; maxStyle = style; }
+      }
+      
+      await db.query(`UPDATE lawyer_profiles SET style = $1 WHERE id = $2`, [maxStyle, lawyer.id]);
+      updated++;
+    }
+    
+    res.json({ status: 'success', updated });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
