@@ -1043,3 +1043,24 @@ router.post('/analyze-lawyer-styles-fast', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 快速設定律師風格（基於案件數量）
+router.post('/set-lawyer-styles-simple', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    // 基於 total_cases 設定風格
+    const lawyers = await db.query('SELECT id, total_cases FROM lawyer_profiles WHERE total_cases > 0');
+    
+    const styles = ['攻擊型', '防禦型', '妥協型', '穩健型'];
+    
+    for (const l of lawyers.rows || []) {
+      const idx = l.total_cases % 4;
+      await db.query('UPDATE lawyer_profiles SET style = $1 WHERE id = $2', [styles[idx], l.id]);
+    }
+    
+    res.json({ status: 'success', updated: lawyers.rows.length });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
