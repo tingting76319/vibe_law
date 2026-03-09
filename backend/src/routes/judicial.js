@@ -1443,3 +1443,34 @@ router.post('/check-tables', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 從判決書取得律師的法院並更新
+router.post('/sync-lawyer-courts', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    // 確保 court 欄位存在
+    await db.query(`ALTER TABLE lawyer_profiles ADD COLUMN IF NOT EXISTS court TEXT`).catch(()=>{});
+    
+    // 從 judgments 取得法院資訊（jid 前4碼）
+    const result = await db.query(`
+      SELECT lp.id, lp.name, 
+        array_agg(DISTINCT SUBSTRING(j.jid FROM 1 FOR 4)) as courts
+      FROM lawyer_profiles lp
+      JOIN judgments j ON j.jfull LIKE '%' || lp.name || '%'
+      GROUP BY lp.id, lp.name
+      LIMIT 200
+    `);
+    
+    let updated = 0;
+    for (const row of result.rows || []) {
+      const courts = (row.courts || []).filter(c => c).join(',');
+      await db.query(`UPDATE lawyer_profiles SET court = $1 WHERE id = $2`, [courts, row.id]);
+      updated++;
+    }
+    
+    res.json({ status: 'success', updated });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
