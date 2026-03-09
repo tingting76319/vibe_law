@@ -1643,3 +1643,81 @@ router.post('/batch-lawyer-analysis', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 建立律師-案件快取表
+router.post('/build-lawyer-cache', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    // 建立快取表格
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS lawyer_case_cache (
+        id SERIAL PRIMARY KEY,
+        lawyer_id INTEGER,
+        lawyer_name TEXT,
+        jid TEXT,
+        court TEXT,
+        case_type TEXT,
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `).catch(()=>{});
+    
+    // 建立索引
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_lawyer_cache_name ON lawyer_case_cache(lawyer_name)`).catch(()=>{});
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_lawyer_cache_lawyer_id ON lawyer_case_cache(lawyer_id)`).catch(()=>{});
+    
+    // 取得所有律師
+    const lawyers = await db.query(`SELECT id, name FROM lawyer_profiles LIMIT 500`);
+    
+    let cached = 0;
+    
+    for (const lawyer of lawyers.rows) {
+      try {
+        // 從判決書找出該律師的案件
+        const cases = await db.query(`
+          SELECT jid, SUBSTRING(jid FROM 1 FOR 4) as court, jcase
+          FROM judgments 
+          WHERE jfull LIKE '%' || $1 || '%'
+          LIMIT 200
+        `, [lawyer.name]);
+        
+        for (const c of cases.rows) {
+          await db.query(`
+            INSERT INTO lawyer_case_cache (lawyer_id, lawyer_name, jid, court, case_type)
+            VALUES ($1, $2, $3, $4, $5)
+          `, [lawyer.id, lawyer.name, c.jid, c.court, c.jcase]);
+        }
+        
+        // 更新律師的案件數
+        await db.query(`
+          UPDATE lawyer_profiles SET total_cases = $1 WHERE id = $2
+        `, [cases.rows.length, lawyer.id]);
+        
+        cached += cases.rows.length;
+      } catch (e) {
+        console.error(`Error caching ${lawyer.name}:`, e.message);
+      }
+    }
+    
+    res.json({ status: 'success', cached_records: cached, lawyers_processed: lawyers.rows.length });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
+
+// 取得快取狀態
+router.post('/get-cache-status', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    const cacheCount = await db.query(`SELECT COUNT(*) as count FROM lawyer_case_cache`);
+    const lawyerCount = await db.query(`SELECT COUNT(*) as count FROM lawyer_profiles WHERE total_cases > 0`);
+    
+    res.json({ 
+      cache_records: parseInt(cacheCount.rows[0].count),
+      lawyers_with_cases: parseInt(lawyerCount.rows[0].count)
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
