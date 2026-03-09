@@ -1474,3 +1474,22 @@ router.post('/sync-lawyer-courts', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 檢查律師數量詳細
+router.post('/check-lawyer-count', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    const total = await db.query('SELECT COUNT(*) as count FROM lawyer_profiles');
+    const withCases = await db.query('SELECT COUNT(*) as count FROM lawyer_profiles WHERE total_cases > 0');
+    const unique = await db.query('SELECT COUNT(DISTINCT name) as count FROM lawyer_profiles');
+    
+    res.json({ 
+      total: parseInt(total.rows[0].count),
+      with_cases: parseInt(withCases.rows[0].count),
+      unique_names: parseInt(unique.rows[0].count)
+    });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
