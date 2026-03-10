@@ -1930,3 +1930,84 @@ router.post('/batch-judge-analysis', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 建立法官資料表並分析
+router.post('/init-judge-analysis', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    // 建立法官資料表
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS judge_profiles (
+        id SERIAL PRIMARY KEY,
+        name TEXT,
+        court TEXT,
+        total_cases INTEGER DEFAULT 0,
+        style TEXT,
+        specialty TEXT
+      )
+    `).catch(()=>{});
+    
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_judge_profiles_name ON judge_profiles(name)`).catch(()=>{});
+    
+    const styleKeywords = {
+      '嚴謹型': ['程序違法', '證據不足', '依法論', '不備要件', '舉證責任'],
+      '寬容型': ['酌情', '寬容', '給予機會', '從輕', '衡平'],
+      '效率型': ['和解', '調解', '撤回', '調處'],
+      '強硬型': ['駁回', '嚴懲', '維持', '確定', '無理由']
+    };
+    
+    // 取得法官列表
+    const judges = await db.query(`
+      SELECT judge_name, court, COUNT(*) as cnt
+      FROM extracted_judges
+      GROUP BY judge_name, court
+      LIMIT 10
+    `);
+    
+    let processed = 0;
+    
+    for (const judge of judges.rows) {
+      const name = judge.judge_name;
+      const court = judge.court;
+      const caseCount = parseInt(judge.cnt);
+      
+      // 取得判決書分析風格
+      const cases = await db.query(`
+        SELECT jfull FROM judgments 
+        WHERE jid LIKE $1 || '%'
+        LIMIT 20
+      `, [court]);
+      
+      const scores = { '嚴謹型': 0, '寬容型': 0, '效率型': 0, '強硬型': 0 };
+      
+      for (const c of cases.rows || []) {
+        const text = c.jfull || '';
+        for (const [style, keywords] of Object.entries(styleKeywords)) {
+          for (const kw of keywords) {
+            if (text.includes(kw)) scores[style]++;
+          }
+        }
+      }
+      
+      let maxStyle = '嚴謹型';
+      let maxScore = 0;
+      for (const [style, score] of Object.entries(scores)) {
+        if (score > maxScore) { maxScore = score; maxStyle = style; }
+      }
+      
+      // 儲存
+      await db.query(`
+        INSERT INTO judge_profiles (name, court, total_cases, style)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (name) DO UPDATE SET style = EXCLUDED.style, total_cases = EXCLUDED.total_cases
+      `, [name, court, caseCount, maxStyle]);
+      
+      processed++;
+    }
+    
+    res.json({ status: 'success', processed });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
