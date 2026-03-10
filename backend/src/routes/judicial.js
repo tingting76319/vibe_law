@@ -2086,3 +2086,14 @@ router.post('/init-judge-analysis-v2', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 取得法官分析數量
+router.post('/get-judge-analyzed-count', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    const result = await db.query(`SELECT COUNT(*) as count FROM judge_profiles_v2 WHERE style IS NOT NULL`);
+    res.json({ status: 'success', count: parseInt(result.rows[0].count) });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
