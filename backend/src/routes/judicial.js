@@ -1793,3 +1793,68 @@ router.post('/quick-batch-analysis', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 建立律師案件快取表（優化版）
+router.post('/build-lawyer-cache-v2', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    // 建立快取表
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS lawyer_case_cache_v2 (
+        id SERIAL PRIMARY KEY,
+        lawyer_id INTEGER,
+        lawyer_name TEXT,
+        jid TEXT,
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `).catch(()=>{});
+    
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_lc_name ON lawyer_case_cache_v2(lawyer_name)`).catch(()=>{});
+    
+    // 每次處理 10 位律師
+    const lawyers = await db.query(`
+      SELECT id, name FROM lawyer_profiles 
+      WHERE id NOT IN (SELECT DISTINCT lawyer_id FROM lawyer_case_cache_v2 WHERE lawyer_id IS NOT NULL)
+      LIMIT 10
+    `);
+    
+    if (lawyers.rows.length === 0) {
+      return res.json({ status: 'done', message: 'All lawyers cached' });
+    }
+    
+    let cached = 0;
+    
+    for (const lawyer of lawyers.rows) {
+      try {
+        const cases = await db.query(`
+          SELECT jid FROM judgments 
+          WHERE jfull LIKE '%' || $1 || '%'
+          LIMIT 100
+        `, [lawyer.name]);
+        
+        for (const c of cases.rows) {
+          await db.query(`
+            INSERT INTO lawyer_case_cache_v2 (lawyer_id, lawyer_name, jid)
+            VALUES ($1, $2, $3)
+          `, [lawyer.id, lawyer.name, c.jid]);
+        }
+        
+        // 更新案件數
+        await db.query(`
+          UPDATE lawyer_profiles SET total_cases = $1 WHERE id = $2
+        `, [cases.rows.length, lawyer.id]);
+        
+        cached += cases.rows.length;
+      } catch (e) {
+        console.error(`Error: ${e.message}`);
+      }
+    }
+    
+    const remaining = await db.query(`SELECT COUNT(*) as count FROM lawyer_profiles WHERE id NOT IN (SELECT DISTINCT lawyer_id FROM lawyer_case_cache_v2 WHERE lawyer_id IS NOT NULL)`);
+    
+    res.json({ status: 'success', cached, remaining: parseInt(remaining.rows[0].count), next: 'Call again to continue' });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
