@@ -1858,3 +1858,75 @@ router.post('/build-lawyer-cache-v2', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 分析法官風格
+router.post('/batch-judge-analysis', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    const styleKeywords = {
+      '嚴謹型': ['程序違法', '證據不足', '依法論', '不備要件', '舉證責任', '管轄錯誤', '程式不符'],
+      '寬容型': ['酌情', '寬容', '給予機會', '從輕', '衡平', '特殊情況', '考量'],
+      '效率型': ['和解', '調解', '撤回', '調處', '協議', '簡便'],
+      '強硬型': ['駁回', '嚴懲', '不予採納', '維持', '確定', '無理由', '應予']
+    };
+    
+    // 每次處理5位法官
+    const judges = await db.query(`
+      SELECT id, name, court FROM extracted_judges 
+      GROUP BY id, name, court
+      HAVING COUNT(*) > 0
+      LIMIT 5
+    `);
+    
+    if (judges.rows.length === 0) {
+      return res.json({ status: 'done', message: 'No more judges' });
+    }
+    
+    let processed = 0;
+    
+    for (const judge of judges.rows) {
+      try {
+        const cases = await db.query(`
+          SELECT jfull FROM judgments 
+          WHERE jid LIKE $1 || '%'
+          LIMIT 20
+        `, [judge.court]);
+        
+        if (cases.rows.length === 0) continue;
+        
+        const scores = { '嚴謹型': 0, '寬容型': 0, '效率型': 0, '強硬型': 0 };
+        
+        for (const c of cases.rows) {
+          const text = c.jfull || '';
+          for (const [style, keywords] of Object.entries(styleKeywords)) {
+            for (const kw of keywords) {
+              if (text.includes(kw)) scores[style]++;
+            }
+          }
+        }
+        
+        let maxStyle = '嚴謹型';
+        let maxScore = 0;
+        for (const [style, score] of Object.entries(scores)) {
+          if (score > maxScore) { maxScore = score; maxStyle = style; }
+        }
+        
+        // 更新或新增法官資料
+        await db.query(`
+          INSERT INTO judge_profiles (name, court, total_cases, style)
+          VALUES ($1, $2, $3, $4)
+          ON CONFLICT (name) DO UPDATE SET style = EXCLUDED.style, total_cases = EXCLUDED.total_cases
+        `, [judge.name, judge.court, cases.rows.length, maxStyle]);
+        
+        processed++;
+      } catch (e) {
+        console.error(`Error: ${e.message}`);
+      }
+    }
+    
+    res.json({ status: 'success', processed, next: 'Call again to continue' });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
