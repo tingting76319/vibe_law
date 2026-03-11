@@ -2979,60 +2979,70 @@ router.post('/test-with-lawyers', async (req, res) => {
 });
 
 
-// 姓名提取（原告/被告律師分類）v3
-router.post('/test-parties-v3', async (req, res) => {
+// 姓名提取（優化版：去重+過濾）
+router.post('/test-optimized', async (req, res) => {
   try {
     const db = require('../db/postgres');
     const judgments = await db.query(`SELECT jid, jfull FROM judgments WHERE jfull LIKE '%律師%' ORDER BY jid ASC LIMIT 5`);
+    
+    // 非人名過濾清單
+    const filterWords = ['如委任', '法扶', '選任', '辯護人', '訴訟代理人', '律師聲', '律師請', '律師法'];
+    
     const results = [];
     
     for (let i = 0; i < judgments.rows.length; i++) {
       const text = judgments.rows[i].jfull || '';
       
-      // 律師（兩種格式：名字+律師 或 選任辯護人+名字+律師）
+      // 法官
+      const judges = [];
+      const jm = text.match(/法\s*官\s+([\u4e00-\u9fa5]{2,4})/);
+      if (jm && jm[1] && !filterWords.includes(jm[1])) judges.push(jm[1]);
+      
+      // 書記官
+      const clerks = [];
+      const cm = text.match(/書記官\s+([\u4e00-\u9fa5]{2,4})/);
+      if (cm && cm[1] && !filterWords.includes(cm[1])) clerks.push(cm[1]);
+      
+      // 律師（去重+過濾）
       const allLawyers = [];
       const lawyerMatches = text.match(/([\u4e00-\u9fa5]{2,4})律師/g);
       if (lawyerMatches) {
         for (const m of lawyerMatches) {
           const name = m.replace('律師', '').trim();
-          if (name.length >= 2) allLawyers.push(name);
+          // 過濾條件：長度>=2，不在黑名單，不是重複
+          if (name.length >= 2 && !filterWords.includes(name) && !allLawyers.includes(name)) {
+            allLawyers.push(name);
+          }
         }
       }
       
-      // 原告/被告 簡單判斷：在判決書中出現的順序
+      // 原告/被告分類
       const plaintiffPos = text.indexOf('原告');
       const defendantPos = text.indexOf('被告');
-      
       const plaintiffLawyers = [];
       const defendantLawyers = [];
       
-      // 簡單分類：前面的律師歸原告，後面的歸被告
       if (plaintiffPos >= 0 && defendantPos >= 0) {
+        const half = Math.ceil(allLawyers.length / 2);
         if (plaintiffPos < defendantPos) {
-          // 原告在前
-          plaintiffLawyers.push(...allLawyers.slice(0, Math.ceil(allLawyers.length / 2)));
-          defendantLawyers.push(...allLawyers.slice(Math.ceil(allLawyers.length / 2)));
+          plaintiffLawyers.push(...allLawyers.slice(0, half));
+          defendantLawyers.push(...allLawyers.slice(half));
         } else {
-          defendantLawyers.push(...allLawyers.slice(0, Math.ceil(allLawyers.length / 2)));
-          plaintiffLawyers.push(...allLawyers.slice(Math.ceil(allLawyers.length / 2)));
+          defendantLawyers.push(...allLawyers.slice(0, half));
+          plaintiffLawyers.push(...allLawyers.slice(half));
         }
       } else {
         plaintiffLawyers.push(...allLawyers);
       }
       
-      // 法官
-      const jm = text.match(/法\s*官\s+([\u4e00-\u9fa5]{2,4})/);
-      // 書記官
-      const cm = text.match(/書記官\s+([\u4e00-\u9fa5]{2,4})/);
-      
       results.push({
         index: i + 1,
         jid: judgments.rows[i].jid,
-        judges: jm ? [jm[1]] : [],
-        clerks: cm ? [cm[1]] : [],
+        judges: [...new Set(judges)],
+        clerks: [...new Set(clerks)],
         all_lawyers: allLawyers,
-        plaintiff_lawyers: plaintiffLawyers,
-        defendant_lawyers: defendantLawyers
+        plaintiff_lawyers: [...new Set(plaintiffLawyers)],
+        defendant_lawyers: [...new Set(defendantLawyers)]
       });
     }
     
