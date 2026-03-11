@@ -2979,11 +2979,11 @@ router.post('/test-with-lawyers', async (req, res) => {
 });
 
 
-// 精準提取原告/被告律師
-router.post('/test-precise', async (req, res) => {
+// 位置ベース原告/被告律師抽出
+router.post('/test-by-position', async (req, res) => {
   try {
     const db = require('../db/postgres');
-    const judgments = await db.query(`SELECT jid, jfull FROM judgments WHERE jfull LIKE '%原告%' AND jfull LIKE '%被告%' ORDER BY jid ASC LIMIT 5`);
+    const judgments = await db.query(`SELECT jid, jfull FROM judgments WHERE jfull LIKE '%原告%' AND jfull LIKE '%被告%' AND jfull LIKE '%律師%' ORDER BY jid ASC LIMIT 5`);
     
     const results = [];
     const filterWords = ['如委任', '法扶', '選任', '辯護人'];
@@ -2991,24 +2991,39 @@ router.post('/test-precise', async (req, res) => {
     for (let i = 0; i < judgments.rows.length; i++) {
       const text = judgments.rows[i].jfull || '';
       
-      // 原告律師：找 "原告" 後面的律師
-      const plaintiffLawyers = [];
-      const pPattern = /原告[^\n]{0,50}([\u4e00-\u9fa5]{2,4})律師/g;
-      let m;
-      while ((m = pPattern.exec(text)) !== null) {
-        if (m[1] && !filterWords.includes(m[1])) plaintiffLawyers.push(m[1]);
+      // 原告位置
+      const plaintiffPos = text.indexOf('原告');
+      // 被告位置
+      const defendantPos = text.indexOf('被告');
+      
+      // 找出所有律師
+      const lawyerNames = [];
+      const lawyerPattern = /([\u4e00-\u9fa5]{2,4})律師/g;
+      let match;
+      while ((match = lawyerPattern.exec(text)) !== null) {
+        const name = match[1];
+        if (name.length >= 2 && !filterWords.includes(name)) {
+          lawyerNames.push({ name, pos: match.index });
+        }
       }
       
-      // 被告律師：找 "被告" 後面的律師
+      // 按位置分類
+      const plaintiffLawyers = [];
       const defendantLawyers = [];
-      const dPattern = /被告[^\n]{0,50}([\u4e00-\u9fa5]{2,4})律師/g;
-      while ((m = dPattern.exec(text)) !== null) {
-        if (m[1] && !filterWords.includes(m[1])) defendantLawyers.push(m[1]);
+      const unknownLawyers = [];
+      
+      for (const lawyer of lawyerNames) {
+        if (plaintiffPos === -1 || defendantPos === -1) {
+          unknownLawyers.push(lawyer.name);
+        } else if (Math.abs(lawyer.pos - plaintiffPos) < Math.abs(lawyer.pos - defendantPos)) {
+          plaintiffLawyers.push(lawyer.name);
+        } else {
+          defendantLawyers.push(lawyer.name);
+        }
       }
       
       // 法官
       const jm = text.match(/法\s*官\s+([\u4e00-\u9fa5]{2,4})/);
-      // 書記官
       const cm = text.match(/書記官\s+([\u4e00-\u9fa5]{2,4})/);
       
       results.push({
@@ -3017,7 +3032,8 @@ router.post('/test-precise', async (req, res) => {
         judges: jm ? [jm[1]] : [],
         clerks: cm ? [cm[1]] : [],
         plaintiff_lawyers: [...new Set(plaintiffLawyers)],
-        defendant_lawyers: [...new Set(defendantLawyers)]
+        defendant_lawyers: [...new Set(defendantLawyers)],
+        unknown_lawyers: [...new Set(unknownLawyers)]
       });
     }
     
