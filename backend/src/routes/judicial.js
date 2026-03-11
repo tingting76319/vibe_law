@@ -2979,25 +2979,68 @@ router.post('/test-with-lawyers', async (req, res) => {
 });
 
 
-// 原始判決書內容
-router.post('/show-judgment', async (req, res) => {
+// 區段式原告/被告律師抽出
+router.post('/test-segment', async (req, res) => {
   try {
     const db = require('../db/postgres');
-    const { jid } = req.body;
+    const judgments = await db.query(`SELECT jid, jfull FROM judgments WHERE jfull LIKE '%原告%' AND jfull LIKE '%被告%' AND jfull LIKE '%律師%' ORDER BY jid ASC LIMIT 5`);
     
-    const result = await db.query(`SELECT jid, jfull FROM judgments WHERE jid = $1`, [jid]);
+    const results = [];
+    const filterWords = ['如委任', '法扶', '選任', '辯護人'];
     
-    if (result.rows.length > 0) {
-      const text = result.rows[0].jfull || '';
-      res.json({ 
-        jid: result.rows[0].jid,
-        length: text.length,
-        content: text.substring(0, 5000)
+    for (let i = 0; i < judgments.rows.length; i++) {
+      const text = judgments.rows[i].jfull || '';
+      
+      // 找出原告、被告的段落位置
+      const plaintiffMatch = text.match(/原\s*告/);
+      const defendantMatch = text.match(/被\s*告/);
+      
+      if (!plaintiffMatch || !defendantMatch) continue;
+      
+      const plaintiffPos = plaintiffMatch.index;
+      const defendantPos = defendantMatch.index;
+      
+      // 找出所有律師
+      const lawyers = [];
+      const lawyerPattern = /([\u4e00-\u9fa5]{2,4})律師/g;
+      let match;
+      while ((match = lawyerPattern.exec(text)) !== null) {
+        const name = match[1];
+        if (name.length >= 2 && !filterWords.includes(name)) {
+          lawyers.push({ name, pos: match.index });
+        }
+      }
+      
+      // 區段分類
+      const plaintiffLawyers = [];
+      const defendantLawyers = [];
+      
+      for (const lawyer of lawyers) {
+        if (lawyer.pos < defendantPos) {
+          // 被告之前 → 原告律師
+          plaintiffLawyers.push(lawyer.name);
+        } else {
+          // 被告之後 → 被告律師
+          defendantLawyers.push(lawyer.name);
+        }
+      }
+      
+      // 法官、書記官
+      const jm = text.match(/法\s*官\s+([\u4e00-\u9fa5]{2,4})/);
+      const cm = text.match(/書記官\s+([\u4e00-\u9fa5]{2,4})/);
+      
+      results.push({
+        index: i + 1,
+        jid: judgments.rows[i].jid,
+        judges: jm ? [jm[1]] : [],
+        clerks: cm ? [cm[1]] : [],
+        plaintiff_lawyers: [...new Set(plaintiffLawyers)],
+        defendant_lawyers: [...new Set(defendantLawyers)]
       });
-    } else {
-      res.json({ error: 'Not found' });
     }
+    
+    res.json({ status: 'success', count: results.length, results });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ status: 'error', message: e.message });
   }
 });
