@@ -2979,8 +2979,8 @@ router.post('/test-with-lawyers', async (req, res) => {
 });
 
 
-// 姓名提取（原告/被告律師分類）v2
-router.post('/test-parties-v2', async (req, res) => {
+// 姓名提取（原告/被告律師分類）v3
+router.post('/test-parties-v3', async (req, res) => {
   try {
     const db = require('../db/postgres');
     const judgments = await db.query(`SELECT jid, jfull FROM judgments WHERE jfull LIKE '%律師%' ORDER BY jid ASC LIMIT 5`);
@@ -2989,23 +2989,39 @@ router.post('/test-parties-v2', async (req, res) => {
     for (let i = 0; i < judgments.rows.length; i++) {
       const text = judgments.rows[i].jfull || '';
       
-      // 原告律師
-      const plaintiffLawyers = [];
-      if (text.includes('原告')) {
-        const m = text.match(/原告.{0,30}(.{2,4})律師/);
-        if (m && m[1]) plaintiffLawyers.push(m[1]);
+      // 律師（兩種格式：名字+律師 或 選任辯護人+名字+律師）
+      const allLawyers = [];
+      const lawyerMatches = text.match(/([\u4e00-\u9fa5]{2,4})律師/g);
+      if (lawyerMatches) {
+        for (const m of lawyerMatches) {
+          const name = m.replace('律師', '').trim();
+          if (name.length >= 2) allLawyers.push(name);
+        }
       }
       
-      // 被告律師
+      // 原告/被告 簡單判斷：在判決書中出現的順序
+      const plaintiffPos = text.indexOf('原告');
+      const defendantPos = text.indexOf('被告');
+      
+      const plaintiffLawyers = [];
       const defendantLawyers = [];
-      if (text.includes('被告')) {
-        const m = text.match(/被告.{0,30}(.{2,4})律師/);
-        if (m && m[1]) defendantLawyers.push(m[1]);
+      
+      // 簡單分類：前面的律師歸原告，後面的歸被告
+      if (plaintiffPos >= 0 && defendantPos >= 0) {
+        if (plaintiffPos < defendantPos) {
+          // 原告在前
+          plaintiffLawyers.push(...allLawyers.slice(0, Math.ceil(allLawyers.length / 2)));
+          defendantLawyers.push(...allLawyers.slice(Math.ceil(allLawyers.length / 2)));
+        } else {
+          defendantLawyers.push(...allLawyers.slice(0, Math.ceil(allLawyers.length / 2)));
+          plaintiffLawyers.push(...allLawyers.slice(Math.ceil(allLawyers.length / 2)));
+        }
+      } else {
+        plaintiffLawyers.push(...allLawyers);
       }
       
       // 法官
       const jm = text.match(/法\s*官\s+([\u4e00-\u9fa5]{2,4})/);
-      
       // 書記官
       const cm = text.match(/書記官\s+([\u4e00-\u9fa5]{2,4})/);
       
@@ -3014,32 +3030,14 @@ router.post('/test-parties-v2', async (req, res) => {
         jid: judgments.rows[i].jid,
         judges: jm ? [jm[1]] : [],
         clerks: cm ? [cm[1]] : [],
+        all_lawyers: allLawyers,
         plaintiff_lawyers: plaintiffLawyers,
         defendant_lawyers: defendantLawyers
       });
     }
     
-    res.json({ status: 'success', count: results.length, total_time_ms: Date.now() - Date.now(), results });
+    res.json({ status: 'success', count: results.length, results });
   } catch (e) {
     res.status(500).json({ status: 'error', message: e.message });
-  }
-});
-
-// 檢查律師格式
-router.post('/check-lawyer-format', async (req, res) => {
-  try {
-    const db = require('../db/postgres');
-    const result = await db.query(`SELECT jfull FROM judgments WHERE jfull LIKE '%律師%' ORDER BY jid ASC LIMIT 1`);
-    
-    if (result.rows.length > 0) {
-      const text = result.rows[0].jfull || '';
-      // 找包含"律師"的前後文
-      const matches = text.match(/.{0,50}律師.{0,20}/g) || [];
-      res.json({ sample: matches.slice(0, 10) });
-    } else {
-      res.json({ error: 'No data' });
-    }
-  } catch (e) {
-    res.status(500).json({ error: e.message });
   }
 });
