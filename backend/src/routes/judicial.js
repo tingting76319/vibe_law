@@ -2410,3 +2410,24 @@ router.post('/test-name-extraction', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 檢查判決書內容
+router.post('/check-judgment-content', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    const result = await db.query(`SELECT jid, jfull FROM judgments ORDER BY jid ASC LIMIT 1`);
+    
+    if (result.rows.length > 0) {
+      const jfull = result.rows[0].jfull || '';
+      res.json({ 
+        jid: result.rows[0].jid,
+        length: jfull.length,
+        sample: jfull.substring(0, 2000)
+      });
+    } else {
+      res.json({ error: 'No judgments found' });
+    }
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
