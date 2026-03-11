@@ -2979,30 +2979,45 @@ router.post('/test-with-lawyers', async (req, res) => {
 });
 
 
-// 檢查原告被告前後文
-router.post('/check-parties-context', async (req, res) => {
+// 精準提取原告/被告律師
+router.post('/test-precise', async (req, res) => {
   try {
     const db = require('../db/postgres');
-    const judgments = await db.query(`SELECT jid, jfull FROM judgments WHERE jfull LIKE '%原告%' AND jfull LIKE '%被告%' ORDER BY jid ASC LIMIT 3`);
+    const judgments = await db.query(`SELECT jid, jfull FROM judgments WHERE jfull LIKE '%原告%' AND jfull LIKE '%被告%' ORDER BY jid ASC LIMIT 5`);
     
     const results = [];
+    const filterWords = ['如委任', '法扶', '選任', '辯護人'];
     
     for (let i = 0; i < judgments.rows.length; i++) {
       const text = judgments.rows[i].jfull || '';
       
-      // 原告前後文
-      const plaintiffMatch = text.match(/(.{0,50}原告.{0,100})/);
-      // 被告前後文
-      const defendantMatch = text.match(/(.{0,50}被告.{0,100})/);
-      // 律師位置
-      const lawyerMatches = text.match(/([\u4e00-\u9fa5]{2,4})律師/g) || [];
+      // 原告律師：找 "原告" 後面的律師
+      const plaintiffLawyers = [];
+      const pPattern = /原告[^\n]{0,50}([\u4e00-\u9fa5]{2,4})律師/g;
+      let m;
+      while ((m = pPattern.exec(text)) !== null) {
+        if (m[1] && !filterWords.includes(m[1])) plaintiffLawyers.push(m[1]);
+      }
+      
+      // 被告律師：找 "被告" 後面的律師
+      const defendantLawyers = [];
+      const dPattern = /被告[^\n]{0,50}([\u4e00-\u9fa5]{2,4})律師/g;
+      while ((m = dPattern.exec(text)) !== null) {
+        if (m[1] && !filterWords.includes(m[1])) defendantLawyers.push(m[1]);
+      }
+      
+      // 法官
+      const jm = text.match(/法\s*官\s+([\u4e00-\u9fa5]{2,4})/);
+      // 書記官
+      const cm = text.match(/書記官\s+([\u4e00-\u9fa5]{2,4})/);
       
       results.push({
         index: i + 1,
         jid: judgments.rows[i].jid,
-        plaintiff_context: plaintiffMatch ? plaintiffMatch[1].replace(/\n/g, ' ') : '',
-        defendant_context: defendantMatch ? defendantMatch[1].replace(/\n/g, ' ') : '',
-        lawyer_positions: lawyerMatches.map(m => ({ text: m, pos: text.indexOf(m) }))
+        judges: jm ? [jm[1]] : [],
+        clerks: cm ? [cm[1]] : [],
+        plaintiff_lawyers: [...new Set(plaintiffLawyers)],
+        defendant_lawyers: [...new Set(defendantLawyers)]
       });
     }
     
