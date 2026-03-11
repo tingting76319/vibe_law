@@ -2827,3 +2827,80 @@ router.post('/check-raw-format', async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+
+// 姓名提取最終優化版v7（根據實際格式）
+router.post('/test-name-extraction-v7', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    const startTime = Date.now();
+    
+    const judgments = await db.query(`SELECT jid, jfull FROM judgments ORDER BY jid ASC LIMIT 10`);
+    const results = [];
+    
+    for (let i = 0; i < judgments.rows.length; i++) {
+      const j = judgments.rows[i];
+      const text = j.jfull || '';
+      
+      // 法官：支援 "法 官  吳思怡" 格式（中間有空格）
+      const judges = [];
+      const judgePatterns = [
+        /法\s*官\s+([\u4e00-\u9fa5]{2,4})/g,
+        /簡易庭[^\n]*法\s*官\s+([\u4e00-\u9fa5]{2,4})/g,
+        /法官\s*([\u4e00-\u9fa5]{2,4})/g,
+        /審判長\s+([\u4e00-\u9fa5]{2,4})/g
+      ];
+      
+      for (const pattern of judgePatterns) {
+        let match;
+        while ((match = pattern.exec(text)) !== null) {
+          if (match[1]) judges.push(match[1]);
+        }
+      }
+      
+      // 書記官
+      const clerks = [];
+      const clerkMatch = text.match(/書記官\s+([\u4e00-\u9fa5]{2,4})/);
+      if (clerkMatch && clerkMatch[1]) clerks.push(clerkMatch[1]);
+      
+      // 律師
+      const lawyers = [];
+      const lawyerMatch = text.match(/([\u4e00-\u9fa5]{2,4})律師/g);
+      if (lawyerMatch) {
+        for (const m of lawyerMatch) {
+          const name = m.replace('律師', '').trim();
+          if (name.length >= 2) lawyers.push(name);
+        }
+      }
+      
+      // 檢察官
+      const prosecutors = [];
+      const prosecutorMatch = text.match(/([\u4e00-\u9fa5]{2,4})檢察官/g);
+      if (prosecutorMatch) {
+        for (const m of prosecutorMatch) {
+          const name = m.replace('檢察官', '').trim();
+          if (name.length >= 2) prosecutors.push(name);
+        }
+      }
+      
+      results.push({
+        index: i + 1,
+        jid: j.jid,
+        judges: [...new Set(judges)].slice(0, 5),
+        clerks: [...new Set(clerks)].slice(0, 3),
+        lawyers: [...new Set(lawyers)].slice(0, 10),
+        prosecutors: [...new Set(prosecutors)].slice(0, 5)
+      });
+    }
+    
+    const totalTime = Date.now() - startTime;
+    
+    res.json({ 
+      status: 'success', 
+      count: results.length,
+      total_time_ms: totalTime,
+      results 
+    });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
