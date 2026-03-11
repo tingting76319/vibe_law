@@ -2977,3 +2977,61 @@ router.post('/test-with-lawyers', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+
+// 姓名提取（原告/被告律師分類）
+router.post('/test-with-parties', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    const startTime = Date.now();
+    
+    const judgments = await db.query(`
+      SELECT jid, jfull FROM judgments 
+      WHERE jfull LIKE '%律師%'
+      ORDER BY jid ASC
+      LIMIT 10
+    `);
+    
+    const results = [];
+    
+    for (let i = 0; i < judgments.rows.length; i++) {
+      const j = judgments.rows[i];
+      const text = j.jfull || '';
+      
+      // 原告律師
+      const plaintiffLawyers = [];
+      const pPatterns = [/原告[^\n]{0,20}([\u4e00-\u9fa5]{2,4})律師/g, /上訴人[^\n]{0,20}([\u4e00-\u9fa5]{2,4})律師/g];
+      for (const p of pPatterns) {
+        let m;
+        while ((m = p.exec(text)) !== null) { if (m[1]) plaintiffLawyers.push(m[1]); }
+      }
+      
+      // 被告律師  
+      const defendantLawyers = [];
+      const dPatterns = [/被告[^\n]{0,20}([\u4e00-\u9fa5]{2,4})律師/g, /被移送人[^\n]{0,20}([\u4e00-\u9fa5]{2,4})律師/g];
+      for (const p of dPatterns) {
+        let m;
+        while ((m = p.exec(text)) !== null) { if (m[1]) defendantLawyers.push(m[1]); }
+      }
+      
+      // 法官
+      const jm = text.match(/法\s*官\s+([\u4e00-\u9fa5]{2,4})/);
+      
+      // 書記官
+      const cm = text.match(/書記官\s+([\u4e00-\u9fa5]{2,4})/);
+      
+      results.push({
+        index: i + 1,
+        jid: j.jid,
+        judges: jm ? [jm[1]] : [],
+        clerks: cm ? [cm[1]] : [],
+        plaintiff_lawyers: [...new Set(plaintiffLawyers)].slice(0, 5),
+        defendant_lawyers: [...new Set(defendantLawyers)].slice(0, 5)
+      });
+    }
+    
+    res.json({ status: 'success', count: results.length, total_time_ms: Date.now() - startTime, results });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
