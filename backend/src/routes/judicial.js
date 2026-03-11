@@ -2501,3 +2501,76 @@ router.post('/test-name-extraction-v2', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 姓名提取最終版
+router.post('/test-name-extraction-v3', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    const startTime = Date.now();
+    
+    const judgments = await db.query(`SELECT jid, jfull FROM judgments ORDER BY jid ASC LIMIT 10`);
+    const results = [];
+    
+    for (let i = 0; i < judgments.rows.length; i++) {
+      const j = judgments.rows[i];
+      const text = j.jfull || '';
+      
+      // 法官：找到 "法官" 或 "審判長" 後面的2-4個中文字
+      const judges = [];
+      const judgePattern = /(?:法官|審判長|受命法官|陪席法官)[^a-zA-Z0-9\u4e00-\u9fa5]*([\u4e00-\u9fa5]{2,4})/g;
+      let match;
+      while ((match = judgePattern.exec(text)) !== null) {
+        const name = match[1];
+        // 過濾掉常見非姓名詞
+        if (!['裁定', '主文', '事實', '理由', '證據', '法院', '本院', '案件', '當事人'].includes(name)) {
+          judges.push(name);
+        }
+      }
+      
+      // 書記官
+      const clerks = [];
+      const clerkPattern = /書記官[^a-zA-Z0-9\u4e00-\u9fa5]*([\u4e00-\u9fa5]{2,4})/g;
+      while ((match = clerkPattern.exec(text)) !== null) {
+        clerks.push(match[1]);
+      }
+      
+      // 律師
+      const lawyers = [];
+      const lawyerPattern = /([\u4e00-\u9fa5]{2,4})律師/g;
+      while ((match = lawyerPattern.exec(text)) !== null) {
+        const name = match[1];
+        // 過濾
+        if (!['律師', '律師聲', '律師請'].includes(name)) {
+          lawyers.push(name);
+        }
+      }
+      
+      // 檢察官
+      const prosecutors = [];
+      const prosecutorPattern = /([\u4e00-\u9fa5]{2,4})檢察官/g;
+      while ((match = prosecutorPattern.exec(text)) !== null) {
+        prosecutors.push(match[1]);
+      }
+      
+      results.push({
+        index: i + 1,
+        jid: j.jid,
+        judges: [...new Set(judges)].slice(0, 5),
+        clerks: [...new Set(clerks)].slice(0, 3),
+        lawyers: [...new Set(lawyers)].slice(0, 10),
+        prosecutors: [...new Set(prosecutors)].slice(0, 5)
+      });
+    }
+    
+    const totalTime = Date.now() - startTime;
+    
+    res.json({ 
+      status: 'success', 
+      count: results.length,
+      total_time_ms: totalTime,
+      results 
+    });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
