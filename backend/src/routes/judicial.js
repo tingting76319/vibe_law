@@ -2804,3 +2804,26 @@ router.post('/test-name-extraction-v6', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 檢查原始格式
+router.post('/check-raw-format', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    const result = await db.query(`SELECT jid, jfull FROM judgments ORDER BY jid ASC LIMIT 1`);
+    
+    if (result.rows.length > 0) {
+      const jfull = result.rows[0].jfull || '';
+      // 找最後100個字
+      const last100 = jfull.slice(-200);
+      res.json({ 
+        jid: result.rows[0].jid,
+        last_chars: last100,
+        length: jfull.length
+      });
+    } else {
+      res.json({ error: 'No data' });
+    }
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
