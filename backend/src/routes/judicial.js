@@ -2160,3 +2160,77 @@ router.post('/stable-batch-analysis', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 測試版：分析前10筆判決書
+router.post('/test-10-judgments', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    // 風格關鍵詞
+    const styleKeywords = {
+      '攻擊型': ['抗辯', '請求', '主張', '侵權', '違約', '損害賠償'],
+      '防禦型': ['否認', '辯稱', '無過失', '不成立'],
+      '妥協型': ['和解', '調解', '撤回', '協商'],
+      '穩健型': ['依法', '證據', '程序', '管轄']
+    };
+    
+    const judgeKeywords = {
+      '嚴謹型': ['程序違法', '證據不足', '依法論', '不備要件'],
+      '寬容型': ['酌情', '寬容', '給予機會', '從輕'],
+      '效率型': ['和解', '調解', '撤回', '調處'],
+      '強硬型': ['駁回', '嚴懲', '維持', '確定']
+    };
+    
+    // 取得前10筆判決書
+    const judgments = await db.query(`
+      SELECT jid, jfull FROM judgments 
+      ORDER BY jid ASC
+      LIMIT 10
+    `);
+    
+    const results = [];
+    
+    for (const j of judgments.rows) {
+      const text = j.jfull || '';
+      const jid = j.jid;
+      
+      // 提取法官（從判決書通常可見）
+      const judgeMatches = text.match(/(?:法官|審判長|受命法官)[^\n]{0,20}/g) || [];
+      
+      // 提取律師
+      const lawyerMatches = text.match(/(?:律師|訴訟代理人)[^\n]{0,20}/g) || [];
+      
+      // 提取檢察官
+      const prosecutorMatches = text.match(/(?:檢察官|檢察署)[^\n]{0,20}/g) || [];
+      
+      // 計算法官風格
+      const judgeScores = { '嚴謹型': 0, '寬容型': 0, '效率型': 0, '強硬型': 0 };
+      for (const [style, keywords] of Object.entries(judgeKeywords)) {
+        for (const kw of keywords) {
+          if (text.includes(kw)) judgeScores[style]++;
+        }
+      }
+      
+      // 計算律師風格
+      const lawyerScores = { '攻擊型': 0, '防禦型': 0, '妥協型': 0, '穩健型': 0 };
+      for (const [style, keywords] of Object.entries(styleKeywords)) {
+        for (const kw of keywords) {
+          if (text.includes(kw)) lawyerScores[style]++;
+        }
+      }
+      
+      results.push({
+        jid,
+        judges: judgeMatches.slice(0, 3),
+        lawyers: lawyerMatches.slice(0, 5),
+        prosecutors: prosecutorMatches.slice(0, 3),
+        judge_style: Object.entries(judgeScores).sort((a,b) => b[1]-a[1])[0][0],
+        lawyer_style: Object.entries(lawyerScores).sort((a,b) => b[1]-a[1])[0][0]
+      });
+    }
+    
+    res.json({ status: 'success', count: results.length, results });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
