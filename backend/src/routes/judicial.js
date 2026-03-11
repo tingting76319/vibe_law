@@ -2329,3 +2329,84 @@ router.post('/test-10-timed', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 姓名提取優化版測試
+router.post('/test-name-extraction', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    const startTime = Date.now();
+    
+    // 優化的姓名提取正則
+    // 法官
+    const judgePatterns = [
+      /(?:法官|審判長|受命法官|陪席法官)[：:\s]*([\u4e00-\u9fa5]{2,4})/g,
+      /裁定[\s\n]*([\u4e00-\u9fa5]{2,4})[\s\n]*法官/g,
+      /判令[\s\n]*([\u4e00-\u9fa5]{2,4})/g
+    ];
+    
+    // 律師
+    const lawyerPatterns = [
+      /(?:律師|訴訟代理人|選任辯護人)[\s\n]*([\u4e00-\u9fa5]{2,4})/g,
+      /([\u4e00-\u9fa5]{2,4})律師/g,
+      /(?:被告|原告|上訴人|被上訴人|告訴人|辯護人)[\s\n]*([\u4e00-\u9fa5]{2,4})/g
+    ];
+    
+    // 檢察官
+    const prosecutorPatterns = [
+      /(?:檢察官|檢察署|檢察長)[\s\n]*([\u4e00-\u9fa5]{2,4})/g,
+      /([\u4e00-\u9fa5]{2,4})檢察官/g
+    ];
+    
+    const judgments = await db.query(`SELECT jid, jfull FROM judgments ORDER BY jid ASC LIMIT 10`);
+    
+    const results = [];
+    
+    for (let i = 0; i < judgments.rows.length; i++) {
+      const j = judgments.rows[i];
+      const text = j.jfull || '';
+      
+      // 提取法官
+      let judges = [];
+      for (const pattern of judgePatterns) {
+        const matches = text.match(pattern);
+        if (matches) judges.push(...matches);
+      }
+      judges = [...new Set(judges)].slice(0, 5);
+      
+      // 提取律師
+      let lawyers = [];
+      for (const pattern of lawyerPatterns) {
+        const matches = text.match(pattern);
+        if (matches) lawyers.push(...matches);
+      }
+      lawyers = [...new Set(lawyers)].slice(0, 10);
+      
+      // 提取檢察官
+      let prosecutors = [];
+      for (const pattern of prosecutorPatterns) {
+        const matches = text.match(pattern);
+        if (matches) prosecutors.push(...matches);
+      }
+      prosecutors = [...new Set(prosecutors)].slice(0, 5);
+      
+      results.push({
+        index: i + 1,
+        jid: j.jid,
+        judges: judges,
+        lawyers: lawyers,
+        prosecutors: prosecutors
+      });
+    }
+    
+    const totalTime = Date.now() - startTime;
+    
+    res.json({ 
+      status: 'success', 
+      count: results.length,
+      total_time_ms: totalTime,
+      results 
+    });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
