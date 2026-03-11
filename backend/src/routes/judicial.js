@@ -3044,3 +3044,19 @@ router.post('/test-segment', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 原始判決書內容
+router.post('/show-judgment', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    const { jid } = req.body;
+    const result = await db.query(`SELECT jid, jfull FROM judgments WHERE jid = $1`, [jid]);
+    if (result.rows.length > 0) {
+      res.json({ jid: result.rows[0].jid, content: result.rows[0].jfull.substring(0, 3000) });
+    } else {
+      res.json({ error: 'Not found' });
+    }
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
