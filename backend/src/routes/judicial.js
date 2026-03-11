@@ -3024,3 +3024,22 @@ router.post('/test-parties-v2', async (req, res) => {
     res.status(500).json({ status: 'error', message: e.message });
   }
 });
+
+// 檢查律師格式
+router.post('/check-lawyer-format', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    const result = await db.query(`SELECT jfull FROM judgments WHERE jfull LIKE '%律師%' ORDER BY jid ASC LIMIT 1`);
+    
+    if (result.rows.length > 0) {
+      const text = result.rows[0].jfull || '';
+      // 找包含"律師"的前後文
+      const matches = text.match(/.{0,50}律師.{0,20}/g) || [];
+      res.json({ sample: matches.slice(0, 10) });
+    } else {
+      res.json({ error: 'No data' });
+    }
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
