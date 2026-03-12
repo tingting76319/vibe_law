@@ -3060,3 +3060,30 @@ router.post('/show-judgment', async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+
+// 建立風格統計欄位
+router.post('/setup-style-columns', async (req, res) => {
+  try {
+    const db = require('../db/postgres');
+    
+    await db.query(`ALTER TABLE lawyer_profiles ADD COLUMN IF NOT EXISTS style_attack_count INTEGER DEFAULT 0`);
+    await db.query(`ALTER TABLE lawyer_profiles ADD COLUMN IF NOT EXISTS style_defense_count INTEGER DEFAULT 0`);
+    await db.query(`ALTER TABLE lawyer_profiles ADD COLUMN IF NOT EXISTS style_compromise_count INTEGER DEFAULT 0`);
+    await db.query(`ALTER TABLE lawyer_profiles ADD COLUMN IF NOT EXISTS style_steady_count INTEGER DEFAULT 0`);
+    await db.query(`ALTER TABLE lawyer_profiles ADD COLUMN IF NOT EXISTS style_keywords JSONB`);
+    await db.query(`ALTER TABLE lawyer_profiles ADD COLUMN IF NOT EXISTS analyzed_cases INTEGER DEFAULT 0`);
+    await db.query(`ALTER TABLE lawyer_profiles ADD COLUMN IF NOT EXISTS last_analyzed_at TIMESTAMP`);
+    
+    // 法官風格欄位
+    await db.query(`ALTER TABLE judge_profiles ADD COLUMN IF NOT EXISTS style_strict_count INTEGER DEFAULT 0`);
+    await db.query(`ALTER TABLE judge_profiles ADD COLUMN IF NOT EXISTS style_lenient_count INTEGER DEFAULT 0`);
+    await db.query(`ALTER TABLE judge_profiles ADD COLUMN IF NOT EXISTS style_efficient_count INTEGER DEFAULT 0`);
+    await db.query(`ALTER TABLE judge_profiles ADD COLUMN IF NOT EXISTS style_firm_count INTEGER DEFAULT 0`);
+    await db.query(`ALTER TABLE judge_profiles ADD COLUMN IF NOT EXISTS style_keywords JSONB`);
+    await db.query(`ALTER TABLE judge_profiles ADD COLUMN IF NOT EXISTS analyzed_cases INTEGER DEFAULT 0`);
+    
+    res.json({ status: 'success', message: 'Style columns created' });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
