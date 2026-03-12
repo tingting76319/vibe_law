@@ -2979,22 +2979,111 @@ router.post('/test-with-lawyers', async (req, res) => {
 });
 
 
-// 建立唯一約束
-router.post('/setup-unique-constraints', async (req, res) => {
+// 風格關鍵詞
+const lawyerStyleKeywords = {
+  '攻擊型': ['抗辯', '舉證', '請求', '主張', '侵權', '違約', '損害賠償', '應負', '過失', '訴訟', '告訴', '起訴'],
+  '防禦型': ['不知', '非因', '否認', '辯稱', '誤會', '無過失', '無因果關係', '不成立', '無罪', '免訴'],
+  '妥協型': ['和解', '調解', '撤回', '願意賠償', '協商', '讓步', '調處'],
+  '穩健型': ['依法', '應依', '程序', '管轄', '適法', '依法論', '證據', '事實', '法律']
+};
+
+const judgeStyleKeywords = {
+  '嚴謹型': ['詳細', '嚴謹', '審慎', '充分', '完整', '嚴格', '精密', '仔細'],
+  '寬容型': ['寬容', '從寬', '酌情', '衡情', '考量', '從輕', '減輕'],
+  '效率型': ['迅速', '速審', '儘速', '從速', '簡化', '快速'],
+  '強硬型': ['嚴厲', '從嚴', '不寬容', '強硬', '維持', '駁回', '不支持']
+};
+
+// 批次分析
+router.post('/batch-analyze-styles', async (req, res) => {
   try {
     const db = require('../db/postgres');
+    const { offset = 0, limit = 100 } = req.body;
     
-    // 律師表唯一約束
-    await db.query(`
-      ALTER TABLE lawyer_profiles ADD CONSTRAINT uk_lawyer_name UNIQUE (name)
-    `).catch(() => {});
+    const judgments = await db.query(`SELECT jid, jfull FROM judgments ORDER BY jid ASC LIMIT $1 OFFSET $2`, [limit, offset]);
     
-    // 法官表唯一約束
-    await db.query(`
-      ALTER TABLE judge_profiles ADD CONSTRAINT uk_judge_name UNIQUE (name)
-    `).catch(() => {});
+    if (judgments.rows.length === 0) {
+      return res.json({ status: 'done', processed: 0, message: 'All done' });
+    }
     
-    res.json({ status: 'success', message: 'Unique constraints created' });
+    const lawyerStats = {};
+    const judgeStats = {};
+    
+    for (const j of judgments.rows) {
+      const text = j.jfull || '';
+      if (text.length < 100) continue;
+      
+      // 法官
+      const jm = text.match(/法\s*官\s+([\u4e00-\u9fa5]{2,4})/);
+      if (jm && jm[1]) {
+        const name = jm[1];
+        if (!judgeStats[name]) judgeStats[name] = { strict: 0, lenient: 0, efficient: 0, firm: 0, cases: 0 };
+        judgeStats[name].cases++;
+        for (const [style, kws] of Object.entries(judgeStyleKeywords)) {
+          for (const kw of kws) {
+            const cnt = (text.match(new RegExp(kw, 'g')) || []).length;
+            if (style === '嚴謹型') judgeStats[name].strict += cnt;
+            if (style === '寬容型') judgeStats[name].lenient += cnt;
+            if (style === '效率型') judgeStats[name].efficient += cnt;
+            if (style === '強硬型') judgeStats[name].firm += cnt;
+          }
+        }
+      }
+      
+      // 律師
+      const pm = text.match(/原\s*告/);
+      const dm = text.match(/被\s*告/);
+      if (pm && dm) {
+        const defPos = dm.index;
+        const lp = /([\u4e00-\u9fa5]{2,4})律師/g;
+        let m;
+        while ((m = lp.exec(text)) !== null) {
+          const name = m[1];
+          if (['如委任', '法扶', '選任'].includes(name)) continue;
+          if (!lawyerStats[name]) lawyerStats[name] = { attack: 0, defense: 0, compromise: 0, steady: 0, cases: 0 };
+          lawyerStats[name].cases++;
+          for (const [style, kws] of Object.entries(lawyerStyleKeywords)) {
+            for (const kw of kws) {
+              const cnt = (text.match(new RegExp(kw, 'g')) || []).length;
+              if (style === '攻擊型') lawyerStats[name].attack += cnt;
+              if (style === '防禦型') lawyerStats[name].defense += cnt;
+              if (style === '妥協型') lawyerStats[name].compromise += cnt;
+              if (style === '穩健型') lawyerStats[name].steady += cnt;
+            }
+          }
+        }
+      }
+    }
+    
+    // 更新律師
+    for (const [name, s] of Object.entries(lawyerStats)) {
+      if (s.cases < 3) continue;
+      const max = Math.max(s.attack, s.defense, s.compromise, s.steady);
+      let style = '穩健型';
+      if (max === s.attack) style = '攻擊型';
+      else if (max === s.defense) style = '防禦型';
+      else if (max === s.compromise) style = '妥協型';
+      
+      await db.query(`INSERT INTO lawyer_profiles (name, style_attack_count, style_defense_count, style_compromise_count, style_steady_count, analyzed_cases, last_analyzed_at, style)
+        VALUES ($1, $2, $3, $4, $5, $6, NOW(), $7) ON CONFLICT (name) DO UPDATE SET style_attack_count = $2, style_defense_count = $3, style_compromise_count = $4, style_steady_count = $5, analyzed_cases = $6, last_analyzed_at = NOW(), style = $7`,
+        [name, s.attack, s.defense, s.compromise, s.steady, s.cases, style]);
+    }
+    
+    // 更新法官
+    for (const [name, s] of Object.entries(judgeStats)) {
+      if (s.cases < 3) continue;
+      const max = Math.max(s.strict, s.lenient, s.efficient, s.firm);
+      let style = '嚴謹型';
+      if (max === s.lenient) style = '寬容型';
+      else if (max === s.efficient) style = '效率型';
+      else if (max === s.firm) style = '強硬型';
+      
+      await db.query(`INSERT INTO judge_profiles (name, style_strict_count, style_lenient_count, style_efficient_count, style_firm_count, analyzed_cases, style)
+        VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (name) DO UPDATE SET style_strict_count = $2, style_lenient_count = $3, style_efficient_count = $4, style_firm_count = $5, analyzed_cases = $6, style = $7`,
+        [name, s.strict, s.lenient, s.efficient, s.firm, s.cases, style]);
+    }
+    
+    res.json({ status: 'success', processed: judgments.rows.length, offset: offset + limit, lawyers: Object.keys(lawyerStats).length, judges: Object.keys(judgeStats).length });
   } catch (e) {
     res.status(500).json({ status: 'error', message: e.message });
   }
