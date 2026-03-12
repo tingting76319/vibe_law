@@ -2979,110 +2979,149 @@ router.post('/test-with-lawyers', async (req, res) => {
 });
 
 
-// 區段式原告/被告律師抽出
-router.post('/test-segment', async (req, res) => {
+// 風格關鍵詞定義
+const styleKeywords = {
+  // 律師風格
+  lawyer: {
+    '攻擊型': ['抗辯', '舉證', '請求', '主張', '侵權', '違約', '損害賠償', '應負', '過失', '訴訟', '告訴', '起訴'],
+    '防禦型': ['不知', '非因', '否認', '辯稱', '誤會', '無過失', '無因果關係', '不成立', '無罪', '免訴'],
+    '妥協型': ['和解', '調解', '撤回', '願意賠償', '協商', '讓步', '調處', '和解方案'],
+    '穩健型': ['依法', '應依', '程序', '管轄', '適法', '依法論', '證據', '事實', '法律']
+  },
+  // 法官風格
+  judge: {
+    '嚴謹型': ['詳細', '嚴謹', '審慎', '充分', '完整', '嚴格', '精密', '仔細'],
+    '寬容型': ['寬容', '從寬', '酌情', '衡情', '考量', '從輕', '減輕'],
+    '效率型': ['迅速', '速審', '儘速', '從速', '簡化', '快速', '效率'],
+    '強硬型': ['嚴厲', '從嚴', '不寬容', '強硬', '維持', '駁回', '不支持']
+  }
+};
+
+// 批次分析判決書風格
+router.post('/batch-analyze-styles', async (req, res) => {
   try {
     const db = require('../db/postgres');
-    const judgments = await db.query(`SELECT jid, jfull FROM judgments WHERE jfull LIKE '%原告%' AND jfull LIKE '%被告%' AND jfull LIKE '%律師%' ORDER BY jid ASC LIMIT 5`);
+    const { offset = 0, limit = 100 } = req.body;
     
-    const results = [];
-    const filterWords = ['如委任', '法扶', '選任', '辯護人'];
+    // 取得判決書
+    const judgments = await db.query(`
+      SELECT jid, jfull FROM judgments 
+      ORDER BY jid ASC
+      LIMIT $1 OFFSET $2
+    `, [limit, offset]);
     
-    for (let i = 0; i < judgments.rows.length; i++) {
-      const text = judgments.rows[i].jfull || '';
+    if (judgments.rows.length === 0) {
+      return res.json({ status: 'done', processed: 0, offset, message: 'All judgments analyzed' });
+    }
+    
+    // 統計結果
+    const lawyerStats = {};
+    const judgeStats = {};
+    
+    for (const j of judgments.rows) {
+      const text = j.jfull || '';
+      if (text.length < 100) continue;
       
-      // 找出原告、被告的段落位置
+      // 提取法官
+      const judgeMatch = text.match(/法\s*官\s+([\u4e00-\u9fa5]{2,4})/);
+      if (judgeMatch && judgeMatch[1]) {
+        const judgeName = judgeMatch[1];
+        if (!judgeStats[judgeName]) {
+          judgeStats[judgeName] = { strict: 0, lenient: 0, efficient: 0, firm: 0, cases: 0 };
+        }
+        judgeStats[judgeName].cases++;
+        
+        for (const [style, keywords] of Object.entries(styleKeywords.judge)) {
+          for (const kw of keywords) {
+            const count = (text.match(new RegExp(kw, 'g')) || []).length;
+            if (style === '嚴謹型') judgeStats[judgeName].strict += count;
+            if (style === '寬容型') judgeStats[judgeName].lenient += count;
+            if (style === '效率型') judgeStats[judgeName].efficient += count;
+            if (style === '強硬型') judgeStats[judgeName].firm += count;
+          }
+        }
+      }
+      
+      // 提取原告/被告律師
       const plaintiffMatch = text.match(/原\s*告/);
       const defendantMatch = text.match(/被\s*告/);
-      
-      if (!plaintiffMatch || !defendantMatch) continue;
-      
-      const plaintiffPos = plaintiffMatch.index;
-      const defendantPos = defendantMatch.index;
-      
-      // 找出所有律師
-      const lawyers = [];
-      const lawyerPattern = /([\u4e00-\u9fa5]{2,4})律師/g;
-      let match;
-      while ((match = lawyerPattern.exec(text)) !== null) {
-        const name = match[1];
-        if (name.length >= 2 && !filterWords.includes(name)) {
-          lawyers.push({ name, pos: match.index });
+      if (plaintiffMatch && defendantMatch) {
+        const defendantPos = defendantMatch.index;
+        
+        // 所有律師
+        const lawyerPattern = /([\u4e00-\u9fa5]{2,4})律師/g;
+        let match;
+        while ((match = lawyerPattern.exec(text)) !== null) {
+          const name = match[1];
+          if (['如委任', '法扶', '選任', '辯護人'].includes(name)) continue;
+          
+          const isPlaintiff = match.index < defendantPos;
+          const role = isPlaintiff ? 'plaintiff' : 'defendant';
+          
+          if (!lawyerStats[name]) {
+            lawyerStats[name] = { attack: 0, defense: 0, compromise: 0, steady: 0, cases: 0 };
+          }
+          lawyerStats[name].cases++;
+          
+          for (const [style, keywords] of Object.entries(styleKeywords.lawyer)) {
+            for (const kw of keywords) {
+              const count = (text.match(new RegExp(kw, 'g')) || []).length;
+              if (style === '攻擊型') lawyerStats[name].attack += count;
+              if (style === '防禦型') lawyerStats[name].defense += count;
+              if (style === '妥協型') lawyerStats[name].compromise += count;
+              if (style === '穩健型') lawyerStats[name].steady += count;
+            }
+          }
         }
       }
-      
-      // 區段分類
-      const plaintiffLawyers = [];
-      const defendantLawyers = [];
-      
-      for (const lawyer of lawyers) {
-        if (lawyer.pos < defendantPos) {
-          // 被告之前 → 原告律師
-          plaintiffLawyers.push(lawyer.name);
-        } else {
-          // 被告之後 → 被告律師
-          defendantLawyers.push(lawyer.name);
-        }
-      }
-      
-      // 法官、書記官
-      const jm = text.match(/法\s*官\s+([\u4e00-\u9fa5]{2,4})/);
-      const cm = text.match(/書記官\s+([\u4e00-\u9fa5]{2,4})/);
-      
-      results.push({
-        index: i + 1,
-        jid: judgments.rows[i].jid,
-        judges: jm ? [jm[1]] : [],
-        clerks: cm ? [cm[1]] : [],
-        plaintiff_lawyers: [...new Set(plaintiffLawyers)],
-        defendant_lawyers: [...new Set(defendantLawyers)]
-      });
     }
     
-    res.json({ status: 'success', count: results.length, results });
-  } catch (e) {
-    res.status(500).json({ status: 'error', message: e.message });
-  }
-});
-
-// 原始判決書內容
-router.post('/show-judgment', async (req, res) => {
-  try {
-    const db = require('../db/postgres');
-    const { jid } = req.body;
-    const result = await db.query(`SELECT jid, jfull FROM judgments WHERE jid = $1`, [jid]);
-    if (result.rows.length > 0) {
-      res.json({ jid: result.rows[0].jid, content: result.rows[0].jfull.substring(0, 3000) });
-    } else {
-      res.json({ error: 'Not found' });
+    // 更新律師資料
+    for (const [name, stats] of Object.entries(lawyerStats)) {
+      if (stats.cases < 3) continue; // 至少3件案件
+      
+      // 找出最高風格
+      const maxStyle = Math.max(stats.attack, stats.defense, stats.compromise, stats.steady);
+      let style = '穩健型';
+      if (maxStyle === stats.attack) style = '攻擊型';
+      else if (maxStyle === stats.defense) style = '防禦型';
+      else if (maxStyle === stats.compromise) style = '妥協型';
+      
+      await db.query(`
+        INSERT INTO lawyer_profiles (name, style_attack_count, style_defense_count, style_compromise_count, style_steady_count, analyzed_cases, last_analyzed_at, style)
+        VALUES ($1, $2, $3, $4, $5, $6, NOW(), $7)
+        ON CONFLICT (name) DO UPDATE SET
+          style_attack_count = $2, style_defense_count = $3, style_compromise_count = $4, style_steady_count = $5,
+          analyzed_cases = $6, last_analyzed_at = NOW(), style = $7
+      `, [name, stats.attack, stats.defense, stats.compromise, stats.steady, stats.cases, style]);
     }
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// 建立風格統計欄位
-router.post('/setup-style-columns', async (req, res) => {
-  try {
-    const db = require('../db/postgres');
     
-    await db.query(`ALTER TABLE lawyer_profiles ADD COLUMN IF NOT EXISTS style_attack_count INTEGER DEFAULT 0`);
-    await db.query(`ALTER TABLE lawyer_profiles ADD COLUMN IF NOT EXISTS style_defense_count INTEGER DEFAULT 0`);
-    await db.query(`ALTER TABLE lawyer_profiles ADD COLUMN IF NOT EXISTS style_compromise_count INTEGER DEFAULT 0`);
-    await db.query(`ALTER TABLE lawyer_profiles ADD COLUMN IF NOT EXISTS style_steady_count INTEGER DEFAULT 0`);
-    await db.query(`ALTER TABLE lawyer_profiles ADD COLUMN IF NOT EXISTS style_keywords JSONB`);
-    await db.query(`ALTER TABLE lawyer_profiles ADD COLUMN IF NOT EXISTS analyzed_cases INTEGER DEFAULT 0`);
-    await db.query(`ALTER TABLE lawyer_profiles ADD COLUMN IF NOT EXISTS last_analyzed_at TIMESTAMP`);
+    // 更新法官資料
+    for (const [name, stats] of Object.entries(judgeStats)) {
+      if (stats.cases < 3) continue;
+      
+      const maxStyle = Math.max(stats.strict, stats.lenient, stats.efficient, stats.firm);
+      let style = '嚴謹型';
+      if (maxStyle === stats.lenient) style = '寬容型';
+      else if (maxStyle === stats.efficient) style = '效率型';
+      else if (maxStyle === stats.firm) style = '強硬型';
+      
+      await db.query(`
+        INSERT INTO judge_profiles (name, style_strict_count, style_lenient_count, style_efficient_count, style_firm_count, analyzed_cases, style)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        ON CONFLICT (name) DO UPDATE SET
+          style_strict_count = $2, style_lenient_count = $3, style_efficient_count = $4, style_firm_count = $5,
+          analyzed_cases = $6, style = $7
+      `, [name, stats.strict, stats.lenient, stats.efficient, stats.firm, stats.cases, style]);
+    }
     
-    // 法官風格欄位
-    await db.query(`ALTER TABLE judge_profiles ADD COLUMN IF NOT EXISTS style_strict_count INTEGER DEFAULT 0`);
-    await db.query(`ALTER TABLE judge_profiles ADD COLUMN IF NOT EXISTS style_lenient_count INTEGER DEFAULT 0`);
-    await db.query(`ALTER TABLE judge_profiles ADD COLUMN IF NOT EXISTS style_efficient_count INTEGER DEFAULT 0`);
-    await db.query(`ALTER TABLE judge_profiles ADD COLUMN IF NOT EXISTS style_firm_count INTEGER DEFAULT 0`);
-    await db.query(`ALTER TABLE judge_profiles ADD COLUMN IF NOT EXISTS style_keywords JSONB`);
-    await db.query(`ALTER TABLE judge_profiles ADD COLUMN IF NOT EXISTS analyzed_cases INTEGER DEFAULT 0`);
-    
-    res.json({ status: 'success', message: 'Style columns created' });
+    res.json({ 
+      status: 'success', 
+      processed: judgments.rows.length,
+      offset: offset + limit,
+      lawyers_updated: Object.keys(lawyerStats).length,
+      judges_updated: Object.keys(judgeStats).length
+    });
   } catch (e) {
     res.status(500).json({ status: 'error', message: e.message });
   }
